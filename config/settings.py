@@ -15,6 +15,8 @@ from pathlib import Path
 import pydash
 from environ import environ
 
+from corsheaders.defaults import default_headers
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,8 +33,10 @@ SECRET_KEY = ENV('SECRET_KEY', str, default='django-insecure-fm)$u4d@+v75_8fziha
 DEBUG = ENV('DEBUG', bool, default=True)
 
 HOST_NAME = ENV('HOST_NAME', str, default='')
-ALLOWED_HOSTS = ['backend'] + ([HOST_NAME] if HOST_NAME else [])
+ALLOWED_HOSTS = ['backend','localhost'] + ([HOST_NAME] if HOST_NAME else [])
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080'] + ([f'https://{HOST_NAME}'] if HOST_NAME else [])
+CORS_ALLOWED_ORIGINS = ["http://localhost:8000",'https://webhook.site']
+CORS_ALLOW_HEADERS = (    *default_headers,    "x-line-signature",)
 
 # Application definition
 ALLOWED_APPS = ENV('ALLOWED_APPS', list, default=[])
@@ -43,6 +47,7 @@ PROJECT_APPS = [
     if os.path.exists(f'apps/{app_name}/apps.py')
     if not ALLOWED_APPS or app_name in ALLOWED_APPS
 ]
+print(os.listdir('apps'))
 
 INSTALLED_APPS = [
     "daphne",
@@ -52,6 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'control.apps.ControlConfig',
     *[
@@ -64,6 +70,7 @@ MIDDLEWARE = [
     'config.healthcheck.HealthCheckMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
