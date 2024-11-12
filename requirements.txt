@@ -8,3 +8,4 @@ celery[redis]==5.*
 psycopg2-binary==2.*
 pydash==4.*
 django-cors-headers==4.6.0
+requests==2.32.3
