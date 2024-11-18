@@ -2,11 +2,11 @@ django==5.*
 djangorestframework==3.*
 django-redis==5.*
 django-environ
+requests==2.32.*
 channels[daphne]==4.*
 channels_redis==4.*
 celery[redis]==5.*
 psycopg2-binary==2.*
 pydash==4.*
 django-cors-headers==4.6.0
-requests==2.32.3
 pillow==11.0.0

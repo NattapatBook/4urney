@@ -33,7 +33,7 @@ SECRET_KEY = ENV('SECRET_KEY', str, default='django-insecure-fm)$u4d@+v75_8fziha
 DEBUG = ENV('DEBUG', bool, default=True)
 
 HOST_NAME = ENV('HOST_NAME', str, default='')
-ALLOWED_HOSTS = ['backend','localhost'] + ([HOST_NAME] if HOST_NAME else [])
+ALLOWED_HOSTS = ['localhost', 'backend'] + ([HOST_NAME] if HOST_NAME else [])
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080'] + ([f'https://{HOST_NAME}'] if HOST_NAME else [])
 CORS_ALLOWED_ORIGINS = ["http://localhost:8000",'https://webhook.site']
 CORS_ALLOW_HEADERS = (    *default_headers,    "x-line-signature",)

@@ -14,6 +14,7 @@ from apps.bot.utils import call_bot
 
 from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
+from apps.webhook_line.models import LineIntegration
 
 LINE_CHATBOT_API_KEY = os.environ.get('LINE_CHATBOT_API_KEY')
 LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
@@ -22,6 +23,10 @@ LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
 @csrf_exempt
 async def webhook(request: HttpRequest, uuid):
     print(uuid)
+    line_integration = LineIntegration.objects.get(uuid=uuid)
+    LINE_CHATBOT_API_KEY = line_integration.line_chatbot_api_key
+    LINE_CHANNEL_SECRET = line_integration.line_channel_secret
+
     print(request.headers)
     try:
         assert request.method == 'POST'
@@ -59,7 +64,7 @@ async def webhook(request: HttpRequest, uuid):
                 print("Bot is not response due to agent's open ticket.")
         elif message_type == 'image':
             """
-            If user response as image
+            If user responseg as image
             """
             # image_url = payload.events[0].message["contentProvider"].originalContentUrl
             # message = HumanMessage(
