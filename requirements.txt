@@ -10,3 +10,4 @@ psycopg2-binary==2.*
 pydash==4.*
 django-cors-headers==4.6.0
 pillow==11.0.0
+pytz==2024.2
