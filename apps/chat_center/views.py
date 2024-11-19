@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from django.shortcuts import render
+import os
 import psycopg2
 import json
 import sys
@@ -12,16 +13,15 @@ from datetime import datetime
 
 from apps.chat_center.models import User
 
-# Constants
 DB_CONFIG = {
-    'host': '54.251.172.6',
-    'database': '4nalyze_social',
-    'user': '4nalyze_social',
-    'password': 'password',
-    'port': '25432',
+    'host': os.environ.get('DEMO_DATABASE_HOST'),
+    'database': os.environ.get('DEMO_DATABASE_NAME'),
+    'user': os.environ.get('DEMO_DATABASE_USER'),
+    'password': os.environ.get('DEMO_DATABASE_PASSWORD'),
+    'port': os.environ.get('DEMO_DATABASE_PORT'),
 }
 
-LINE_CHATBOT_API_KEY = 'AFZDXcurWpvwekwXn1GHPegEpgtOEYSfcR284C497Dmxz9AiYBc8DtwLu7GLpJKmCa21x9nNvtGGmTgm5+JOnih9o8EsDuXsc/R5CE1DhvFUELTzafcT7aVNfA2nd8X7qk263HEftlm2RucPoPqPigdB04t89/1O/w1cDnyilFU='
+LINE_CHATBOT_API_KEY = os.environ.get('LINE_CHATBOT_API_KEY')
 LINE_API = 'https://api.line.me/v2/bot/message/reply'
 
 tz = pytz.timezone('Asia/Bangkok')
