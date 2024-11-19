@@ -231,12 +231,18 @@
                   <v-card-text
                     :style="{
                       display: `flex`,
+                      justifyContent: `center`,
                     }"
                   >
-                    <v-img
-                      :style="{ aspectRatio: `30/9 !important` }"
-                      :src="'/img/landing/showChat.png'"
-                    ></v-img>
+                    <div :style="{ maxWidth: `880px`, width: `100%` }">
+                      <v-img
+                        :style="{
+                          aspectRatio: `30/9 !important`,
+                        }"
+                        :src="'/img/landing/showChat.png'"
+                      ></v-img>
+                    </div>
+
                     <!-- <div
                       class="mb-2"
                       v-for="(item, idx) in showChat"
@@ -295,7 +301,7 @@
                   </v-card-title>
                   <v-card-text
                     class="pb-0"
-                    :style="{ height: `calc(100% - 64px)`, overflowX: `auto` }"
+                    :style="{ height: `calc(100% - 165px)`, overflowX: `auto` }"
                   >
                     <v-container>
                       <v-row>
@@ -320,12 +326,265 @@
                   </v-card-text>
                 </v-card>
               </v-carousel-item>
-              <!-- START -->
-              <v-carousel-item>
-                <v-card class="pa-4 rounded-xl card-landing-top">
+              <!-- login&trial both in > 880 -->
+              <v-carousel-item v-if="windowWidth > 880">
+                <v-card
+                  :style="{
+                    height: `100%`,
+                    display: `flex`,
+                    justifyContent: `space-between`,
+                  }"
+                >
+                  <!-- login -->
+                  <v-card
+                    elevation="0"
+                    class="pa-4 rounded-xl card-landing-top"
+                    :style="{ height: `100%`, width: `50%` }"
+                  >
+                    <v-card-title>
+                      <p :style="{ fontSize: `2em`, fontWeight: `bold` }">
+                        Login 🔑
+                      </p>
+                      <p :style="{ fontSize: `0.8em` }">"Start Your Journey"</p>
+                      <p :style="{ fontSize: `0.8em` }">
+                        &nbsp;Smarter, faster, easier service.
+                      </p>
+                      <p :style="{ fontSize: `0.8em` }">
+                        &nbsp;with the
+                        <span
+                          class="gradient-text"
+                          :style="{ fontWeight: `bold` }"
+                          >Power of AI</span
+                        >.
+                      </p>
+                    </v-card-title>
+                    <v-card-text
+                      class="pb-0"
+                      :style="{
+                        height: `calc(100% - 64px)`,
+                        overflowX: `auto`,
+                        display: `flex`,
+                        alignItems: `center`,
+                        flexDirection: `column`,
+                        justifyContent: `flex-start`,
+                      }"
+                    >
+                      <p
+                        class="mb-10 mt-5"
+                        :style="{ color: `grey`, textAlign: `center` }"
+                      >
+                        Log In to Begin Experience AI Power
+                      </p>
+                      <v-btn
+                        class="get-login-page-btn rounded-lg"
+                        color="primary"
+                        elevation="10"
+                        :style="{ width: `15em` }"
+                      >
+                        Login
+                      </v-btn>
+
+                      <p
+                        class="mt-10"
+                        :style="{ color: `grey`, textAlign: `center` }"
+                      >
+                        <span
+                          >Powered by
+                          <span
+                            :style="{
+                              color: `#757575`,
+                              fontWeight: `bold`,
+                            }"
+                            >AWS Cognito</span
+                          >
+                          for unmatched reliability and protection.</span
+                        >
+                      </p>
+                    </v-card-text>
+                  </v-card>
+                  <v-divider
+                    class="border-opacity-50 my-15"
+                    color="grey"
+                    vertical
+                  />
+                  <!-- trial -->
+                  <v-card
+                    elevation="0"
+                    class="pa-4 rounded-xl card-landing-top"
+                    :style="{ height: `100%`, width: `50%` }"
+                  >
+                    <v-card-title>
+                      <p :style="{ fontSize: `2em`, fontWeight: `bold` }">
+                        Trial 🔥
+                      </p>
+                      <p :style="{ fontSize: `0.8em` }">
+                        "Start Your Free Trial Today!"
+                      </p>
+                      <p :style="{ fontSize: `0.8em` }">
+                        &nbsp;Unlock the
+                        <span
+                          class="gradient-text"
+                          :style="{ fontWeight: `bold` }"
+                          >Power of AI</span
+                        >.
+                      </p>
+                      <p :style="{ fontSize: `0.8em` }">
+                        &nbsp;Discover the new possibilities!
+                      </p>
+                    </v-card-title>
+                    <v-card-text
+                      class="pb-0"
+                      :style="{
+                        height: `calc(100% - 165px)`,
+                        overflowX: `auto`,
+                        display: `flex`,
+                        alignItems: `center`,
+                        flexDirection: `column`,
+                        justifyContent: `flex-start`,
+                      }"
+                    >
+                      <p
+                        class="mb-10 mt-5"
+                        :style="{ color: `grey`, textAlign: `center` }"
+                      >
+                        {{
+                          !alreadyGetTrial
+                            ? `"Start your free trial here."`
+                            : `"We'll contact you shortly."`
+                        }}
+                      </p>
+                      <v-btn
+                        :disabled="alreadyGetTrial"
+                        class="get-trial-btn rounded-lg"
+                        color="primary"
+                        @click="trialDialog = true"
+                        elevation="10"
+                        :style="{ width: `15em` }"
+                      >
+                        {{
+                          !alreadyGetTrial
+                            ? `Get Trial for Free`
+                            : `Request Submitted!`
+                        }}
+                      </v-btn>
+                      <p
+                        class="mt-10"
+                        :style="{ color: `grey`, textAlign: `center` }"
+                      >
+                        <span v-if="!alreadyGetTrial"
+                          >"No charge, no commitment <br />
+                          just a quick follow-up to get you started."</span
+                        >
+                        <span v-else
+                          >In a hurry? Call us now at
+                          <span
+                            :style="{
+                              color: `#757575`,
+                              fontWeight: `bold`,
+                            }"
+                            >+66 2 640 1151</span
+                          >
+                          for quick assistance.</span
+                        >
+                      </p>
+                    </v-card-text>
+                  </v-card>
+                </v-card>
+              </v-carousel-item>
+              <!-- trial <= 880 -->
+              <v-carousel-item v-if="windowWidth <= 880">
+                <v-card
+                  elevation="0"
+                  class="pa-4 rounded-xl card-landing-top"
+                  :style="{ height: `100%` }"
+                >
                   <v-card-title>
                     <p :style="{ fontSize: `2em`, fontWeight: `bold` }">
                       Trial 🔥
+                    </p>
+                    <p :style="{ fontSize: `0.8em` }">
+                      "Start Your Free Trial Today!"
+                    </p>
+                    <p :style="{ fontSize: `0.8em` }">
+                      &nbsp;Unlock the
+                      <span
+                        class="gradient-text"
+                        :style="{ fontWeight: `bold` }"
+                        >Power of AI</span
+                      >.
+                    </p>
+                    <p :style="{ fontSize: `0.8em` }">
+                      &nbsp;Discover the new possibilities!
+                    </p>
+                  </v-card-title>
+                  <v-card-text
+                    class="pb-0"
+                    :style="{
+                      height: `calc(100% - 165px)`,
+                      overflowX: `auto`,
+                      display: `flex`,
+                      alignItems: `center`,
+                      flexDirection: `column`,
+                      justifyContent: `flex-start`,
+                    }"
+                  >
+                    <p
+                      class="mb-10 mt-5"
+                      :style="{ color: `grey`, textAlign: `center` }"
+                    >
+                      {{
+                        !alreadyGetTrial
+                          ? `"Start your free trial here."`
+                          : `"We'll contact you shortly."`
+                      }}
+                    </p>
+                    <v-btn
+                      :disabled="alreadyGetTrial"
+                      class="get-trial-btn rounded-lg"
+                      color="primary"
+                      @click="trialDialog = true"
+                      elevation="10"
+                      :style="{ width: `15em` }"
+                    >
+                      {{
+                        !alreadyGetTrial
+                          ? `Get Trial for Free`
+                          : `Request Submitted!`
+                      }}
+                    </v-btn>
+                    <p
+                      class="mt-10"
+                      :style="{ color: `grey`, textAlign: `center` }"
+                    >
+                      <span v-if="!alreadyGetTrial"
+                        >"No charge, no commitment <br />
+                        just a quick follow-up to get you started."</span
+                      >
+                      <span v-else
+                        >In a hurry? Call us now at
+                        <span
+                          :style="{
+                            color: `#757575`,
+                            fontWeight: `bold`,
+                          }"
+                          >+66 2 640 1151</span
+                        >
+                        for quick assistance.</span
+                      >
+                    </p>
+                  </v-card-text>
+                </v-card>
+              </v-carousel-item>
+              <!-- login <= 880 -->
+              <v-carousel-item v-if="windowWidth <= 880">
+                <v-card
+                  elevation="0"
+                  class="pa-4 rounded-xl card-landing-top"
+                  :style="{ height: `100%` }"
+                >
+                  <v-card-title>
+                    <p :style="{ fontSize: `2em`, fontWeight: `bold` }">
+                      Login 🔑
                     </p>
                     <p :style="{ fontSize: `0.8em` }">"Start Your Journey"</p>
                     <p :style="{ fontSize: `0.8em` }">
@@ -348,119 +607,38 @@
                       display: `flex`,
                       alignItems: `center`,
                       flexDirection: `column`,
-                      justifyContent: `center`,
+                      justifyContent: `flex-start`,
                     }"
                   >
                     <p
-                      class="mb-10"
+                      class="mb-10 mt-5"
                       :style="{ color: `grey`, textAlign: `center` }"
                     >
-                      {{
-                        !alreadyGetTrial
-                          ? `"Start your free trial and unlock AI-powered support!"`
-                          : `"Request submitted! We'll contact you shortly."`
-                      }}
+                      Log In to Begin Experience AI Power
                     </p>
                     <v-btn
-                      :disabled="alreadyGetTrial"
-                      class="get-trial-btn rounded-lg"
+                      class="get-login-page-btn rounded-lg"
                       color="primary"
-                      @click="dialog = true"
                       elevation="10"
+                      :style="{ width: `15em` }"
                     >
-                      {{
-                        !alreadyGetTrial
-                          ? ` Get Trial for Free`
-                          : `Request Submitted`
-                      }}
+                      Login
                     </v-btn>
 
-                    <v-dialog v-model="dialog" max-width="600px">
-                      <v-card class="pa-6 rounded-xl">
-                        <v-card-title class="headline"
-                          >Request Your Free Trial 🔑
-                        </v-card-title>
-                        <v-card-text class="pb-0">
-                          <v-form>
-                            <v-text-field
-                              hint="*Required"
-                              persistent-hint
-                              class="mb-3"
-                              rounded="xl"
-                              variant="outlined"
-                              label="Name"
-                              :rules="[(v) => !!v || 'Name is required']"
-                              v-model="form.name"
-                              required
-                            ></v-text-field>
-                            <v-text-field
-                              hint="*Required"
-                              persistent-hint
-                              class="mb-3"
-                              rounded="xl"
-                              variant="outlined"
-                              label="Email"
-                              :rules="[
-                                (v) => !!v || 'Email is required',
-                                (v) =>
-                                  /.+@.+\..+/.test(v) || 'Email must be valid',
-                              ]"
-                              v-model="form.email"
-                              required
-                              type="email"
-                            ></v-text-field>
-                            <v-text-field
-                              hint="*Required"
-                              persistent-hint
-                              class="mb-3"
-                              rounded="xl"
-                              variant="outlined"
-                              label="Company Name"
-                              :rules="[
-                                (v) => !!v || 'Company Name is required',
-                              ]"
-                              v-model="form.company"
-                              required
-                            ></v-text-field>
-                            <v-textarea
-                              class="mb-3"
-                              rounded="xl"
-                              variant="outlined"
-                              label="Message"
-                              v-model="form.message"
-                              required
-                            ></v-textarea>
-                          </v-form>
-                        </v-card-text>
-                        <v-card-actions>
-                          <v-btn text @click="dialog = false">Cancel</v-btn>
-                          <v-btn
-                            :disabled="validateForm()"
-                            @click="clickSubmitRequestTrial()"
-                            :style="{
-                              backgroundColor: `#00c853`,
-                              color: `white`,
-                              minWidth: `100px`,
-                            }"
-                            >Submit</v-btn
-                          >
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
                     <p
                       class="mt-10"
                       :style="{ color: `grey`, textAlign: `center` }"
                     >
-                      <span v-if="!alreadyGetTrial"
-                        >"No charge, no commitment – just a quick follow-up to
-                        get you started."</span
-                      >
-                      <span v-else
-                        >In a hurry? Call us now at
-                        <span :style="{ color: `darkgrey`, fontWeight: `bold` }"
-                          >+66 2 640 1151</span
+                      <span
+                        >Powered by
+                        <span
+                          :style="{
+                            color: `#757575`,
+                            fontWeight: `bold`,
+                          }"
+                          >AWS Cognito</span
                         >
-                        for quick assistance.</span
+                        for unmatched reliability and protection.</span
                       >
                     </p>
                   </v-card-text>
@@ -558,11 +736,81 @@
           <span v-if="windowWidth > 615">
             | Contact us:
             <span :style="{ fontWeight: `bold` }">+66 2 640 1151</span>
+            (Thailand)
           </span>
         </p>
       </v-col>
     </v-footer>
-
+    <!-- trial dialog -->
+    <v-dialog v-model="trialDialog" max-width="600px">
+      <v-card class="pa-6 rounded-xl">
+        <v-card-title class="headline"
+          >Request Your Free Trial 🔑
+        </v-card-title>
+        <v-card-text class="pb-0">
+          <v-form>
+            <v-text-field
+              hint="*Required"
+              persistent-hint
+              class="mb-3"
+              rounded="xl"
+              variant="outlined"
+              label="Name"
+              :rules="[(v) => !!v || 'Name is required']"
+              v-model="form.name"
+              required
+            ></v-text-field>
+            <v-text-field
+              hint="*Required"
+              persistent-hint
+              class="mb-3"
+              rounded="xl"
+              variant="outlined"
+              label="Email"
+              :rules="[
+                (v) => !!v || 'Email is required',
+                (v) => /.+@.+\..+/.test(v) || 'Email must be valid',
+              ]"
+              v-model="form.email"
+              required
+              type="email"
+            ></v-text-field>
+            <v-text-field
+              hint="*Required"
+              persistent-hint
+              class="mb-3"
+              rounded="xl"
+              variant="outlined"
+              label="Company Name"
+              :rules="[(v) => !!v || 'Company Name is required']"
+              v-model="form.company"
+              required
+            ></v-text-field>
+            <v-textarea
+              class="mb-3"
+              rounded="xl"
+              variant="outlined"
+              label="Message"
+              v-model="form.message"
+              required
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="trialDialog = false">Cancel</v-btn>
+          <v-btn
+            :disabled="validateForm()"
+            @click="clickSubmitRequestTrial()"
+            :style="{
+              backgroundColor: `#00c853`,
+              color: `white`,
+              minWidth: `100px`,
+            }"
+            >Submit</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!--snackbar-->
     <v-snackbar
       v-model="snackbarAlert"
@@ -592,7 +840,7 @@
 export default {
   data() {
     return {
-      dialog: false,
+      trialDialog: false,
       form: {
         name: "",
         email: "",
@@ -768,7 +1016,7 @@ export default {
       this.form.email = ``;
       this.form.message = ``;
 
-      this.dialog = false;
+      this.trialDialog = false;
       this.alreadyGetTrial = true;
       this.snackbarMsg = `Success! We'll contact you as soon as possible.`;
       this.snackbarSuccess = true;
@@ -932,6 +1180,35 @@ export default {
 }
 
 .get-login-btn:focus {
+  outline: none;
+}
+
+.get-login-page-btn {
+  background: linear-gradient(45deg, #00c853, #00bfae);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 50px;
+  padding: 12px 40px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 35%;
+}
+
+.get-login-page-btn:hover {
+  background: linear-gradient(45deg, #00bfae, #00c853);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.get-login-page-btn:active {
+  transform: scale(0.98);
+}
+
+.get-login-page-btn:focus {
   outline: none;
 }
 </style>
