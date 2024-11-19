@@ -86,7 +86,7 @@
           </v-card>
         </template>
       </v-dialog>
-      <v-menu open-on-hover transition="fab-transition">
+      <v-menu transition="fab-transition">
         <template v-slot:activator="{ props }">
           <v-btn
             v-if="windowWidth <= 880"
@@ -142,7 +142,6 @@
                     <v-btn
                       variant="plain"
                       text
-                      block
                       icon="mdi-close"
                       @click="isActive.value = false"
                     ></v-btn>
