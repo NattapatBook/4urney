@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <!-- layout -->
     <div
       :style="{
         boxShadow:
@@ -576,7 +577,7 @@
                 </v-card>
               </v-carousel-item>
               <!-- login <= 880 -->
-              <v-carousel-item v-if="windowWidth <= 880">
+              <!-- <v-carousel-item v-if="windowWidth <= 880">
                 <v-card
                   elevation="0"
                   class="pa-4 rounded-xl card-landing-top"
@@ -643,11 +644,67 @@
                     </p>
                   </v-card-text>
                 </v-card>
-              </v-carousel-item>
+              </v-carousel-item> -->
             </v-carousel>
           </v-col>
         </v-row>
 
+        <!-- Trusted Customers Section -->
+        <v-row
+          id="trustedCustomers"
+          class="pb-5"
+          :style="{ paddingTop: `60px` }"
+        >
+          <v-col cols="12">
+            <v-card class="elevation-0">
+              <v-card-title class="d-flex justify-center py-6">
+                <h2
+                  class="text-center font-weight-bold"
+                  :style="{ color: `#34495e` }"
+                >
+                  Our Trusted Customers
+                </h2>
+              </v-card-title>
+
+              <v-card-text class="text-center px-8">
+                <p :style="{ color: `#7f8c8d` }">
+                  Join a growing list of satisfied customers who trust us for
+                  our exceptional services.
+                </p>
+              </v-card-text>
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col
+                      cols="3"
+                      class="pa-8"
+                      v-for="(item, idx) in customers"
+                      :key="`landing_trusted_customer_${idx}`"
+                    >
+                      <v-tooltip text="Tooltip">
+                        <template v-slot:activator="{ props }">
+                          <v-avatar
+                            v-bind="props"
+                            :style="{
+                              height: `100%`,
+                              width: `100%`,
+                              maxHeight: `150px`,
+                              maxWidth: `150px`,
+                              aspectRatio: `1`,
+                            }"
+                          >
+                            <v-img :src="item.img"></v-img>
+                          </v-avatar>
+                        </template>
+                        <span>{{ item.name }}</span>
+                      </v-tooltip>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
         <!-- Features Section -->
         <v-row id="features" class="pb-5" :style="{ paddingTop: `60px` }">
           <v-col cols="12">
@@ -698,23 +755,6 @@
             <v-card>
               <v-card-title>
                 <h2>Solution</h2>
-              </v-card-title>
-              <v-card-text>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-                  ut tristique urna. Integer bibendum auctor purus.
-                </p>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Trusted Customers Section -->
-        <v-row id="trustedCustomers" class="py-5">
-          <v-col cols="12">
-            <v-card>
-              <v-card-title>
-                <h2>Our Trusted Customers</h2>
               </v-card-title>
               <v-card-text>
                 <p>
@@ -956,6 +996,40 @@ export default {
           head: `Insightful Analytics Dashboard`,
           body: `Access a dashboard that analyzes customer needs and tracks responder (admin) performance to enhance service efficiency.`,
           emoji: `📊`,
+        },
+      ],
+      customers: [
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
+        },
+        {
+          name: `4Plus Consulting`,
+          img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
         },
       ],
       snackbarAlert: false,
