@@ -1,4 +1,5 @@
 from pprint import pprint
+from django.http import JsonResponse
 
 import requests
 from django.conf import settings
@@ -46,11 +47,10 @@ def redirect_view(request):
 
         if response.status_code == 200:
             tokens = response.json()
-            # Here, you'll typically:
-            # 1. Validate the ID token (JWT) to get user information.
-            # 2. Create or retrieve a Django user based on the ID token claims.
-            # 3. Store the tokens (securely) for later use (e.g., in the session or a database).
-            # 4. Call `login(request, user)` to log in the user in Django.
+            # print(tokens.get('access_token'))
+            request.session['access_token'] = tokens.get('access_token')
+            request.session['id_token'] = tokens.get('id_token')
+            request.session['refresh_token'] = tokens.get('refresh_token')
 
             # (Example - simplified user creation)
             user_response = requests.get(
@@ -61,7 +61,7 @@ def redirect_view(request):
                 user_info = user_response.json()
                 user = User.objects.get_or_create(username=user_info['email'], defaults=dict(email=user_info['email']))[0]
                 login(request, user)
-                return HttpResponseRedirect('/admin/')
+                return HttpResponseRedirect('/api/control/test')
 
         else:
             pprint(response.json())
@@ -72,3 +72,21 @@ def redirect_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect('/')
+
+
+def test_session(request):
+    user_info = dict()
+    access_token = request.session.get('access_token')
+    id_token = request.session.get('id_token')
+    refresh_token = request.session.get('refresh_token')
+
+    if access_token:
+        user_info_response = requests.get(
+            f'https://{COGNITO_DOMAIN}/oauth2/userInfo',
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
+        if user_info_response.ok:
+            user_info = user_info_response.json()
+        else:
+            pass
+    return JsonResponse(user_info)
