@@ -89,4 +89,6 @@ def test_session(request):
             user_info = user_info_response.json()
         else:
             pass
-    return JsonResponse(user_info)
+        return JsonResponse(user_info)
+    else:
+        return JsonResponse({'error': 'Permission denied: User not logged in'}, status=403)
