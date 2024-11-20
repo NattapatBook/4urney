@@ -12,7 +12,11 @@
       }"
       class="landing-layout py-3"
     >
-      <div class="div-app-bar" :style="{ fontWeight: `bold` }">
+      <div
+        class="div-app-bar"
+        :style="{ fontWeight: `bold`, cursor: `pointer` }"
+        @click="scrollTo('landingPage')"
+      >
         <v-avatar class="mr-2">
           <v-img :src="'/img/4urneyLogo.png'"></v-img>
         </v-avatar>
@@ -25,12 +29,12 @@
         @click="scrollTo('features')"
         >Features</v-btn
       >
-      <v-btn
+      <!-- <v-btn
         v-if="windowWidth > 880"
         variant="text"
         @click="scrollTo('solution')"
         >Solution</v-btn
-      >
+      > -->
       <v-btn
         v-if="windowWidth > 880"
         variant="text"
@@ -106,11 +110,11 @@
               <span>Features</span>
             </v-card>
           </v-list-item>
-          <v-list-item class="pa-0">
+          <!-- <v-list-item class="pa-0">
             <v-card class="pa-4" @click="scrollTo('solution')" elevation="0">
               <span>Solution</span>
             </v-card>
-          </v-list-item>
+          </v-list-item> -->
           <v-list-item class="pa-0">
             <v-card
               class="pa-4"
@@ -658,7 +662,14 @@
           :style="{ paddingTop: `60px` }"
         >
           <v-col cols="12">
-            <v-card class="elevation-0">
+            <v-card
+              class="elevation-0"
+              :style="{
+                display: `flex`,
+                flexDirection: `column`,
+                alignItems: `center`,
+              }"
+            >
               <v-card-title class="d-flex justify-center py-6">
                 <h2
                   class="text-center font-weight-bold"
@@ -674,7 +685,7 @@
                   our exceptional services.
                 </p>
               </v-card-text>
-              <v-card-text>
+              <v-card-text :style="{ maxWidth: `800px` }">
                 <v-container>
                   <v-row>
                     <v-col
@@ -683,7 +694,7 @@
                       v-for="(item, idx) in customers"
                       :key="`landing_trusted_customer_${idx}`"
                     >
-                      <v-tooltip text="Tooltip">
+                      <v-tooltip location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-avatar
                             v-bind="props"
@@ -707,7 +718,9 @@
             </v-card>
           </v-col>
         </v-row>
+
         <v-divider class="mx-15" />
+
         <!-- Features Section -->
         <v-row id="features" class="pb-5" :style="{ paddingTop: `60px` }">
           <v-col cols="12">
@@ -717,7 +730,7 @@
                   class="text-center font-weight-bold"
                   :style="{ color: `#34495e` }"
                 >
-                  Features
+                  Feature
                 </h2>
               </v-card-title>
 
@@ -728,70 +741,116 @@
                   business success.
                 </p>
               </v-card-text>
-
-              <!-- Main Menu -->
               <v-card-text>
                 <v-container>
-                  <v-row>
+                  <v-row
+                    :style="{
+                      display: `flex`,
+                      justifyContent: `center`,
+                    }"
+                  >
                     <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                      v-for="(items, category, idx) in menu"
-                      :key="`main_menu_${idx}`"
+                      class="pa-10 rounded-xl"
+                      :style="{ maxWidth: `805px`, backgroundColor: `#f5f5f5` }"
                     >
-                      <v-hover>
-                        <template #default="{ isHovering, props }">
-                          <v-card
-                            v-bind="props"
-                            :elevation="isHovering ? 8 : 2"
-                            class="d-flex flex-column align-center pa-4"
-                            @click="toggleSubMenu(category)"
-                            style="cursor: pointer"
-                          >
-                            <v-icon
-                              :size="36"
+                      <div
+                        v-for="(category, categoryIndex) in menu"
+                        :key="categoryIndex"
+                      >
+                        <div
+                          v-for="(feature, featureIndex) in category"
+                          :key="featureIndex"
+                          class="mb-2"
+                          :disabled="feature.disabled"
+                          :style="{
+                            display: `flex`,
+                            alignItems: `center`,
+                            justifyContent:
+                              featureIndex % 3 === 0
+                                ? `flex-start`
+                                : `flex-end`,
+                          }"
+                        >
+                          <v-tooltip location="bottom">
+                            <template v-slot:activator="{ props }">
+                              <div
+                                v-bind="props"
+                                :style="{
+                                  display: `flex`,
+                                  alignItems: `center`,
+                                  cursor: `pointer`,
+                                  transition: `transform 0.2s ease-in-out`,
+                                  filter:
+                                    featureHover.trim().length < 1
+                                      ? ``
+                                      : feature.name === featureHover
+                                      ? ``
+                                      : `blur(3px)`,
+                                }"
+                                class="hover-scale"
+                                @mouseover="featureHover = feature.name"
+                                @mouseleave="featureHover = ``"
+                              >
+                                <v-chip
+                                  v-if="featureIndex % 3 === 0"
+                                  :prepend-icon="feature.icon"
+                                  class="mr-2 chip_feature_landing_icon"
+                                >
+                                </v-chip>
+                                <v-chip
+                                  :style="{
+                                    backgroundColor:
+                                      featureIndex % 3 === 0 ? `#8eff8e` : ``,
+                                  }"
+                                >
+                                  {{ feature.name }}
+                                </v-chip>
+                                <v-chip
+                                  v-if="featureIndex % 3 !== 0"
+                                  :prepend-icon="feature.icon"
+                                  class="ml-2 chip_feature_landing_icon"
+                                >
+                                </v-chip>
+                              </div>
+                            </template>
+                            <v-card
+                              elevation="0"
                               :style="{
-                                color: isHovering ? '#2c3e50' : '#7f8c8d',
+                                color: `white`,
+                                backgroundColor: `rgba(0,0,0,0)`,
                               }"
                             >
-                              mdi-folder
-                            </v-icon>
-                            <h3 class="text-center mt-2">{{ category }}</h3>
-                          </v-card>
-                        </template>
-                      </v-hover>
+                              <v-card-title>
+                                <span :style="{ fontSize: `1rem` }">{{
+                                  feature.description
+                                }}</span>
+                              </v-card-title>
+                            </v-card>
+                          </v-tooltip>
+                        </div>
+                      </div>
+                      <div
+                        class="mt-10"
+                        :style="{
+                          filter:
+                            featureHover.trim().length >= 1 ? `blur(3px)` : ``,
+                        }"
+                      >
+                        <v-text-field
+                          v-model="featureText"
+                          hide-details
+                          density="compact"
+                          variant="outlined"
+                          :append-inner-icon="`mdi-send-variant`"
+                          :placeholder="`Write something...`"
+                          @keyup.enter="featureText = ``"
+                          @click:appendInner="featureText = ``"
+                        ></v-text-field>
+                      </div>
                     </v-col>
                   </v-row>
                 </v-container>
               </v-card-text>
-
-              <!-- Sub Menu -->
-              <transition-group name="fade" tag="div">
-                <v-container v-if="selectedMenu">
-                  <v-row>
-                    <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                      v-for="(feature, idx) in menu[selectedMenu]"
-                      :key="`sub_menu_${selectedMenu}_${idx}`"
-                    >
-                      <v-card class="pa-4">
-                        <v-icon :size="32" :style="{ color: `#2c3e50` }">
-                          {{ feature.icon }}
-                        </v-icon>
-                        <h4 class="font-weight-bold mt-2">
-                          {{ feature.name }}
-                        </h4>
-                        <p :style="{ color: `#7f8c8d` }">
-                          {{ feature.description }}
-                        </p>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </transition-group>
             </v-card>
           </v-col>
         </v-row>
@@ -812,11 +871,35 @@
             </v-card>
           </v-col>
         </v-row>
+
+        <!-- Pricing Section -->
+        <v-row id="pricing" class="py-5">
+          <v-col cols="12">
+            <v-card>
+              <v-card-title>
+                <h2>Pricing</h2>
+              </v-card-title>
+              <v-card-text>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
+                  ut tristique urna. Integer bibendum auctor purus.
+                </p>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
 
     <!-- Footer Section -->
-    <v-footer app>
+    <v-footer
+      app
+      :style="{
+        backgroundColor: `rgba(244, 244, 249, ${
+          scrollPosition - 60 >= 1 ? `1` : `0`
+        })`,
+      }"
+    >
       <v-col class="text-center">
         <p>
           &copy; 2024 4Plus Consulting Co. Ltd
@@ -927,6 +1010,7 @@
 export default {
   data() {
     return {
+      featureText: ``,
       trialDialog: false,
       form: {
         name: "",
@@ -990,6 +1074,14 @@ export default {
               "Collaborate with AI to innovate and design your next big product.",
           },
         ],
+        Support_Function: [
+          {
+            icon: "mdi-account-group",
+            name: "Human Resource",
+            description:
+              "Quickly locate relevant dashboards to address inquiries and needs.",
+          },
+        ],
         Dashboard_Solutions: [
           {
             icon: "mdi-view-dashboard",
@@ -1002,14 +1094,6 @@ export default {
             name: "AI-Enhanced Automated Dashboards",
             description:
               "Utilize Copilot to create dynamic Power BI dashboards effortlessly.",
-          },
-        ],
-        Support_Function: [
-          {
-            icon: "mdi-account-group",
-            name: "Human Resource",
-            description:
-              "Quickly locate relevant dashboards to address inquiries and needs.",
           },
         ],
       },
@@ -1083,7 +1167,7 @@ export default {
       snackbarSuccess: false,
       snackbarMsg: "untitled",
       alreadyGetTrial: false,
-      selectedMenu: null,
+      featureHover: ``,
     };
   },
   mounted() {
@@ -1130,9 +1214,6 @@ export default {
       }
 
       return false;
-    },
-    toggleSubMenu(category) {
-      this.selectedMenu = this.selectedMenu === category ? null : category;
     },
     //click
     clickSubmitRequestTrial() {
@@ -1336,13 +1417,13 @@ export default {
 .get-login-page-btn:focus {
   outline: none;
 }
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+.chip_feature_landing_icon {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
 }
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
+
+.hover-scale:hover {
+  transform: scale(1.2);
 }
 </style>

@@ -6,7 +6,7 @@ import LandingPage from "./pages/LandingPage.vue";
 
 import HomePage from "./pages/HomePage.vue";
 
-import { createPersistentWebSocket }  from "@/utils/websocket"
+import { createPersistentWebSocket } from "@/utils/websocket";
 
 const currentPage = ref("landing");
 
@@ -14,24 +14,24 @@ function navigateTo(page) {
   currentPage.value = page;
 }
 
-const messages = ref([])
-const ws = createPersistentWebSocket('chat_center/chat/',(event)=>{
-    messages.value.push(event)
-  })
+const messages = ref([]);
+const ws = createPersistentWebSocket("chat_center/chat/", (event) => {
+  messages.value.push(event);
+});
 onMounted(async () => {
-  console.log(ws)
-})
-const message = ref('')
-function sendmessage(){
-  ws.send(message.value)
-  message.value = ''
+  console.log(ws);
+});
+const message = ref("");
+function sendmessage() {
+  ws.send(message.value);
+  message.value = "";
 }
 </script>
 
 <template>
   <div id="app">
-    {{ messages }}
-    <input v-model="message" @keydown.enter="sendmessage">
+    <!-- {{ messages }}
+    <input v-model="message" @keydown.enter="sendmessage" /> -->
     <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
 
     <AppLayout v-else @navigate="navigateTo">
