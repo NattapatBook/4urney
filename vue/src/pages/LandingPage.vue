@@ -5,7 +5,9 @@
       :style="{
         boxShadow:
           scrollPosition > 60
-            ? `2px 2px 20px 6px #000000${scrollPosition - 60} !important`
+            ? `1px 2px ${
+                scrollPosition - 60 > 20 ? 20 : scrollPosition - 60
+              }px 0px black !important`
             : ``,
       }"
       class="landing-layout py-3"
@@ -705,46 +707,91 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-divider class="mx-15" />
         <!-- Features Section -->
         <v-row id="features" class="pb-5" :style="{ paddingTop: `60px` }">
           <v-col cols="12">
-            <v-card>
-              <v-card-title>
-                <h2>Our Features</h2>
+            <v-card elevation="0">
+              <v-card-title class="d-flex justify-center py-6">
+                <h2
+                  class="text-center font-weight-bold"
+                  :style="{ color: `#34495e` }"
+                >
+                  Features
+                </h2>
               </v-card-title>
-              <v-card-text>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-                  ut tristique urna. Integer bibendum auctor purus.
+
+              <v-card-text class="text-center px-8">
+                <p :style="{ color: `#7f8c8d` }">
+                  Discover cutting-edge tools and solutions designed to
+                  streamline your workflow, enhance creativity, and drive
+                  business success.
                 </p>
-                <v-list>
-                  <v-list-item-group
-                    v-for="(category, categoryIndex) in menu"
-                    :key="categoryIndex"
-                  >
-                    <v-list-item
-                      v-for="(feature, featureIndex) in category"
-                      :key="featureIndex"
-                      :disabled="feature.disabled"
-                    >
-                      <v-list-item-icon>
-                        <v-icon>{{ feature.icon }}</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-content>
-                        <v-list-item-title>{{
-                          feature.name
-                        }}</v-list-item-title>
-                        <v-list-item-subtitle>{{
-                          feature.description
-                        }}</v-list-item-subtitle>
-                      </v-list-item-content>
-                      <v-list-item-action>
-                        <v-btn color="primary">Learn More</v-btn>
-                      </v-list-item-action>
-                    </v-list-item>
-                  </v-list-item-group>
-                </v-list>
               </v-card-text>
+
+              <!-- Main Menu -->
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col
+                      cols="12"
+                      sm="6"
+                      md="4"
+                      v-for="(items, category, idx) in menu"
+                      :key="`main_menu_${idx}`"
+                    >
+                      <v-hover>
+                        <template #default="{ isHovering, props }">
+                          <v-card
+                            v-bind="props"
+                            :elevation="isHovering ? 8 : 2"
+                            class="d-flex flex-column align-center pa-4"
+                            @click="toggleSubMenu(category)"
+                            style="cursor: pointer"
+                          >
+                            <v-icon
+                              :size="36"
+                              :style="{
+                                color: isHovering ? '#2c3e50' : '#7f8c8d',
+                              }"
+                            >
+                              mdi-folder
+                            </v-icon>
+                            <h3 class="text-center mt-2">{{ category }}</h3>
+                          </v-card>
+                        </template>
+                      </v-hover>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+
+              <!-- Sub Menu -->
+              <transition-group name="fade" tag="div">
+                <v-container v-if="selectedMenu">
+                  <v-row>
+                    <v-col
+                      cols="12"
+                      sm="6"
+                      md="4"
+                      v-for="(feature, idx) in menu[selectedMenu]"
+                      :key="`sub_menu_${selectedMenu}_${idx}`"
+                    >
+                      <v-card class="pa-4">
+                        <v-icon :size="32" :style="{ color: `#2c3e50` }">
+                          {{ feature.icon }}
+                        </v-icon>
+                        <h4 class="font-weight-bold mt-2">
+                          {{ feature.name }}
+                        </h4>
+                        <p :style="{ color: `#7f8c8d` }">
+                          {{ feature.description }}
+                        </p>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </transition-group>
             </v-card>
           </v-col>
         </v-row>
@@ -1036,6 +1083,7 @@ export default {
       snackbarSuccess: false,
       snackbarMsg: "untitled",
       alreadyGetTrial: false,
+      selectedMenu: null,
     };
   },
   mounted() {
@@ -1082,6 +1130,9 @@ export default {
       }
 
       return false;
+    },
+    toggleSubMenu(category) {
+      this.selectedMenu = this.selectedMenu === category ? null : category;
     },
     //click
     clickSubmitRequestTrial() {
@@ -1284,5 +1335,14 @@ export default {
 
 .get-login-page-btn:focus {
   outline: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
