@@ -322,10 +322,28 @@
                           v-for="(item, idx) in core"
                           :key="`core_item_key=${idx}`"
                         >
-                          <v-chip class="mb-2 pr-4"
-                            >{{ item.emoji }} {{ item.head }}</v-chip
-                          >
-
+                          <v-tooltip location="bottom">
+                            <template v-slot:activator="{ props }">
+                              <v-chip
+                                v-bind="props"
+                                class="mb-2 pr-4"
+                                :style="{
+                                  maxWidth: `100%`,
+                                }"
+                              >
+                                <div
+                                  :style="{
+                                    display: `grid`,
+                                  }"
+                                >
+                                  <span class="ellipsis-text">
+                                    {{ item.emoji }}{{ item.head }}</span
+                                  >
+                                </div>
+                              </v-chip>
+                            </template>
+                            <span>{{ item.head }}</span>
+                          </v-tooltip>
                           <p class="ml-2">{{ item.body }}</p>
                         </v-col>
                       </v-row>
@@ -404,8 +422,7 @@
                             }"
                             >AWS Cognito</span
                           >
-                          for unmatched reliability and protection.</span
-                        >
+                        </span>
                       </p>
                     </v-card-text>
                   </v-card>
@@ -777,7 +794,7 @@
                                 v-bind="props"
                                 :style="{
                                   display: `flex`,
-                                  alignItems: `center`,
+                                  alignItems: `start`,
                                   cursor: `pointer`,
                                   transition: `transform 0.2s ease-in-out`,
                                   filter:
@@ -786,6 +803,7 @@
                                       : feature.name === featureHover
                                       ? ``
                                       : `blur(3px)`,
+                                  maxWidth: `100%`,
                                 }"
                                 class="hover-scale"
                                 @mouseover="featureHover = feature.name"
@@ -797,14 +815,20 @@
                                   class="mr-2 chip_feature_landing_icon"
                                 >
                                 </v-chip>
-                                <v-chip
+                                <v-card
+                                  class="py-2 px-4 rounded-xl"
+                                  elevation="0"
                                   :style="{
                                     backgroundColor:
-                                      featureIndex % 3 === 0 ? `#8eff8e` : ``,
+                                      featureIndex % 3 === 0
+                                        ? `#8eff8e`
+                                        : `rgb(219 219 219)`,
                                   }"
                                 >
-                                  {{ feature.name }}
-                                </v-chip>
+                                  <div>
+                                    {{ feature.name }}
+                                  </div>
+                                </v-card>
                                 <v-chip
                                   v-if="featureIndex % 3 !== 0"
                                   :prepend-icon="feature.icon"
@@ -813,19 +837,23 @@
                                 </v-chip>
                               </div>
                             </template>
-                            <v-card
-                              elevation="0"
-                              :style="{
-                                color: `white`,
-                                backgroundColor: `rgba(0,0,0,0)`,
-                              }"
-                            >
-                              <v-card-title>
-                                <span :style="{ fontSize: `1rem` }">{{
-                                  feature.description
-                                }}</span>
-                              </v-card-title>
-                            </v-card>
+                            <div>
+                              <p
+                                :style="{
+                                  fontSize: `0.95rem`,
+                                  fontWeight: `bold`,
+                                }"
+                              >
+                                {{ feature.name }}
+                              </p>
+                              <span
+                                class="break-word"
+                                :style="{
+                                  fontSize: `0.8rem`,
+                                }"
+                                >{{ feature.description }}</span
+                              >
+                            </div>
                           </v-tooltip>
                         </div>
                       </div>
@@ -843,10 +871,260 @@
                           variant="outlined"
                           :append-inner-icon="`mdi-send-variant`"
                           :placeholder="`Write something...`"
-                          @keyup.enter="featureText = ``"
-                          @click:appendInner="featureText = ``"
+                          @keyup.enter="clickInteresting()"
+                          @click:appendInner="clickInteresting()"
                         ></v-text-field>
                       </div>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-divider class="mx-15" />
+
+        <!-- Pricing Section -->
+        <v-row id="pricing" class="py-5" :style="{ paddingTop: `60px` }">
+          <v-col cols="12">
+            <v-card elevation="0" class="rounded-lg">
+              <v-card-title class="d-flex justify-center">
+                <h2
+                  class="text-center font-weight-bold"
+                  :style="{ color: `#34495e` }"
+                >
+                  Flexible Pricing Plans
+                </h2>
+              </v-card-title>
+
+              <v-card-text class="text-center">
+                <p :style="{ color: `#7f8c8d`, fontSize: `1rem` }">
+                  Choose the plan that fits your needs. Our pricing is
+                  transparent and flexible based on the features you require.
+                </p>
+              </v-card-text>
+
+              <v-card-text>
+                <v-container>
+                  <!-- Plan Selector -->
+                  <v-row class="justify-center">
+                    <!-- Basic Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        class="pa-4 rounded-lg"
+                        :style="{ backgroundColor: `#dbe9f1`, height: `100%` }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#34495e` }"
+                          >
+                            Basic Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#7f8c8d` }"
+                        >
+                          Simple plan for individuals.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#b2bec3` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#2980b9` }"
+                          >
+                            From $19/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#7f8c8d` }">
+                            Basic features for small teams.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Standard Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        class="pa-4 rounded-lg"
+                        :style="{ backgroundColor: `#a9cce3`, height: `100%` }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#2c3e50` }"
+                          >
+                            Standard Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#2c3e50` }"
+                        >
+                          Popular plan for teams.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#b2bec3` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#2980b9` }"
+                          >
+                            From $49/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#7f8c8d` }">
+                            Ideal for growing teams.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Advanced Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        class="pa-4 rounded-lg"
+                        :style="{ backgroundColor: `#a8e6cf`, height: `100%` }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#34495e` }"
+                          >
+                            Advanced Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#2c3e50` }"
+                        >
+                          For advanced needs.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#b2bec3` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#27ae60` }"
+                          >
+                            From $79/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#7f8c8d` }">
+                            Advanced features for larger teams.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Custom Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        class="pa-4 rounded-lg"
+                        :style="{
+                          background:
+                            'linear-gradient(90deg, rgba(242, 195, 235, 1) 9%, rgba(217, 212, 252, 1) 77%)',
+                          height: `100%`,
+                        }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#8e44ad` }"
+                          >
+                            Custom Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#2f3640` }"
+                        >
+                          Pay for what you need.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#e0a9c7` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#8e44ad` }"
+                          >
+                            From $4.99/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#7f8c8d` }">
+                            Start with one feature, expand as needed.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Premium Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        class="pa-4 rounded-lg"
+                        :style="{ backgroundColor: `#e74c3c`, height: `100%` }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#fff` }"
+                          >
+                            Premium Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#fff` }"
+                        >
+                          For large-scale operations.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#b2bec3` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#fff` }"
+                          >
+                            From $199/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#fff` }">
+                            All features and premium support.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col
+                      cols="12"
+                      :style="{ display: `flex`, justifyContent: `center` }"
+                    >
+                      <v-btn
+                        :style="{
+                          backgroundColor: `#f3f3f3`,
+                        }"
+                        variant="outlined"
+                        rounded
+                        class="compare-btn"
+                        @click="onComparePlans"
+                      >
+                        Compare Plans
+                        <v-icon>mdi-chevron-double-down</v-icon>
+                      </v-btn>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -861,23 +1139,6 @@
             <v-card>
               <v-card-title>
                 <h2>Solution</h2>
-              </v-card-title>
-              <v-card-text>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-                  ut tristique urna. Integer bibendum auctor purus.
-                </p>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Pricing Section -->
-        <v-row id="pricing" class="py-5">
-          <v-col cols="12">
-            <v-card>
-              <v-card-title>
-                <h2>Pricing</h2>
               </v-card-title>
               <v-card-text>
                 <p>
@@ -981,6 +1242,60 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- interesting dialog -->
+    <v-dialog v-model="interestingDialog" max-width="600px">
+      <v-card class="pa-6 rounded-xl shake">
+        <v-card-title
+          class="headline"
+          :style="{
+            display: `flex`,
+            justifyContent: `space-between`,
+            alignItems: `center`,
+          }"
+        >
+          <span
+            ><span :style="{ fontWeight: `bold`, fontSize: `1.5rem` }"
+              >Interested?
+            </span></span
+          >
+          <v-btn
+            icon="mdi-close"
+            variant="fab"
+            @click="interestingDialog = false"
+          ></v-btn>
+        </v-card-title>
+        <v-card-text class="pb-0 pt-1">
+          <p>
+            "It looks like you're interested in our app! You can request a free
+            trial right now."
+          </p>
+        </v-card-text>
+        <v-card-action>
+          <!-- <v-btn text @click="interestingDialog = false">Cancel</v-btn> -->
+          <div
+            class="pa-10"
+            :style="{ display: `flex`, justifyContent: `center` }"
+          >
+            <v-btn
+              @click="clickInterestingRequest()"
+              class="get-trial-btn"
+              :style="{
+                backgroundColor: `#00c853`,
+                color: `white`,
+                minWidth: `100px`,
+              }"
+              >Request Trial</v-btn
+            >
+          </div>
+        </v-card-action>
+        <v-card-text class="pt-0">
+          <p :style="{ fontSize: `0.75rem`, color: `grey` }">
+            "If you need immediate assistance, feel free to contact us at
+            <span :style="{ fontWeight: `bold` }">+66 2 640 1151</span>
+          </p>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <!--snackbar-->
     <v-snackbar
       v-model="snackbarAlert"
@@ -1037,7 +1352,7 @@ export default {
             icon: "mdi-chat-outline",
             name: "Unified Online Channel Chat",
             description:
-              "Seamlessly connect with customers from multiple channels in one place.",
+              "Streamline customer communication by effortlessly connecting across multiple online channels, creating a unified hub for all your interactions",
           },
         ],
         Data_Insight: [
@@ -1045,13 +1360,13 @@ export default {
             icon: "mdi-database",
             name: "Data Warehouse Explorer",
             description:
-              "Dive deep into enterprise data to uncover key insights and serve users effectively.",
+              "Unlock the potential of your enterprise's data by exploring vast datasets, revealing hidden insights to drive smarter business decisions.",
           },
           {
             icon: "mdi-robot",
             name: "Product Knowledge Hub",
             description:
-              "Get expert product information directly from an intelligent chatbot.",
+              "Access a wealth of expert-level product knowledge instantly through an AI-driven chatbot, providing your team with valuable insights for every query.",
           },
         ],
         Design_Partner: [
@@ -1059,19 +1374,19 @@ export default {
             icon: "mdi-facebook",
             name: "Facebook Ads with AI",
             description:
-              "Leverage AI to craft engaging and optimized Facebook ad campaigns.",
+              "Harness the power of AI to create highly engaging, data-driven Facebook ad campaigns that resonate with your audience and drive measurable results.",
           },
           {
             icon: "mdi-google",
             name: "Google Ads with AI",
             description:
-              "Enhance your Google Ads strategy using AI-driven content creation.",
+              "Optimize your Google Ads strategy by leveraging AI to generate compelling ad content, target the right audience, and maximize your ROI.",
           },
           {
             icon: "mdi-lightbulb",
             name: "AI-Powered Product Design",
             description:
-              "Collaborate with AI to innovate and design your next big product.",
+              "Collaborate with AI to push the boundaries of creativity and innovation, helping you design your next groundbreaking product with ease.",
           },
         ],
         Support_Function: [
@@ -1079,7 +1394,7 @@ export default {
             icon: "mdi-account-group",
             name: "Human Resource",
             description:
-              "Quickly locate relevant dashboards to address inquiries and needs.",
+              "Streamline HR processes by quickly accessing relevant dashboards to handle employee inquiries and manage HR needs efficiently.",
           },
         ],
         Dashboard_Solutions: [
@@ -1087,13 +1402,13 @@ export default {
             icon: "mdi-view-dashboard",
             name: "Smart Dashboard Finder",
             description:
-              "Quickly locate relevant dashboards to address inquiries and needs.",
+              "Easily discover and access the dashboards that matter most to your team, enabling you to focus on key metrics and decisions without wasting time.",
           },
           {
             icon: "mdi-chart-areaspline",
             name: "AI-Enhanced Automated Dashboards",
             description:
-              "Utilize Copilot to create dynamic Power BI dashboards effortlessly.",
+              "Leverage the power of Copilot to automatically create dynamic Power BI dashboards that update in real-time, ensuring you have the latest insights at your fingertips.",
           },
         ],
       },
@@ -1168,6 +1483,7 @@ export default {
       snackbarMsg: "untitled",
       alreadyGetTrial: false,
       featureHover: ``,
+      interestingDialog: false,
     };
   },
   mounted() {
@@ -1216,6 +1532,14 @@ export default {
       return false;
     },
     //click
+    clickInteresting() {
+      this.featureText = ``;
+      this.interestingDialog = true;
+    },
+    clickInterestingRequest() {
+      this.interestingDialog = false;
+      this.trialDialog = true;
+    },
     clickSubmitRequestTrial() {
       this.form.name = ``;
       this.form.company = ``;
@@ -1425,5 +1749,52 @@ export default {
 
 .hover-scale:hover {
   transform: scale(1.2);
+}
+
+span.break-word {
+  display: inline-block;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+span.break-word-chip {
+  display: inline-block;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-10px);
+  }
+  40%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+.compare-btn {
+  text-transform: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.compare-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.ellipsis-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
