@@ -1,20 +1,37 @@
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
 import AppLayout from "./components/layouts/AppLayout.vue";
 
 import LandingPage from "./pages/LandingPage.vue";
 
 import HomePage from "./pages/HomePage.vue";
 
+import { createPersistentWebSocket }  from "@/utils/websocket"
+
 const currentPage = ref("landing");
 
 function navigateTo(page) {
   currentPage.value = page;
 }
+
+const messages = ref([])
+const ws = createPersistentWebSocket('chat_center/chat/',(event)=>{
+    messages.value.push(event)
+  })
+onMounted(async () => {
+  console.log(ws)
+})
+const message = ref('')
+function sendmessage(){
+  ws.send(message.value)
+  message.value = ''
+}
 </script>
 
 <template>
   <div id="app">
+    {{ messages }}
+    <input v-model="message" @keydown.enter="sendmessage">
     <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
 
     <AppLayout v-else @navigate="navigateTo">

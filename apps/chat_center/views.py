@@ -26,11 +26,6 @@ LINE_API = 'https://api.line.me/v2/bot/message/reply'
 
 tz = pytz.timezone('Asia/Bangkok')
 
-class PingView(View):
-    def get(self, request):
-        return JsonResponse({'status': 'pong'})
-
-
 @csrf_exempt
 def list_user(request):
     conn = psycopg2.connect(**DB_CONFIG)
