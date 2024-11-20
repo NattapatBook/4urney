@@ -120,7 +120,7 @@
               <span>Solution</span>
             </v-card>
           </v-list-item> -->
-          <v-list-item class="pa-0">
+          <!-- <v-list-item class="pa-0">
             <v-card
               class="pa-4"
               @click="scrollTo('trustedCustomers')"
@@ -128,7 +128,7 @@
             >
               <span>Our Trusted Customers</span>
             </v-card>
-          </v-list-item>
+          </v-list-item> -->
 
           <v-list-item class="pa-0">
             <v-dialog max-width="500" transition="dialog-bottom-transition">
