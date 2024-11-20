@@ -29,7 +29,7 @@ function sendmessage() {
 </script>
 
 <template>
-  <div id="app">
+  <div id="app" :style="{ overflowX: `hidden` }">
     <!-- {{ messages }}
     <input v-model="message" @keydown.enter="sendmessage" /> -->
     <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />

@@ -38,8 +38,8 @@
       <v-btn
         v-if="windowWidth > 880"
         variant="text"
-        @click="scrollTo('trustedCustomers')"
-        >Our Trusted Customers</v-btn
+        @click="scrollTo('pricing')"
+        >Pricing</v-btn
       >
 
       <v-dialog
@@ -108,6 +108,11 @@
           <v-list-item class="pa-0">
             <v-card class="pa-4" @click="scrollTo('features')" elevation="0">
               <span>Features</span>
+            </v-card>
+          </v-list-item>
+          <v-list-item class="pa-0">
+            <v-card class="pa-4" @click="scrollTo('pricing')" elevation="0">
+              <span>Pricing</span>
             </v-card>
           </v-list-item>
           <!-- <v-list-item class="pa-0">
@@ -672,72 +677,6 @@
           </v-col>
         </v-row>
 
-        <!-- Trusted Customers Section -->
-        <v-row
-          id="trustedCustomers"
-          class="pb-5"
-          :style="{ paddingTop: `60px` }"
-        >
-          <v-col cols="12">
-            <v-card
-              class="elevation-0"
-              :style="{
-                display: `flex`,
-                flexDirection: `column`,
-                alignItems: `center`,
-              }"
-            >
-              <v-card-title class="d-flex justify-center py-6">
-                <h2
-                  class="text-center font-weight-bold"
-                  :style="{ color: `#34495e` }"
-                >
-                  Our Trusted Customers
-                </h2>
-              </v-card-title>
-
-              <v-card-text class="text-center px-8">
-                <p :style="{ color: `#7f8c8d` }">
-                  Join a growing list of satisfied customers who trust us for
-                  our exceptional services.
-                </p>
-              </v-card-text>
-              <v-card-text :style="{ maxWidth: `800px` }">
-                <v-container>
-                  <v-row>
-                    <v-col
-                      cols="3"
-                      class="pa-8"
-                      v-for="(item, idx) in customers"
-                      :key="`landing_trusted_customer_${idx}`"
-                    >
-                      <v-tooltip location="bottom">
-                        <template v-slot:activator="{ props }">
-                          <v-avatar
-                            v-bind="props"
-                            :style="{
-                              height: `100%`,
-                              width: `100%`,
-                              maxHeight: `150px`,
-                              maxWidth: `150px`,
-                              aspectRatio: `1`,
-                            }"
-                          >
-                            <v-img :src="item.img"></v-img>
-                          </v-avatar>
-                        </template>
-                        <span>{{ item.name }}</span>
-                      </v-tooltip>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <v-divider class="mx-15" />
-
         <!-- Features Section -->
         <v-row id="features" class="pb-5" :style="{ paddingTop: `60px` }">
           <v-col cols="12">
@@ -883,10 +822,75 @@
           </v-col>
         </v-row>
 
-        <v-divider class="mx-15" />
+        <!-- Trusted Customers Section -->
+        <v-row
+          id="trustedCustomers"
+          class="pb-5"
+          :style="{ paddingTop: `60px`, backgroundColor: `#f5f6fa` }"
+        >
+          <v-col cols="12">
+            <v-card
+              class="elevation-0"
+              :style="{
+                display: `flex`,
+                flexDirection: `column`,
+                alignItems: `center`,
+                backgroundColor: `#f5f6fa`,
+              }"
+            >
+              <v-card-title class="d-flex justify-center py-6">
+                <h2
+                  class="text-center font-weight-bold"
+                  :style="{ color: `#34495e` }"
+                >
+                  Our Trusted Customers
+                </h2>
+              </v-card-title>
+
+              <v-card-text class="text-center px-8">
+                <p :style="{ color: `#7f8c8d` }">
+                  Join a growing list of satisfied customers who trust us for
+                  our exceptional services.
+                </p>
+              </v-card-text>
+              <v-card-text :style="{ maxWidth: `800px`, width: `100%` }">
+                <v-container>
+                  <v-row>
+                    <v-col
+                      cols="3"
+                      class="pa-4"
+                      v-for="(item, idx) in customers"
+                      :key="`landing_trusted_customer_${idx}`"
+                    >
+                      <v-tooltip location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-avatar
+                            class="hover-scale"
+                            v-bind="props"
+                            :style="{
+                              height: `100%`,
+                              width: `100%`,
+                              maxHeight: `150px`,
+                              maxWidth: `150px`,
+                              aspectRatio: `1`,
+                              cursor: `pointer`,
+                            }"
+                          >
+                            <v-img :src="item.img"></v-img>
+                          </v-avatar>
+                        </template>
+                        <span>{{ item.name }}</span>
+                      </v-tooltip>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
 
         <!-- Pricing Section -->
-        <v-row id="pricing" class="py-5" :style="{ paddingTop: `60px` }">
+        <v-row id="pricing" class="pb-5" :style="{ paddingTop: `100px` }">
           <v-col cols="12">
             <v-card elevation="0" class="rounded-lg">
               <v-card-title class="d-flex justify-center">
@@ -912,8 +916,13 @@
                     <!-- Basic Plan -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
-                        class="pa-4 rounded-lg"
-                        :style="{ backgroundColor: `#dbe9f1`, height: `100%` }"
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-scale"
+                        :style="{
+                          backgroundColor: `#dbe9f1`,
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
                       >
                         <v-card-title class="justify-center">
                           <h3
@@ -927,7 +936,7 @@
                           class="text-center"
                           :style="{ color: `#7f8c8d` }"
                         >
-                          Simple plan for individuals.
+                          Plan for individuals.
                         </v-card-subtitle>
                         <v-divider
                           class="my-3"
@@ -951,8 +960,13 @@
                     <!-- Standard Plan -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
-                        class="pa-4 rounded-lg"
-                        :style="{ backgroundColor: `#a9cce3`, height: `100%` }"
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-scale"
+                        :style="{
+                          backgroundColor: `#a9cce3`,
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
                       >
                         <v-card-title class="justify-center">
                           <h3
@@ -990,8 +1004,13 @@
                     <!-- Advanced Plan -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
-                        class="pa-4 rounded-lg"
-                        :style="{ backgroundColor: `#a8e6cf`, height: `100%` }"
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-scale"
+                        :style="{
+                          backgroundColor: `#a8e6cf`,
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
                       >
                         <v-card-title class="justify-center">
                           <h3
@@ -1026,14 +1045,60 @@
                       </v-card>
                     </v-col>
 
+                    <!-- Premium Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-scale"
+                        :style="{
+                          backgroundColor: `rgb(217 81 67)`,
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#fff` }"
+                          >
+                            Premium Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#fff` }"
+                        >
+                          Plan for enterprises.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#b2bec3` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#fff` }"
+                          >
+                            From $199/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#fff` }">
+                            All features and premium support.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
                     <!-- Custom Plan -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
-                        class="pa-4 rounded-lg"
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-scale"
                         :style="{
                           background:
                             'linear-gradient(90deg, rgba(242, 195, 235, 1) 9%, rgba(217, 212, 252, 1) 77%)',
                           height: `100%`,
+                          cursor: `pointer`,
                         }"
                       >
                         <v-card-title class="justify-center">
@@ -1060,49 +1125,10 @@
                             class="font-weight-bold"
                             :style="{ color: `#8e44ad` }"
                           >
-                            From $4.99/month
+                            From $9/month
                           </h4>
                           <p class="mt-2" :style="{ color: `#7f8c8d` }">
                             Start with one feature, expand as needed.
-                          </p>
-                        </div>
-                      </v-card>
-                    </v-col>
-
-                    <!-- Premium Plan -->
-                    <v-col cols="12" sm="4" class="mb-4">
-                      <v-card
-                        class="pa-4 rounded-lg"
-                        :style="{ backgroundColor: `#e74c3c`, height: `100%` }"
-                      >
-                        <v-card-title class="justify-center">
-                          <h3
-                            class="font-weight-bold"
-                            :style="{ color: `#fff` }"
-                          >
-                            Premium Plan
-                          </h3>
-                        </v-card-title>
-                        <v-card-subtitle
-                          class="text-center"
-                          :style="{ color: `#fff` }"
-                        >
-                          For large-scale operations.
-                        </v-card-subtitle>
-                        <v-divider
-                          class="my-3"
-                          :style="{ backgroundColor: `#b2bec3` }"
-                        ></v-divider>
-
-                        <div class="text-center">
-                          <h4
-                            class="font-weight-bold"
-                            :style="{ color: `#fff` }"
-                          >
-                            From $199/month
-                          </h4>
-                          <p class="mt-2" :style="{ color: `#fff` }">
-                            All features and premium support.
                           </p>
                         </div>
                       </v-card>
@@ -1111,7 +1137,12 @@
                   <v-row>
                     <v-col
                       cols="12"
-                      :style="{ display: `flex`, justifyContent: `center` }"
+                      :style="{
+                        display: `flex`,
+                        justifyContent: `center`,
+                        flexDirection: `column`,
+                        alignItems: `center`,
+                      }"
                     >
                       <v-btn
                         :style="{
@@ -1120,11 +1151,18 @@
                         variant="outlined"
                         rounded
                         class="compare-btn"
-                        @click="onComparePlans"
+                        @click="compareDialog = true"
                       >
                         Compare Plans
                         <v-icon>mdi-chevron-double-down</v-icon>
                       </v-btn>
+                      <span
+                        class="mt-3"
+                        :style="{ fontSize: `0.7rem`, color: `grey` }"
+                        >* "If you choose the custom plan, you can tailor the
+                        features to suit your needs, based on your specific
+                        requirements."</span
+                      >
                     </v-col>
                   </v-row>
                 </v-container>
@@ -1133,18 +1171,86 @@
           </v-col>
         </v-row>
 
-        <!-- Solution Section -->
-        <v-row id="solution" class="py-5">
+        <!-- Technologies We Trust Section -->
+        <v-row
+          id="technologiesWeTrust"
+          class="pb-5"
+          :style="{ paddingTop: `60px`, backgroundColor: `rgb(208, 223, 249)` }"
+        >
           <v-col cols="12">
-            <v-card>
-              <v-card-title>
-                <h2>Solution</h2>
+            <v-card
+              class="elevation-0"
+              :style="{
+                display: `flex`,
+                flexDirection: `column`,
+                alignItems: `center`,
+                backgroundColor: `rgb(208, 223, 249)`,
+              }"
+            >
+              <v-card-title class="d-flex justify-center py-6">
+                <h2
+                  class="text-center font-weight-bold"
+                  :style="{ color: `#34495e` }"
+                >
+                  Technologies We Trust
+                </h2>
               </v-card-title>
-              <v-card-text>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-                  ut tristique urna. Integer bibendum auctor purus.
+
+              <v-card-text class="text-center px-8">
+                <p :style="{ color: `#7f8c8d` }">
+                  We utilize cutting-edge technologies to deliver the best
+                  performance and security for our users.
                 </p>
+              </v-card-text>
+
+              <v-card-text :style="{ maxWidth: `1000px`, width: `100%` }">
+                <v-container>
+                  <v-row>
+                    <v-col
+                      cols="4"
+                      class="pa-4"
+                      v-for="(tech, idx) in technologies"
+                      :key="`landing_technology_${idx}`"
+                      :style="{ display: `flex`, justifyContent: `center` }"
+                    >
+                      <v-tooltip location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-avatar
+                            class="hover-scale"
+                            v-bind="props"
+                            :style="{
+                              height: `100%`,
+                              width: `100%`,
+                              maxHeight: `100px`,
+                              maxWidth: `100px`,
+                              aspectRatio: `1`,
+                              cursor: `pointer`,
+                            }"
+                          >
+                            <v-img :src="tech.img" alt="tech.name"></v-img>
+                          </v-avatar>
+                        </template>
+                        <div>
+                          <p
+                            :style="{
+                              fontSize: `0.95rem`,
+                              fontWeight: `bold`,
+                            }"
+                          >
+                            {{ tech.name }}
+                          </p>
+                          <span
+                            class="break-word"
+                            :style="{
+                              fontSize: `0.8rem`,
+                            }"
+                            >{{ tech.description }}</span
+                          >
+                        </div>
+                      </v-tooltip>
+                    </v-col>
+                  </v-row>
+                </v-container>
               </v-card-text>
             </v-card>
           </v-col>
@@ -1172,6 +1278,7 @@
         </p>
       </v-col>
     </v-footer>
+
     <!-- trial dialog -->
     <v-dialog v-model="trialDialog" max-width="600px">
       <v-card class="pa-6 rounded-xl">
@@ -1296,6 +1403,70 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+    <!-- compare dialog -->
+    <v-dialog
+      v-model="compareDialog"
+      max-width="850px"
+      transition="dialog-bottom-transition"
+    >
+      <v-card class="pa-6 rounded-xl">
+        <v-card-title
+          class="headline"
+          :style="{
+            display: `flex`,
+            justifyContent: `space-between`,
+            alignItems: `center`,
+            borderBottom: `solid 1px black`,
+          }"
+        >
+          Compare 🔍
+          <v-btn
+            icon="mdi-close"
+            variant="fab"
+            @click="compareDialog = false"
+          ></v-btn>
+        </v-card-title>
+        <v-card-text class="pb-0 pt-1">
+          <v-table>
+            <thead>
+              <tr>
+                <th />
+                <th class="text-left">Feature</th>
+                <th class="text-left">Basic</th>
+                <th class="text-left">Standard</th>
+                <th class="text-left">Advance</th>
+                <th class="text-left">Premium</th>
+                <!-- <th class="text-left">Custom</th> -->
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in itemTable" :key="`table_pricing_${item.name}`">
+                <td class="px-0">
+                  <v-icon>{{ item.icon }}</v-icon>
+                </td>
+                <td class="px-0">
+                  {{ item.name }}
+                </td>
+                <td :style="{ textAlign: `center` }">
+                  {{ item.basic ? `✅` : `❌` }}
+                </td>
+                <td :style="{ textAlign: `center` }">
+                  {{ item.standard ? `✅` : `❌` }}
+                </td>
+                <td :style="{ textAlign: `center` }">
+                  {{ item.advance ? `✅` : `❌` }}
+                </td>
+                <td :style="{ textAlign: `center` }">
+                  {{ item.premium ? `✅` : `❌` }}
+                </td>
+                <!-- <td :style="{ textAlign: `center` }">{{ item.custom }}</td> -->
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <!--snackbar-->
     <v-snackbar
       v-model="snackbarAlert"
@@ -1346,6 +1517,81 @@ export default {
       windowWidth: 0,
       windowHeight: 0,
       scrollPosition: 0,
+      itemTable: [
+        {
+          icon: "mdi-chat-outline",
+          name: "Unified Online Channel Chat",
+          basic: true,
+          standard: true,
+          advance: true,
+          premium: true,
+        },
+        {
+          icon: "mdi-database",
+          name: "Data Warehouse Explorer",
+          basic: true,
+          standard: true,
+          advance: true,
+          premium: true,
+        },
+        {
+          icon: "mdi-robot",
+          name: "Product Knowledge Hub",
+          basic: false,
+          standard: true,
+          advance: true,
+          premium: true,
+        },
+        {
+          icon: "mdi-account-group",
+          name: "Human Resource",
+          basic: false,
+          standard: true,
+          advance: true,
+          premium: true,
+        },
+        {
+          icon: "mdi-facebook",
+          name: "Facebook Ads with AI",
+          basic: false,
+          standard: false,
+          advance: true,
+          premium: true,
+        },
+        {
+          icon: "mdi-google",
+          name: "Google Ads with AI",
+          basic: false,
+          standard: false,
+          advance: true,
+          premium: true,
+        },
+
+        {
+          icon: "mdi-view-dashboard",
+          name: "Smart Dashboard Finder",
+          basic: false,
+          standard: false,
+          advance: true,
+          premium: true,
+        },
+        {
+          icon: "mdi-chart-areaspline",
+          name: "AI-Enhanced Automated Dashboards",
+          basic: false,
+          standard: false,
+          advance: false,
+          premium: true,
+        },
+        {
+          icon: "mdi-lightbulb",
+          name: "AI-Powered Product Design",
+          basic: false,
+          standard: false,
+          advance: false,
+          premium: true,
+        },
+      ],
       menu: {
         Communication: [
           {
@@ -1478,12 +1724,33 @@ export default {
           img: `https://media.licdn.com/dms/image/v2/C560BAQGB4JBkIt74mA/company-logo_200_200/company-logo_200_200/0/1630646658833?e=2147483647&v=beta&t=APD0So5Q75j5MqOQeYxGtVYwSJHzBTb6J4qLG3iZ6Cg`,
         },
       ],
+      technologies: [
+        {
+          name: "AWS Web Services (AWS)",
+          img: "https://seekvectors.com/files/download/7bc0d5d3fcd01b0bf60c363e4537dc5d.jpg",
+          description:
+            "AWS provides secure, scalable, and reliable cloud infrastructure to support your business operations with the flexibility and power to scale as your needs grow.",
+        },
+        {
+          name: "OpenAI (ChatGPT)",
+          img: "https://openai.com/favicon.ico",
+          description:
+            "OpenAI’s ChatGPT enables AI-powered conversational capabilities, providing intelligent, human-like interactions and insights to enhance customer service and decision-making.",
+        },
+        {
+          name: "Tableau",
+          img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9RQ7-cqafLIVFwKrME-J2qMLNX3J70oLDww&s",
+          description:
+            "Tableau is a powerful data visualization tool that helps you turn your data into actionable insights through interactive dashboards and reports.",
+        },
+      ],
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: "untitled",
       alreadyGetTrial: false,
       featureHover: ``,
       interestingDialog: false,
+      compareDialog: false,
     };
   },
   mounted() {
@@ -1749,6 +2016,7 @@ export default {
 
 .hover-scale:hover {
   transform: scale(1.2);
+  z-index: 999;
 }
 
 span.break-word {
