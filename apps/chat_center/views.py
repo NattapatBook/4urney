@@ -191,7 +191,7 @@ def change_message_type(request):
 
             return JsonResponse({'messageType': 'Closed Messages', 'listUser': formatted_data})
 
-def list_dashboard(id):
+def list_dashboard(request, id):
     conn = psycopg2.connect(**DB_CONFIG)
     cursor = conn.cursor()
     conn.autocommit = False

@@ -14,6 +14,6 @@ urlpatterns = [
     path('list_message/<user_id>', list_message),
     path('admin_reply_post/', admin_reply_post),
     path('change_message_type/', change_message_type),
-    path('list_dashboard/', list_dashboard)
+    path('list_dashboard/<id>', list_dashboard),
     # *router.urls,
 ]
