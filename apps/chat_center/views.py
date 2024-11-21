@@ -197,6 +197,8 @@ def list_dashboard(id):
     conn.autocommit = False
     cursor.execute(f'''SELECT * FROM "4urney".dashboard WHERE id = '{id}' ''')
     result = cursor.fetchone()
+    cursor.execute(f'''select summarize from "4urney".chat_summarize where user_id='{id}' ''')
+    summarize = cursor.fetchone()
     cursor.close()
     conn.close()
     if result:
@@ -221,7 +223,7 @@ def list_dashboard(id):
                 "totalMessage": totalmessage,
                 "urgent": urgent,
                 "priority": priority,
-                "intentSummary": json.loads(intentsummary)
+                "intentSummary": summarize[0].split('\n') if summarize else [],
             }
         }
 
