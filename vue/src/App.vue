@@ -77,10 +77,13 @@ body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Animation */
+
 .bg-wave {
   display: inline-block;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background: linear-gradient(
     270deg,
     rgba(242, 195, 235, 1) 10%,
@@ -109,5 +112,75 @@ body {
   100% {
     background-position: 0% 50%;
   }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-10px);
+  }
+  40%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+
+.hover-bounce:hover {
+  transform: scale(1.1) translateY(-10px);
+  z-index: 999;
+  animation: bounce 0.4s ease-out;
+  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2), 0px 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes bounce {
+  0% {
+    transform: scale(1.05) translateY(-5px);
+  }
+  50% {
+    transform: scale(1.1) translateY(-15px);
+  }
+  100% {
+    transform: scale(1.1) translateY(-10px);
+  }
+}
+
+.hover-tilt-glow {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-tilt-glow:hover {
+  transform: scale(1.1) rotateX(10deg) rotateY(10deg);
+  z-index: 999;
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3),
+    0px 10px 20px rgba(255, 255, 255, 0.4);
+  animation: glow-pulse 1s ease infinite;
+}
+
+@keyframes glow-pulse {
+  0% {
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3),
+      0px 10px 20px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.2),
+      0px 10px 25px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3),
+      0px 10px 20px rgba(255, 255, 255, 0.2);
+  }
+}
+
+.hover-tilt-glow {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  perspective: 1000px;
 }
 </style>

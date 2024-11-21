@@ -93,7 +93,7 @@
           </v-card>
         </template>
       </v-dialog>
-      <v-menu transition="fab-transition">
+      <v-menu transition="fab-transition" class="rounded-xl">
         <template v-slot:activator="{ props }">
           <v-btn
             v-if="windowWidth <= 880"
@@ -104,15 +104,15 @@
           ></v-btn>
         </template>
 
-        <v-list class="pa-0">
+        <v-list class="pa-0 rounded-lg">
           <v-list-item class="pa-0">
             <v-card class="pa-4" @click="scrollTo('features')" elevation="0">
-              <span>Features</span>
+              <span>🚀 Features</span>
             </v-card>
           </v-list-item>
           <v-list-item class="pa-0">
             <v-card class="pa-4" @click="scrollTo('pricing')" elevation="0">
-              <span>Pricing</span>
+              <span>🏷️ Pricing</span>
             </v-card>
           </v-list-item>
           <!-- <v-list-item class="pa-0">
@@ -139,7 +139,7 @@
                   @click="scrollTo('trustedCustomers')"
                   elevation="0"
                 >
-                  <span>Contact Us</span>
+                  <span>📞 Contact Us</span>
                 </v-card>
               </template>
 
@@ -208,6 +208,7 @@
           align="center"
           class="landing-page"
           id="landingPage"
+          :style="{ height: `calc(100vh - 72px)` }"
         >
           <v-col cols="9" sm="9" md="8" lg="8" xl="6" xxl="6">
             <v-carousel
@@ -917,7 +918,7 @@
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-scale"
+                        class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
                           backgroundColor: `#dbe9f1`,
                           height: `100%`,
@@ -961,7 +962,7 @@
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-scale"
+                        class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
                           backgroundColor: `#a9cce3`,
                           height: `100%`,
@@ -1005,7 +1006,7 @@
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-scale"
+                        class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
                           backgroundColor: `#a8e6cf`,
                           height: `100%`,
@@ -1049,7 +1050,7 @@
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-scale"
+                        class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
                           backgroundColor: `rgb(217 81 67)`,
                           height: `100%`,
@@ -1093,7 +1094,7 @@
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-scale"
+                        class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
                           background:
                             'linear-gradient(90deg, rgba(242, 195, 235, 1) 9%, rgba(217, 212, 252, 1) 77%)',
@@ -1211,12 +1212,15 @@
                       class="pa-4"
                       v-for="(tech, idx) in technologies"
                       :key="`landing_technology_${idx}`"
-                      :style="{ display: `flex`, justifyContent: `center` }"
+                      :style="{
+                        display: `flex`,
+                        justifyContent: `center`,
+                      }"
                     >
                       <v-tooltip location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-avatar
-                            class="hover-scale"
+                            class="hover-bounce"
                             v-bind="props"
                             :style="{
                               height: `100%`,
@@ -1861,40 +1865,6 @@ export default {
   animation: bgAnimation 12s ease infinite;
 }
 
-.bg-wave {
-  display: inline-block;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    270deg,
-    rgba(242, 195, 235, 1) 10%,
-    rgba(229, 216, 245, 1) 40%,
-    rgba(217, 212, 252, 1) 70%,
-    rgba(201, 234, 247, 1) 100%
-  );
-
-  background-size: 400% 400%;
-  animation: bgAnimation 12s ease infinite;
-  color: #ffffff;
-  font-size: 1.5rem;
-  text-align: center;
-  padding: 10px;
-  border-radius: 8px;
-  position: absolute;
-}
-
-@keyframes bgAnimation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
 .landing-layout {
   width: 100%;
   position: fixed;
@@ -2029,25 +1999,6 @@ span.break-word-chip {
   display: inline-block;
   max-width: 100%;
   word-wrap: break-word;
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20%,
-  60% {
-    transform: translateX(-10px);
-  }
-  40%,
-  80% {
-    transform: translateX(10px);
-  }
-}
-
-.shake {
-  animation: shake 0.5s ease;
 }
 
 .compare-btn {
