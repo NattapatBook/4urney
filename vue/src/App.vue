@@ -7,10 +7,12 @@ import LandingPage from "./pages/LandingPage.vue";
 import HomePage from "./pages/HomePage.vue";
 
 import { createPersistentWebSocket } from "@/utils/websocket";
+import Listen from "./pages/listen.vue";
 
 const currentPage = ref("landing");
 
 function navigateTo(page) {
+  console.log(page);
   currentPage.value = page;
 }
 
@@ -36,6 +38,7 @@ function sendmessage() {
 
     <AppLayout v-else @navigate="navigateTo">
       <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
+      <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
     </AppLayout>
   </div>
 </template>

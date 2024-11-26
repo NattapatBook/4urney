@@ -10,7 +10,7 @@
               }px 0px black !important`
             : ``,
       }"
-      class="landing-layout py-3"
+      class="landing-layout pa-4"
     >
       <div
         class="div-app-bar"
@@ -208,7 +208,7 @@
           align="center"
           class="landing-page"
           id="landingPage"
-          :style="{ height: `calc(100vh - 72px)` }"
+          :style="{ minHeight: `calc(675px)` }"
         >
           <v-col cols="9" sm="9" md="8" lg="8" xl="6" xxl="6">
             <v-carousel
