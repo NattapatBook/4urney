@@ -10,7 +10,7 @@
               }px 0px black !important`
             : ``,
       }"
-      class="landing-layout py-3"
+      class="landing-layout pa-4"
     >
       <div
         class="div-app-bar"

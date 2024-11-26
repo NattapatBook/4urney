@@ -11,6 +11,7 @@ import { createPersistentWebSocket } from "@/utils/websocket";
 const currentPage = ref("landing");
 
 function navigateTo(page) {
+  console.log(page);
   currentPage.value = page;
 }
 
@@ -34,7 +35,7 @@ function sendmessage() {
     <input v-model="message" @keydown.enter="sendmessage" /> -->
     <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
 
-    <AppLayout v-else @navigate="navigateTo">
+    <AppLayout v-else-if="currentPage === 'home'" @navigate="navigateTo">
       <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
     </AppLayout>
   </div>
