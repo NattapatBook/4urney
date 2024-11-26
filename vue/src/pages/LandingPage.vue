@@ -814,6 +814,7 @@
                         }"
                       >
                         <v-text-field
+                          :disabled="alreadyGetTrial"
                           v-model="featureText"
                           hide-details
                           density="compact"
