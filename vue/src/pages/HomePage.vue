@@ -9,10 +9,7 @@
     >
       <v-col cols="12" sm="12" md="10" lg="10" xl="8" xxl="8">
         <div :style="{ marginTop: `84px`, width: `100%` }">
-          <v-card
-            class="rounded-xl polka-dots-bg"
-            :style="{ height: `calc(100vh - 115px)` }"
-          >
+          <v-card class="rounded-xl" :style="{ height: `calc(100vh - 115px)` }">
             <v-card-title>
               <p class="gradient-text" :style="{ fontWeight: `bold` }">
                 "Explore Our Features"
