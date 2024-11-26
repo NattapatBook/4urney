@@ -74,7 +74,12 @@
               <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
             </v-toolbar>
 
-            <v-list class="mt-4" lines="two" subheader>
+            <v-list
+              class="mt-4"
+              lines="two"
+              subheader
+              :style="{ overflowX: `hidden` }"
+            >
               <div class="px-4">
                 <v-avatar
                   :style="{
@@ -122,6 +127,7 @@
               <v-list-subheader>Menu</v-list-subheader>
 
               <v-list-item
+                class="hover-gradient"
                 v-for="item in items"
                 :key="`appLayout_${item.name}`"
                 link
@@ -419,4 +425,14 @@ export default {
   },
 };
 </script>
-<style scoped></style>
+<style scoped>
+.hover-gradient {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-gradient:hover {
+  transform: scale(1.01);
+  z-index: 999;
+  color: rgb(55, 61, 133);
+}
+</style>

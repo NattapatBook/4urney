@@ -263,7 +263,7 @@ body {
 }
 
 .hover-tilt-glow-wave:hover {
-  transform: scale(1.1) rotateX(10deg) rotateY(10deg);
+  transform: scale(1.1) rotateX(5deg) rotateY(10deg);
   z-index: 999;
   background: linear-gradient(
     270deg,
