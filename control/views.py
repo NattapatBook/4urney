@@ -7,6 +7,17 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def protected_api_view(request):
+    print("Authenticated user:", request.user)
+    return Response({"message": "This page is protected for authenticated users only"})
+
+
 COGNITO_DOMAIN = settings.ENV('COGNITO_DOMAIN', default='')
 COGNITO_APP_CLIENT_ID = settings.ENV('COGNITO_APP_CLIENT_ID', default='')
 COGNITO_APP_CLIENT_SECRET = settings.ENV('COGNITO_APP_CLIENT_SECRET', default='')
@@ -59,9 +70,10 @@ def redirect_view(request):
             )
             if user_response.ok:
                 user_info = user_response.json()
-                user = User.objects.get_or_create(username=user_info['email'], defaults=dict(email=user_info['email']))[0]
+                print(user_info)
+                user = User.objects.get_or_create(username=user_info['username'], defaults=dict(email=user_info['email']))[0]
                 login(request, user)
-                return HttpResponseRedirect('/api/control/test')
+                return HttpResponseRedirect('/')
 
         else:
             pprint(response.json())

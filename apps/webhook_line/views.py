@@ -26,6 +26,7 @@ async def webhook(request: HttpRequest, uuid):
     line_integration = LineIntegration.objects.get(uuid=uuid)
     LINE_CHATBOT_API_KEY = line_integration.line_chatbot_api_key
     LINE_CHANNEL_SECRET = line_integration.line_channel_secret
+    organization_id = line_integration.organization_id
 
     print(request.headers)
     try:
@@ -50,11 +51,14 @@ async def webhook(request: HttpRequest, uuid):
             message = event['message']["text"]
             message_dt = event['timestamp']
 
+
             # response = requests.post(model_url_post,
             #                          json={"user_id": user_id, "username": username, "message_type": message_type,
             #                                "msg": message, "message_dt": message_dt, "reply_token": reply_token})
             #
             # print(response)
+
+            #TODO query 5 latest message
 
             responses_message = call_bot(message)
 

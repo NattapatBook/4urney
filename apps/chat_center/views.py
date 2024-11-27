@@ -1,5 +1,7 @@
+from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
-from django.http import JsonResponse
+from django.forms import model_to_dict
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from django.shortcuts import render
@@ -11,7 +13,10 @@ import requests
 import pytz
 from datetime import datetime
 
-from apps.chat_center.models import User
+from rest_framework import status
+from rest_framework.response import Response
+
+from apps.chat_center.models import User, OrganizationMember
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -46,7 +51,7 @@ def list_user(request):
     # data = serialize('json', users)
     return JsonResponse(formatted_data, safe=False)
 
-
+@login_required
 def list_user_test(request):
     users = User.objects.all()
     data = serialize('json', users)
@@ -192,6 +197,7 @@ def change_message_type(request):
             return JsonResponse({'messageType': 'Closed Messages', 'listUser': formatted_data})
 
 def list_dashboard(request, id):
+    print(id)
     conn = psycopg2.connect(**DB_CONFIG)
     cursor = conn.cursor()
     conn.autocommit = False
@@ -227,7 +233,7 @@ def list_dashboard(request, id):
             }
         }
 
-        return data
+        return JsonResponse(data, safe=False)
 
     else:
         data = {
@@ -252,4 +258,22 @@ def list_dashboard(request, id):
                 "phoneNumber": "untitled"
             }
         }
-        return data
+        return JsonResponse(data, safe=False)
+
+def get_user_detail(request):
+    if request.user.is_authenticated:
+        user = User.objects.get(username=request.user)
+        user_dict = model_to_dict(user)
+        if request.user.is_superuser:
+            return JsonResponse(user_dict, status=status.HTTP_200_OK)
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        if organization_member:
+            organization_id = organization_member.organization.id
+            print("Organization ID:", organization_id)
+            return JsonResponse(user_dict, status=status.HTTP_200_OK)
+        else:
+            print("User is not a member of any organization.")
+            return JsonResponse({"detail": "User is not a member of any organization."}, status=status.HTTP_403_FORBIDDEN)
+    else:
+        return JsonResponse({"detail": "Authentication credentials were not provided."},
+                        status=status.HTTP_401_UNAUTHORIZED)

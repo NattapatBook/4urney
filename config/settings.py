@@ -203,3 +203,5 @@ REST_FRAMEWORK = {
         'control.rest_framework.permissions.FullDjangoModelPermissions',
     ],
 }
+
+LOGIN_URL = '/api/control/login/'
