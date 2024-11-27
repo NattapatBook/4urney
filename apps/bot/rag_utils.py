@@ -1,12 +1,13 @@
-from langchain_community.embeddings import HuggingFaceHubEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_milvus.vectorstores import Milvus
 
-def hugging_face_embeddings(api_key, hf_model="intfloat/multilingual-e5-base"):
+def hugging_face_embeddings(hf_model="airesearch/wangchanberta-base-att-spm-uncased"):
     """
     Create customer embeddings using huggingface
     """
-    embeddings = HuggingFaceHubEmbeddings(
-            huggingfacehub_api_token=api_key, model=hf_model
+    embeddings = HuggingFaceEmbeddings(
+            # huggingfacehub_api_token=api_key, 
+            model_name=hf_model
         )
     
     return embeddings
