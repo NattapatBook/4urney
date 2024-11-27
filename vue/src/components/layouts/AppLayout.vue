@@ -53,12 +53,12 @@
                   }"
                 >
                   <v-avatar>
-                    <v-img
-                      :src="'/img/4urneyLogo.png'"
-                      height="50"
-                      width="50"
-                    ></v-img>
+                    <img
+                      :style="{ height: `50px` }"
+                      src="@/assets/img/4urneyLogo.png"
+                    />
                   </v-avatar>
+
                   &nbsp;
                   <span
                     :style="{
@@ -172,11 +172,10 @@
             }"
           >
             <v-avatar>
-              <v-img
-                :src="'/img/4urneyLogo.png'"
-                height="50"
-                width="50"
-              ></v-img>
+              <img
+                :style="{ height: `50px` }"
+                src="@/assets/img/4urneyLogo.png"
+              />
             </v-avatar>
             &nbsp;
             <span :style="{ fontSize: `1.7rem` }">4urney</span>

@@ -18,7 +18,7 @@
         @click="scrollTo('landingPage')"
       >
         <v-avatar class="mr-2">
-          <v-img :src="'/img/4urneyLogo.png'"></v-img>
+          <img :style="{ height: `50px` }" src="@/assets/img/4urneyLogo.png" />
         </v-avatar>
         <p :style="{ fontSize: `1.2rem` }">4urney</p>
       </div>
@@ -247,13 +247,22 @@
                       justifyContent: `center`,
                     }"
                   >
-                    <div :style="{ maxWidth: `880px`, width: `100%` }">
-                      <v-img
+                    <div
+                      :style="{
+                        width: `100%`,
+                        display: `flex`,
+                        justifyContent: `center`,
+                      }"
+                    >
+                      <img
                         :style="{
-                          aspectRatio: `30/9 !important`,
+                          width: `100%`,
+                          maxWidth: `700px`,
+                          aspectRatio: '580 / 221',
+                          objectFit: 'contain',
                         }"
-                        :src="'/img/landing/showChat.png'"
-                      ></v-img>
+                        src="@/assets/img/landing/showChat.png"
+                      />
                     </div>
 
                     <!-- <div
@@ -805,6 +814,7 @@
                         }"
                       >
                         <v-text-field
+                          :disabled="alreadyGetTrial"
                           v-model="featureText"
                           hide-details
                           density="compact"
