@@ -31,17 +31,56 @@ function sendmessage() {
 </script>
 
 <template>
-  <div id="app" :style="{ overflowX: `hidden` }">
-    <!-- {{ messages }}
-    <input v-model="message" @keydown.enter="sendmessage" /> -->
-    <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
+  <div id="app" :style="{ overflowX: 'hidden' }">
+    <!-- Background Animation -->
+    <div :class="currentPage === `landing` ? `` : `bg-wave`"></div>
 
-    <AppLayout v-else @navigate="navigateTo">
-      <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
-      <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
-    </AppLayout>
+    <!-- LandingPage -->
+    <transition name="fade" mode="out-in">
+      <div :key="`landing_app_${currentPage}`">
+        <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
+      </div>
+    </transition>
+
+    <!-- App Layout -->
+    <transition name="fade" mode="out-in">
+      <AppLayout v-if="currentPage !== 'landing'" @navigate="navigateTo">
+        <transition name="minimal-fade" mode="out-in">
+          <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
+          <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
+        </transition>
+      </AppLayout>
+    </transition>
   </div>
 </template>
+
+<style scoped>
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Minimal Fade Transition */
+.minimal-fade-enter-active,
+.minimal-fade-leave-active {
+  transition: opacity 0.4s ease; /* Smoother and quicker fade */
+}
+
+.minimal-fade-enter,
+.minimal-fade-leave-to {
+  opacity: 0;
+}
+
+.minimal-fade-enter-to,
+.minimal-fade-leave {
+  opacity: 1;
+}
+</style>
 
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap");

@@ -1391,7 +1391,7 @@
             trial right now."
           </p>
         </v-card-text>
-        <v-card-action>
+        <v-card-actions>
           <!-- <v-btn text @click="interestingDialog = false">Cancel</v-btn> -->
           <div
             class="pa-10"
@@ -1408,7 +1408,7 @@
               >Request Trial</v-btn
             >
           </div>
-        </v-card-action>
+        </v-card-actions>
         <v-card-text class="pt-0">
           <p :style="{ fontSize: `0.75rem`, color: `grey` }">
             "If you need immediate assistance, feel free to contact us at

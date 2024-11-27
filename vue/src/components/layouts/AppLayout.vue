@@ -23,7 +23,7 @@
               : `dialog-top-transition`
           "
           :style="{
-            width: windowWidth > 960 ? `25vw !important` : `100%`,
+            width: windowWidth > 960 ? `25.5vw !important` : `100%`,
             right: `initial`,
           }"
           :min-width="`400px`"
@@ -420,6 +420,9 @@ export default {
     // resposive
     onResize() {
       this.windowWidth = window.innerWidth;
+    },
+    clickChangeMenu(menu) {
+      this.$emit(`navigate`, menu);
     },
   },
 };
