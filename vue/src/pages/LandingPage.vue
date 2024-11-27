@@ -932,6 +932,140 @@
                         @click="compareDialog = true"
                         class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
+                          backgroundColor: `#eaf4fc`,
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#4a6072` }"
+                          >
+                            Starter Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#647c8c` }"
+                        >
+                          A great plan to get started.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#cbd9e3` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#5a9bd6` }"
+                          >
+                            From $0/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#647c8c` }">
+                            Basic tools for individuals and small teams.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Professional Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-tilt-glow"
+                        :style="{
+                          backgroundColor: `#fdf6e3`,
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#bfa05d` }"
+                          >
+                            Professional Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#9c8c66` }"
+                        >
+                          Ideal for growing teams.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#efe4c9` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#c4a652` }"
+                          >
+                            From $0/month
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#9c8c66` }">
+                            Advanced features for collaboration and
+                            productivity.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Enterprise Plan -->
+                    <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-tilt-glow"
+                        :style="{
+                          background:
+                            'linear-gradient(90deg, rgba(243, 227, 250, 1) 9%, rgba(220, 238, 249, 1) 77%)',
+                          height: `100%`,
+                          cursor: `pointer`,
+                        }"
+                      >
+                        <v-card-title class="justify-center">
+                          <h3
+                            class="font-weight-bold"
+                            :style="{ color: `#9359a2` }"
+                          >
+                            Enterprise Plan
+                          </h3>
+                        </v-card-title>
+                        <v-card-subtitle
+                          class="text-center"
+                          :style="{ color: `#7c6a86` }"
+                        >
+                          The ultimate plan for large organizations.
+                        </v-card-subtitle>
+                        <v-divider
+                          class="my-3"
+                          :style="{ backgroundColor: `#e4badd` }"
+                        ></v-divider>
+
+                        <div class="text-center">
+                          <h4
+                            class="font-weight-bold"
+                            :style="{ color: `#9359a2` }"
+                          >
+                            Contact us for pricing
+                          </h4>
+                          <p class="mt-2" :style="{ color: `#7c6a86` }">
+                            Premium tools and dedicated support for enterprises.
+                          </p>
+                        </div>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Basic Plan -->
+                    <!-- <v-col cols="12" sm="4" class="mb-4">
+                      <v-card
+                        @click="compareDialog = true"
+                        class="pa-4 rounded-lg hover-tilt-glow"
+                        :style="{
                           backgroundColor: `#dbe9f1`,
                           height: `100%`,
                           cursor: `pointer`,
@@ -942,7 +1076,7 @@
                             class="font-weight-bold"
                             :style="{ color: `#34495e` }"
                           >
-                            Basic Plan
+                            Standard Plan
                           </h3>
                         </v-card-title>
                         <v-card-subtitle
@@ -968,15 +1102,15 @@
                           </p>
                         </div>
                       </v-card>
-                    </v-col>
+                    </v-col> -->
 
-                    <!-- Standard Plan -->
-                    <v-col cols="12" sm="4" class="mb-4">
+                    <!-- Professional Plan -->
+                    <!-- <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
                         class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
-                          backgroundColor: `#a9cce3`,
+                          backgroundColor: `#ffeaa7`,
                           height: `100%`,
                           cursor: `pointer`,
                         }"
@@ -984,126 +1118,38 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#2c3e50` }"
+                            :style="{ color: `#b7950b` }"
                           >
-                            Standard Plan
+                            Professional Plan
                           </h3>
                         </v-card-title>
                         <v-card-subtitle
                           class="text-center"
-                          :style="{ color: `#2c3e50` }"
+                          :style="{ color: `#7f8c8d` }"
                         >
-                          Popular plan for teams.
+                          Perfect for professionals.
                         </v-card-subtitle>
                         <v-divider
                           class="my-3"
-                          :style="{ backgroundColor: `#b2bec3` }"
+                          :style="{ backgroundColor: `#d4ac0d` }"
                         ></v-divider>
 
                         <div class="text-center">
                           <h4
                             class="font-weight-bold"
-                            :style="{ color: `#2980b9` }"
+                            :style="{ color: `#b7950b` }"
                           >
                             From $49/month
                           </h4>
                           <p class="mt-2" :style="{ color: `#7f8c8d` }">
-                            Ideal for growing teams.
+                            Enhanced features for professional teams.
                           </p>
                         </div>
                       </v-card>
-                    </v-col>
+                    </v-col> -->
 
-                    <!-- Advanced Plan -->
-                    <v-col cols="12" sm="4" class="mb-4">
-                      <v-card
-                        @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-tilt-glow"
-                        :style="{
-                          backgroundColor: `#a8e6cf`,
-                          height: `100%`,
-                          cursor: `pointer`,
-                        }"
-                      >
-                        <v-card-title class="justify-center">
-                          <h3
-                            class="font-weight-bold"
-                            :style="{ color: `#34495e` }"
-                          >
-                            Advanced Plan
-                          </h3>
-                        </v-card-title>
-                        <v-card-subtitle
-                          class="text-center"
-                          :style="{ color: `#2c3e50` }"
-                        >
-                          For advanced needs.
-                        </v-card-subtitle>
-                        <v-divider
-                          class="my-3"
-                          :style="{ backgroundColor: `#b2bec3` }"
-                        ></v-divider>
-
-                        <div class="text-center">
-                          <h4
-                            class="font-weight-bold"
-                            :style="{ color: `#27ae60` }"
-                          >
-                            From $79/month
-                          </h4>
-                          <p class="mt-2" :style="{ color: `#7f8c8d` }">
-                            Advanced features for larger teams.
-                          </p>
-                        </div>
-                      </v-card>
-                    </v-col>
-
-                    <!-- Premium Plan -->
-                    <v-col cols="12" sm="4" class="mb-4">
-                      <v-card
-                        @click="compareDialog = true"
-                        class="pa-4 rounded-lg hover-tilt-glow"
-                        :style="{
-                          backgroundColor: `rgb(217 81 67)`,
-                          height: `100%`,
-                          cursor: `pointer`,
-                        }"
-                      >
-                        <v-card-title class="justify-center">
-                          <h3
-                            class="font-weight-bold"
-                            :style="{ color: `#fff` }"
-                          >
-                            Premium Plan
-                          </h3>
-                        </v-card-title>
-                        <v-card-subtitle
-                          class="text-center"
-                          :style="{ color: `#fff` }"
-                        >
-                          Plan for enterprises.
-                        </v-card-subtitle>
-                        <v-divider
-                          class="my-3"
-                          :style="{ backgroundColor: `#b2bec3` }"
-                        ></v-divider>
-
-                        <div class="text-center">
-                          <h4
-                            class="font-weight-bold"
-                            :style="{ color: `#fff` }"
-                          >
-                            From $199/month
-                          </h4>
-                          <p class="mt-2" :style="{ color: `#fff` }">
-                            All features and premium support.
-                          </p>
-                        </div>
-                      </v-card>
-                    </v-col>
-
-                    <!-- Custom Plan -->
-                    <v-col cols="12" sm="4" class="mb-4">
+                    <!-- Enterprise Plan -->
+                    <!-- <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
                         class="pa-4 rounded-lg hover-tilt-glow"
@@ -1119,14 +1165,14 @@
                             class="font-weight-bold"
                             :style="{ color: `#8e44ad` }"
                           >
-                            Custom Plan
+                            Enterprise Plan
                           </h3>
                         </v-card-title>
                         <v-card-subtitle
                           class="text-center"
                           :style="{ color: `#2f3640` }"
                         >
-                          Pay for what you need.
+                          Plan for enterprise
                         </v-card-subtitle>
                         <v-divider
                           class="my-3"
@@ -1138,14 +1184,14 @@
                             class="font-weight-bold"
                             :style="{ color: `#8e44ad` }"
                           >
-                            From $9/month
+                            From $0/month
                           </h4>
                           <p class="mt-2" :style="{ color: `#7f8c8d` }">
-                            Start with one feature, expand as needed.
+                            All Features and premium support.
                           </p>
                         </div>
                       </v-card>
-                    </v-col>
+                    </v-col> -->
                   </v-row>
                   <v-row>
                     <v-col
@@ -1169,13 +1215,13 @@
                         Compare Plans
                         <v-icon>mdi-chevron-double-down</v-icon>
                       </v-btn>
-                      <span
+                      <!-- <span
                         class="mt-3"
                         :style="{ fontSize: `0.7rem`, color: `grey` }"
                         >* "If you choose the custom plan, you can tailor the
                         features to suit your needs, based on your specific
                         requirements."</span
-                      >
+                      > -->
                     </v-col>
                   </v-row>
                 </v-container>
@@ -1442,16 +1488,15 @@
             @click="compareDialog = false"
           ></v-btn>
         </v-card-title>
-        <v-card-text class="pb-0 pt-1">
+        <v-card-text class="pb-0 pt-1 px-1">
           <v-table>
             <thead>
               <tr>
                 <th />
-                <th class="text-left">Feature</th>
-                <th class="text-left">Basic</th>
-                <th class="text-left">Standard</th>
-                <th class="text-left">Advance</th>
-                <th class="text-left">Premium</th>
+                <th class="text-center">Feature</th>
+                <th class="text-center">Standard</th>
+                <th class="text-center">Professional</th>
+                <th class="text-center">Enterprise</th>
                 <!-- <th class="text-left">Custom</th> -->
               </tr>
             </thead>
@@ -1463,17 +1508,47 @@
                 <td class="px-0">
                   {{ item.name }}
                 </td>
-                <td :style="{ textAlign: `center` }">
-                  {{ item.basic ? `✅` : `❌` }}
+                <td
+                  :style="{
+                    textAlign: `center`,
+                  }"
+                >
+                  {{ item.standard }}
+                  <p
+                    v-if="
+                      item.name === 'Integration API' || item.name === 'Channel'
+                    "
+                  >
+                    {{ item.BRstandard }}
+                  </p>
                 </td>
-                <td :style="{ textAlign: `center` }">
-                  {{ item.standard ? `✅` : `❌` }}
+                <td
+                  :style="{
+                    textAlign: `center`,
+                  }"
+                >
+                  {{ item.profressional }}
+                  <p
+                    v-if="
+                      item.name === 'Integration API' || item.name === 'Channel'
+                    "
+                  >
+                    {{ item.BRprofressional }}
+                  </p>
                 </td>
-                <td :style="{ textAlign: `center` }">
-                  {{ item.advance ? `✅` : `❌` }}
-                </td>
-                <td :style="{ textAlign: `center` }">
-                  {{ item.premium ? `✅` : `❌` }}
+                <td
+                  :style="{
+                    textAlign: `center`,
+                  }"
+                >
+                  {{ item.enterprise }}
+                  <p
+                    v-if="
+                      item.name === 'Integration API' || item.name === 'Channel'
+                    "
+                  >
+                    {{ item.BRenterprise }}
+                  </p>
                 </td>
                 <!-- <td :style="{ textAlign: `center` }">{{ item.custom }}</td> -->
               </tr>
@@ -1535,77 +1610,88 @@ export default {
       scrollPosition: 0,
       itemTable: [
         {
-          icon: "mdi-chat-outline",
-          name: "Unified Online Channel Chat",
-          basic: true,
-          standard: true,
-          advance: true,
-          premium: true,
+          icon: "mdi-message-processing-outline",
+          name: "Interaction",
+          standard: `60,000(5,000)`,
+          profressional: `120,000(10,000)`,
+          enterprise: `240,000(20,000)`,
         },
         {
-          icon: "mdi-database",
-          name: "Data Warehouse Explorer",
-          basic: true,
-          standard: true,
-          advance: true,
-          premium: true,
+          icon: "mdi-account-key-outline",
+          name: "Admin",
+          standard: "1",
+          profressional: "2",
+          enterprise: "3",
         },
         {
-          icon: "mdi-robot",
-          name: "Product Knowledge Hub",
-          basic: false,
-          standard: true,
-          advance: true,
-          premium: true,
+          icon: "mdi-account-multiple-outline",
+          name: "Agent",
+          standard: "1",
+          profressional: "2",
+          enterprise: "3",
         },
         {
-          icon: "mdi-account-group",
-          name: "Human Resource",
-          basic: false,
-          standard: true,
-          advance: true,
-          premium: true,
+          icon: "mdi-chart-box-outline",
+          name: "Report",
+          standard: "✅",
+          profressional: "✅",
+          enterprise: "✅",
         },
         {
-          icon: "mdi-facebook",
-          name: "Facebook Ads with AI",
-          basic: false,
-          standard: false,
-          advance: true,
-          premium: true,
+          icon: "mdi-emoticon-outline",
+          name: "Sentiment Analysis",
+          standard: "❌",
+          profressional: "✅",
+          enterprise: "✅",
         },
         {
-          icon: "mdi-google",
-          name: "Google Ads with AI",
-          basic: false,
-          standard: false,
-          advance: true,
-          premium: true,
+          icon: "mdi-lightbulb-outline",
+          name: "Summary Ai",
+          standard: "❌",
+          profressional: "✅",
+          enterprise: "✅",
+        },
+        {
+          icon: "mdi-chart-timeline-variant",
+          name: "Customer 360 Reports",
+          standard: "❌",
+          profressional: "❌",
+          enterprise: "✅",
+        },
+        {
+          icon: "mdi-message-text-outline",
+          name: "Channel",
+          standard: "1 Social",
+          profressional: "2 Socials",
+          enterprise: "3 Socials",
+          BRstandard: "Live Chat (Line)",
+          BRprofressional: "Live Chat",
+          BRenterprise: "Live Chat",
+        },
+        {
+          icon: "mdi-api",
+          name: "Integration API",
+          standard: "0",
+          profressional: "1",
+          enterprise: "2-3",
+          BRstandard: "200,000(16,666)",
+          BRprofressional: "250,000(20,833)",
+          BRenterprise: "350,000(29,166)",
         },
 
         {
-          icon: "mdi-view-dashboard",
-          name: "Smart Dashboard Finder",
-          basic: false,
-          standard: false,
-          advance: true,
-          premium: true,
+          icon: "mdi-cash-multiple",
+          name: "One Time Set up Fee",
+          standard: "50,000",
+          profressional: "50,000",
+          enterprise: "50,000",
         },
         {
-          icon: "mdi-chart-areaspline",
-          name: "AI-Enhanced Automated Dashboards",
-          basic: false,
-          standard: false,
-          advance: false,
-          premium: true,
-        },
-        {
-          icon: "mdi-lightbulb",
-          name: "AI-Powered Product Design",
-          basic: false,
-          standard: false,
-          advance: false,
-          premium: true,
+          icon: "mdi-wrench-outline",
+          name: "Implementation",
+          standard: "-",
+          profressional: "Based on complexity",
+          enterprise: "Based on complexity",
         },
       ],
       menu: {
