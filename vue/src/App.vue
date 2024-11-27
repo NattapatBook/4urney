@@ -32,7 +32,7 @@ function sendmessage() {
 
 <template>
   <div id="app" :style="{ overflowX: 'hidden' }">
-    <!-- Background Animation -->
+    <!-- Background -->
     <div :class="currentPage === `landing` ? `` : `bg-wave`"></div>
 
     <!-- LandingPage -->

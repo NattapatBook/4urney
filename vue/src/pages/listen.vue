@@ -24,7 +24,8 @@
             >
               <v-card
                 :style="{
-                  height: `calc(100vh - 135px)`,
+                  height: `calc(100vh - 14vh)`,
+                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
               >
@@ -34,7 +35,10 @@
                     :icon="`mdi-chevron-left`"
                   />
                 </v-card-title>
-                <v-card-text>to chat</v-card-text>
+                <v-card-text>
+                  <v-btn @click="scrollTo(`chatPanel`)">go chat</v-btn>
+                  <v-btn @click="scrollTo(`dashboard`)">dashboard</v-btn>
+                </v-card-text>
               </v-card>
             </v-col>
             <!-- hide list panel -->
@@ -49,7 +53,8 @@
             >
               <v-card
                 :style="{
-                  height: `calc(100vh - 135px)`,
+                  height: `calc(100vh - 14vh)`,
+                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
               >
@@ -61,6 +66,7 @@
             </v-col>
             <!-- chat panel -->
             <v-col
+              id="chatPanel"
               class="pa-1"
               :style="{
                 height: `100%`,
@@ -68,13 +74,15 @@
             >
               <v-card
                 :style="{
-                  height: `calc(100vh - 135px)`,
+                  height: `calc(100vh - 14vh)`,
+                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
                 >chat col
               </v-card>
             </v-col>
             <v-col
+              id="dashboard"
               :cols="windowWidth > 1280 ? 4 : windowWidth > 960 ? 4 : 12"
               class="pa-1"
               :style="{
@@ -84,11 +92,8 @@
             >
               <v-card
                 :style="{
-                  height:
-                    windowWidth > 960
-                      ? `calc(100vh - 135px)`
-                      : `calc(100vh - 50px)`,
-                  marginTop: windowWidth > 960 ? `0px` : `10px`,
+                  height: `calc(100vh - 14vh)`,
+                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
               >
@@ -132,6 +137,12 @@ export default {
     // Toggles the visibility of the first column
     toggleFirstCol() {
       this.isFirstColMinimized = !this.isFirstColMinimized;
+    },
+    scrollTo(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     },
   },
 };
