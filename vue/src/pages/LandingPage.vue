@@ -208,7 +208,9 @@
           align="center"
           class="landing-page"
           id="landingPage"
-          :style="{ minHeight: `calc(675px)` }"
+          :style="{
+            height: windowWidth > 960 ? `100vh` : `calc(100vh - 10vh)`,
+          }"
         >
           <v-col cols="9" sm="9" md="8" lg="8" xl="6" xxl="6">
             <v-carousel
@@ -1391,7 +1393,7 @@
             trial right now."
           </p>
         </v-card-text>
-        <v-card-action>
+        <v-card-actions>
           <!-- <v-btn text @click="interestingDialog = false">Cancel</v-btn> -->
           <div
             class="pa-10"
@@ -1408,7 +1410,7 @@
               >Request Trial</v-btn
             >
           </div>
-        </v-card-action>
+        </v-card-actions>
         <v-card-text class="pt-0">
           <p :style="{ fontSize: `0.75rem`, color: `grey` }">
             "If you need immediate assistance, feel free to contact us at
@@ -1856,7 +1858,6 @@ export default {
   align-items: center;
 }
 .landing-page {
-  height: 100vh;
   background: rgb(242, 195, 235);
   background: linear-gradient(
     180deg,
