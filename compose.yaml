@@ -34,7 +34,7 @@ services:
     volumes:
       - ./vue/:/app/
       - /app/node_modules/
-    command: npm run serve
+    command: npm run dev
 
   backend:
     image: base-python:latest

@@ -145,8 +145,34 @@ from django.db.models import Q
 #         case_count=Case.objects.filter(customer=models.OuterRef('id')).values('customer').annotate(case_count=models.Count(1)).values('case_count')[:1]
 #     )
 
-class User(models.Model):
-    platform_id = models.CharField(max_length=1000, primary_key=True)
+# class Role(models.Model):
+#     name = models.CharField(max_length=255, unique=True)
+#     description = models.TextField(null=True, blank=True)
+#
+#     def __str__(self):
+#         return self.name
+
+class Organization(models.Model):
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class OrganizationMember(models.Model):
+    # username = models.CharField(max_length=255, unique=True)
+    # email = models.EmailField()
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    group = models.ForeignKey('auth.Group', on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.user)
+
+class Customer(models.Model):
+    platform_id = models.CharField(max_length=1000, primary_key=True) # change pk use id
     img = models.CharField(max_length=1000, null=True, blank=True)
     name = models.CharField(max_length=1000, null=True, blank=True)
     tag = models.CharField(max_length=1000, null=True, blank=True)
@@ -158,15 +184,18 @@ class User(models.Model):
     agent = models.CharField(max_length=1000, null=True, blank=True)
     message_type = models.CharField(max_length=255, null=True, blank=True)
     reply_token = models.CharField(max_length=1000, null=True, blank=True)
+    organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.platform_id})"
 
 class Message(models.Model):
-    platform_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField(null=True, blank=True)
-    by = models.CharField(max_length=1000, null=True, blank=True)
+    by = models.CharField(max_length=255, null=True, blank=True) # user or customer
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True) # user => admin(a,b,c) , bot(a,b,c)
     timestamp = models.DateTimeField(null=True, blank=True)
+    organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"Message from {self.by} at {self.timestamp}"

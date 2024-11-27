@@ -64,6 +64,7 @@ INSTALLED_APPS = [
         f'apps.{app_name}.apps.{pydash.pascal_case(app_name)}Config'
         for app_name in PROJECT_APPS
     ],
+    'migrator.apps.MigratorConfig',  # help handle post_final_migrate signal
 ]
 
 MIDDLEWARE = [
@@ -202,3 +203,5 @@ REST_FRAMEWORK = {
         'control.rest_framework.permissions.FullDjangoModelPermissions',
     ],
 }
+
+LOGIN_URL = '/api/control/login/'

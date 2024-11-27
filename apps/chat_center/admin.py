@@ -1,11 +1,14 @@
 from django.contrib import admin
 from django.db.models import OuterRef, Count
 
+from apps.chat_center.models import Organization, OrganizationMember
 # from apps.chat_center.models import Customer, Case, Topic, TopicHandler
 
 
 # Register your models here.
 
+admin.site.register(Organization)
+admin.site.register(OrganizationMember)
 # class CustomerAdmin(admin.ModelAdmin):
 #     list_display = ['platform_uid', 'id', 'platform', 'platform_name', 'case_count']
 #     list_display_links = ['platform_uid']
