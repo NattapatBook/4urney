@@ -926,13 +926,14 @@
                 <v-container>
                   <!-- Plan Selector -->
                   <v-row class="justify-center">
-                    <!-- Basic Plan -->
+                    <!-- Starter Plan (Green - Common) -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
                         class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
-                          backgroundColor: `#eaf4fc`,
+                          background:
+                            'linear-gradient(90deg, rgba(210, 245, 210, 1) 0%, rgba(180, 235, 200, 1) 100%)',
                           height: `100%`,
                           cursor: `pointer`,
                         }"
@@ -940,43 +941,44 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#4a6072` }"
+                            :style="{ color: `#3a6b47` }"
                           >
                             Starter Plan
                           </h3>
                         </v-card-title>
                         <v-card-subtitle
                           class="text-center"
-                          :style="{ color: `#647c8c` }"
+                          :style="{ color: `#588564` }"
                         >
                           A great plan to get started.
                         </v-card-subtitle>
                         <v-divider
                           class="my-3"
-                          :style="{ backgroundColor: `#cbd9e3` }"
+                          :style="{ backgroundColor: `#a8d3a8` }"
                         ></v-divider>
 
                         <div class="text-center">
                           <h4
                             class="font-weight-bold"
-                            :style="{ color: `#5a9bd6` }"
+                            :style="{ color: `#4caf50` }"
                           >
-                            From $0/month
+                            From $19/month
                           </h4>
-                          <p class="mt-2" :style="{ color: `#647c8c` }">
+                          <p class="mt-2" :style="{ color: `#588564` }">
                             Basic tools for individuals and small teams.
                           </p>
                         </div>
                       </v-card>
                     </v-col>
 
-                    <!-- Professional Plan -->
+                    <!-- Professional Plan (Blue - Rare) -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
                         class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
-                          backgroundColor: `#fdf6e3`,
+                          background:
+                            'linear-gradient(90deg, rgba(210, 235, 255, 1) 0%, rgba(180, 220, 250, 1) 100%)',
                           height: `100%`,
                           cursor: `pointer`,
                         }"
@@ -984,30 +986,30 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#bfa05d` }"
+                            :style="{ color: `#3a5780` }"
                           >
                             Professional Plan
                           </h3>
                         </v-card-title>
                         <v-card-subtitle
                           class="text-center"
-                          :style="{ color: `#9c8c66` }"
+                          :style="{ color: `#526b8f` }"
                         >
                           Ideal for growing teams.
                         </v-card-subtitle>
                         <v-divider
                           class="my-3"
-                          :style="{ backgroundColor: `#efe4c9` }"
+                          :style="{ backgroundColor: `#b5d4f5` }"
                         ></v-divider>
 
                         <div class="text-center">
                           <h4
                             class="font-weight-bold"
-                            :style="{ color: `#c4a652` }"
+                            :style="{ color: `#2979ff` }"
                           >
-                            From $0/month
+                            From $49/month
                           </h4>
-                          <p class="mt-2" :style="{ color: `#9c8c66` }">
+                          <p class="mt-2" :style="{ color: `#526b8f` }">
                             Advanced features for collaboration and
                             productivity.
                           </p>
@@ -1015,14 +1017,14 @@
                       </v-card>
                     </v-col>
 
-                    <!-- Enterprise Plan -->
+                    <!-- Enterprise Plan (Yellow - Legendary) -->
                     <v-col cols="12" sm="4" class="mb-4">
                       <v-card
                         @click="compareDialog = true"
                         class="pa-4 rounded-lg hover-tilt-glow"
                         :style="{
                           background:
-                            'linear-gradient(90deg, rgba(243, 227, 250, 1) 9%, rgba(220, 238, 249, 1) 77%)',
+                            'linear-gradient(90deg, rgba(255, 244, 200, 1) 0%, rgba(255, 229, 150, 1) 100%)',
                           height: `100%`,
                           cursor: `pointer`,
                         }"
@@ -1030,30 +1032,30 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#9359a2` }"
+                            :style="{ color: `#b7860c` }"
                           >
                             Enterprise Plan
                           </h3>
                         </v-card-title>
                         <v-card-subtitle
                           class="text-center"
-                          :style="{ color: `#7c6a86` }"
+                          :style="{ color: `#8f6f0a` }"
                         >
                           The ultimate plan for large organizations.
                         </v-card-subtitle>
                         <v-divider
                           class="my-3"
-                          :style="{ backgroundColor: `#e4badd` }"
+                          :style="{ backgroundColor: `#ffdd80` }"
                         ></v-divider>
 
                         <div class="text-center">
                           <h4
                             class="font-weight-bold"
-                            :style="{ color: `#9359a2` }"
+                            :style="{ color: `#ffa000` }"
                           >
                             Contact us for pricing
                           </h4>
-                          <p class="mt-2" :style="{ color: `#7c6a86` }">
+                          <p class="mt-2" :style="{ color: `#8f6f0a` }">
                             Premium tools and dedicated support for enterprises.
                           </p>
                         </div>
@@ -1478,7 +1480,6 @@
             display: `flex`,
             justifyContent: `space-between`,
             alignItems: `center`,
-            borderBottom: `solid 1px black`,
           }"
         >
           Compare 🔍
@@ -1488,27 +1489,32 @@
             @click="compareDialog = false"
           ></v-btn>
         </v-card-title>
-        <v-card-text class="pb-0 pt-1 px-1">
+        <v-card-text class="pb-0 pt-0 px-1 rounded-lg">
           <v-table>
             <thead>
               <tr>
-                <th />
-                <th class="text-center">Feature</th>
-                <th class="text-center">Standard</th>
-                <th class="text-center">Professional</th>
-                <th class="text-center">Enterprise</th>
+                <th class="text-center table-feature-head">Feature</th>
+                <th class="text-center table-standard-head">Standard</th>
+                <th class="text-center table-professional-head">
+                  Professional
+                </th>
+                <th class="text-center table-enterprise-head">Enterprise</th>
                 <!-- <th class="text-left">Custom</th> -->
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in itemTable" :key="`table_pricing_${item.name}`">
+              <tr
+                class="tableBody"
+                v-for="item in itemTable"
+                :key="`table_pricing_${item.name}`"
+              >
                 <td class="px-0">
-                  <v-icon>{{ item.icon }}</v-icon>
-                </td>
-                <td class="px-0">
+                  <v-icon>{{ item.icon }}</v-icon
+                  >&nbsp;
                   {{ item.name }}
                 </td>
                 <td
+                  class="table-standard"
                   :style="{
                     textAlign: `center`,
                   }"
@@ -1523,6 +1529,7 @@
                   </p>
                 </td>
                 <td
+                  class="table-professional"
                   :style="{
                     textAlign: `center`,
                   }"
@@ -1537,6 +1544,7 @@
                   </p>
                 </td>
                 <td
+                  class="table-enterprise"
                   :style="{
                     textAlign: `center`,
                   }"
@@ -2112,5 +2120,82 @@ span.break-word-chip {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/*table*/
+
+.table-standard {
+  background: linear-gradient(
+    90deg,
+    rgb(210, 245, 210) 0%,
+    rgb(180, 235, 200) 100%
+  );
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: rgb(58, 107, 71);
+}
+.table-professional {
+  background: linear-gradient(
+    90deg,
+    rgb(210, 235, 255) 0%,
+    rgb(180, 220, 250) 100%
+  );
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: rgb(58, 87, 128);
+}
+.table-enterprise {
+  background: linear-gradient(
+    90deg,
+    rgb(255, 244, 200) 0%,
+    rgb(255, 229, 150) 100%
+  );
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: rgb(183, 134, 12);
+}
+
+.table-feature-head {
+  width: 270px;
+}
+.table-standard-head {
+  background: linear-gradient(
+    90deg,
+    rgb(210, 245, 210) 0%,
+    rgb(180, 235, 200) 100%
+  );
+
+  color: rgb(76, 175, 80);
+  font-weight: bold;
+  font-size: 1rem;
+  width: 200px;
+}
+.table-professional-head {
+  background: linear-gradient(
+    90deg,
+    rgb(210, 235, 255) 0%,
+    rgb(180, 220, 250) 100%
+  );
+  color: rgb(41, 121, 255);
+  font-weight: bold;
+  font-size: 1rem;
+  width: 200px;
+}
+.table-enterprise-head {
+  background: linear-gradient(
+    90deg,
+    rgb(255, 244, 200) 0%,
+    rgb(255, 229, 150) 100%
+  );
+  color: rgb(255, 160, 0);
+  font-weight: bold;
+  font-size: 1rem;
+  width: 200px;
+}
+
+.tableBody:hover {
+  transform: scale(0.9);
+  cursor: pointer;
+  border: solid 1px black !important;
 }
 </style>
