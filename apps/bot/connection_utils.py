@@ -11,8 +11,6 @@ DB_CONFIG = {
     'port': os.environ.get('DEMO_DATABASE_PORT'),
 }
 
-conn = psycopg2.connect(**DB_CONFIG)
-
 def execute_script(script): 
     try: 
         cursor = conn.cursor() 
@@ -28,6 +26,8 @@ def execute_script(script):
     
     
 def execute_to_df(script):
+    
+    conn = psycopg2.connect(**DB_CONFIG)
         
     df = sqlio.read_sql_query(script, conn)
 
@@ -35,6 +35,8 @@ def execute_to_df(script):
 
 
 def execute_values(conn, df, schema, table): 
+    
+    conn = psycopg2.connect(**DB_CONFIG)
   
     tuples = [tuple(x) for x in df.to_numpy()] 
 
