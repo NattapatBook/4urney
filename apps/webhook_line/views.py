@@ -19,9 +19,9 @@ from apps.webhook_line.models import LineIntegration
 
 LINE_CHATBOT_API_KEY = os.environ.get('LINE_CHATBOT_API_KEY')
 LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
-# HUGGINGFACEHUB_API_KEY = os.environ.get('HUGGINGFACEHUB_API_KEY')
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
+EMBEDDING_MODEL_API=os.environ.get('EMBEDDING_MODEL_API')
 
 # Create your views here.
 @csrf_exempt
@@ -59,8 +59,12 @@ async def webhook(request: HttpRequest, uuid):
                 """
                 message = event['message']["text"]
                 message_dt = event['timestamp']
+                
+                retrieval_text = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": MILVUS_COLLECTION_NAME_DRONE})
+                
+                retrieval_text = retrieval_text.json()['retrieval_text']
 
-                responses_message = call_bot(message, df_routing_config, MILVUS_COLLECTION_NAME_DRONE, MILVUS_URI)
+                responses_message = call_bot(message, retrieval_text, df_routing_config)
 
                 if responses_message:
                     await reply_message(user_id,reply_token,responses_message,LINE_CHATBOT_API_KEY)
