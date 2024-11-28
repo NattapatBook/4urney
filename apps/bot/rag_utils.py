@@ -1,7 +1,7 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_milvus.vectorstores import Milvus
 
-def hugging_face_embeddings(hf_model="airesearch/wangchanberta-base-att-spm-uncased"):
+def hugging_face_embeddings(hf_model="intfloat/multilingual-e5-base"):
     """
     Create customer embeddings using huggingface
     """
