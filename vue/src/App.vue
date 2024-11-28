@@ -12,7 +12,6 @@ import Listen from "./pages/listen.vue";
 const currentPage = ref("landing");
 
 function navigateTo(page) {
-  console.log(page);
   currentPage.value = page;
 }
 

@@ -29,16 +29,13 @@
                   borderRadius: `8px`,
                 }"
               >
-                <v-card-title>
-                  <v-btn
-                    @click="hideListuserPanel = true"
-                    :icon="`mdi-chevron-left`"
-                  />
-                </v-card-title>
-                <v-card-text>
-                  <v-btn @click="scrollTo(`chatPanel`)">go chat</v-btn>
-                  <v-btn @click="scrollTo(`dashboard`)">dashboard</v-btn>
-                </v-card-text>
+                <ListUser
+                  class="shake"
+                  @selectUser="selectUser"
+                  @minimize="hideListuserPanel = !hideListuserPanel"
+                  :selected-user-prop="selectedUser"
+                  :user-items="userItems"
+                />
               </v-card>
             </v-col>
             <!-- hide list panel -->
@@ -52,15 +49,19 @@
               }"
             >
               <v-card
+                class="px-0"
                 :style="{
                   height: `calc(100vh - 14vh)`,
                   marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
               >
-                <v-btn
-                  @click="hideListuserPanel = false"
-                  :icon="`mdi-chevron-right`"
+                <ListUserCompact
+                  class="shake"
+                  @selectUser="selectUser"
+                  @minimize="hideListuserPanel = !hideListuserPanel"
+                  :selected-user-prop="selectedUser"
+                  :user-items="userItems"
                 />
               </v-card>
             </v-col>
@@ -78,9 +79,14 @@
                   marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
-                >chat col
+              >
+                <ChatPanel
+                  :selected-user-prop="selectedUser"
+                  :is-change="isSelectedDataChange"
+                />
               </v-card>
             </v-col>
+            <!-- dashboard panel -->
             <v-col
               id="dashboard"
               :cols="windowWidth > 1280 ? 4 : windowWidth > 960 ? 4 : 12"
@@ -108,14 +114,146 @@
 </template>
 
 <script>
+import ChatPanel from "@/components/listen/chatPanel.vue";
+import ListUser from "@/components/listen/listUser.vue";
+import ListUserCompact from "@/components/listen/listUserCompact.vue";
+
 export default {
   name: "listen",
+  components: { ListUser, ListUserCompact, ChatPanel },
   data() {
     return {
       windowWidth: 0,
       windowHeight: 0,
       hideListuserPanel: false,
       testDash: false,
+      userItems: [
+        {
+          agent: "Agent1",
+          id: "888",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "T1_test_line_lastest_message",
+          messageType: "Closed Messages",
+          name: "T1_test_line",
+          priority: "medium",
+          provider: "line",
+          replyToken: null,
+          tag: "",
+          timestamp: "2023-04-03 17:00:04+07:00",
+        },
+        {
+          agent: "Agent2",
+          id: "999",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "T2_test_messenger_lastest_message",
+          messageType: "Closed Messages",
+          name: "T2_test_messenger",
+          priority: "medium",
+          provider: "messenger",
+          replyToken: null,
+          tag: "",
+          timestamp: "2023-04-03 17:00:04+07:00",
+        },
+        {
+          agent: "Agent3",
+          id: "111",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "T3_test_instagram_lastest_message",
+          messageType: "Closed Messages",
+          name: "T3_test_instagram",
+          priority: "low",
+          provider: "instagram",
+          replyToken: null,
+          tag: "",
+          timestamp: "2023-04-03 17:00:04+07:00",
+        },
+        {
+          agent: "Agent4",
+          id: "222",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "T4_test_tiktok_lastest_message",
+          messageType: "Closed Messages",
+          name: "T4_test_tiktok",
+          priority: "low",
+          provider: "tiktok",
+          replyToken: null,
+          tag: "",
+          timestamp: "2023-04-03 17:00:04+07:00",
+        },
+        {
+          agent: "Agent4",
+          id: "8989123897",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "T4_test_tiktok_lastest_message",
+          messageType: "Closed Messages",
+          name: "T5_test_line",
+          priority: "low",
+          provider: "tiktok",
+          replyToken: null,
+          tag: "",
+          timestamp: "2024-07-18 13:22:40.086815+07:00",
+        },
+        {
+          agent: "Me",
+          id: "982349299",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "Hi",
+          messageType: "Closed Messages",
+          name: "BAS",
+          priority: "high",
+          provider: "line",
+          replyToken: null,
+          tag: "VIP",
+          timestamp: "2023-04-03 17:00:04+07:00",
+        },
+        {
+          agent: "Me",
+          id: "982349232",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "Hello",
+          messageType: "Opened Messages",
+          name: "Bamnardo",
+          priority: "high",
+          provider: "line",
+          replyToken: null,
+          tag: "VVIP",
+          timestamp: "2024-04-03 17:00:04+07:00",
+        },
+        {
+          agent: "Me",
+          id: "242378958",
+          img: "",
+          isUrgent: false,
+          lastestMsg: "Yoo !",
+          messageType: "Closed Messages",
+          name: "JobJoob",
+          priority: "high",
+          provider: "line",
+          replyToken: null,
+          tag: "VIP",
+          timestamp: "2024-04-03 17:00:04+07:00",
+        },
+      ],
+      //selectedUser
+      selectedUser: {
+        id: `-1`,
+        img: ``,
+        name: `untitled`,
+        tag: `untitled`,
+        priority: `untitled`,
+        lastestMsg: `untitled`,
+        timestamp: new Date(),
+        isUrgent: false,
+        provider: `untitled`,
+      },
+      isSelectedDataChange: false,
     };
   },
   mounted() {
@@ -134,15 +272,15 @@ export default {
       this.windowWidth = window.innerWidth;
       this.windowHeight = window.innerHeight;
     },
-    // Toggles the visibility of the first column
-    toggleFirstCol() {
-      this.isFirstColMinimized = !this.isFirstColMinimized;
-    },
     scrollTo(id) {
       const element = document.getElementById(id);
       if (element) {
         element.scrollIntoView({ behavior: "smooth" });
       }
+    },
+    selectUser(user, flag) {
+      this.selectedUser = user;
+      this.isSelectedDataChange = flag;
     },
   },
 };
