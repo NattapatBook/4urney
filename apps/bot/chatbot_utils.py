@@ -8,12 +8,15 @@ from apps.bot.chain_utils import get_multi_routing_chain
 
 def call_bot(message: str, df_routing_config: pd.DataFrame, MILVUS_URI: str, MILVUS_COLLECTION_NAME_DRONE: str):
     
-    embeddings = hugging_face_embeddings()
-    vectorstore = get_milvus_retriever(uri=MILVUS_URI, embeddings=embeddings, collection_name=MILVUS_COLLECTION_NAME_DRONE)
+    # embeddings = hugging_face_embeddings()
+    # vectorstore = get_milvus_retriever(uri=MILVUS_URI, embeddings=embeddings, collection_name=MILVUS_COLLECTION_NAME_DRONE)
     
-    docs = vectorstore.similarity_search(message, k=2)
-    contents = [doc.page_content for doc in docs]
-    retrieval_text = '\n'.join(contents)
+    # docs = vectorstore.similarity_search(message, k=2)
+    # contents = [doc.page_content for doc in docs]
+    # retrieval_text = '\n'.join(contents)
+    
+    # call get_retrieval api
+    retrieval_text = ''
     
     routing = "พูดคุยหรือสอบถามทั่วไป"
     
