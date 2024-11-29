@@ -23,7 +23,7 @@ def get_multi_routing_chain(routing, retrieval_text, df, model):
 
     template = str(df[df.routing == routing]['prompt'].values[0]) + '\n' + str(rag_text) + '\n' + str(qa_text)
 
-    print(template)
+    # print(template)
 
     prompt = PromptTemplate(input_variables=['history', 'input'], template=template)
 

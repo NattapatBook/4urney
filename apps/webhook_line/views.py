@@ -9,8 +9,9 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
+from langsmith import Client
 
-from apps.bot.chatbot_utils import call_bot
+from apps.bot.chatbot_utils import call_bot, set_anonymizer
 from apps.bot.connection_utils import execute_script, execute_to_df
 
 from apps.webhook_line.connector import get_username, reply_message
@@ -21,7 +22,12 @@ LINE_CHATBOT_API_KEY = os.environ.get('LINE_CHATBOT_API_KEY')
 LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
+OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 EMBEDDING_MODEL_API=os.environ.get('EMBEDDING_MODEL_API')
+LANGCHAIN_TRACING_V2=os.environ.get('LANGCHAIN_TRACING_V2')
+LANGCHAIN_ENDPOINT=os.environ.get('LANGCHAIN_ENDPOINT')
+LANGCHAIN_API_KEY=os.environ.get('LANGCHAIN_API_KEY')
+LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
 
 # Create your views here.
 @csrf_exempt
@@ -30,8 +36,10 @@ async def webhook(request: HttpRequest, uuid):
     # line_integration = LineIntegration.objects.get(uuid=uuid)
     # LINE_CHATBOT_API_KEY = line_integration.line_chatbot_api_key
     # LINE_CHANNEL_SECRET = line_integration.line_channel_secret
+    
+    client = Client(anonymizer=set_anonymizer())
 
-    print(request.headers)
+    # print(request.headers)
     try:
         assert request.method == 'POST'
         body = request.body
@@ -47,7 +55,7 @@ async def webhook(request: HttpRequest, uuid):
         message_type = event['message']['type']
         reply_token = event['replyToken']
         
-        df_routing_config = execute_to_df("""SELECT * FROM "4urney".routing_chain WHERE project_name = 'Drone';""")
+        df_routing_config = execute_to_df(f"""SELECT * FROM "4urney".routing_chain WHERE project_name = '{MILVUS_COLLECTION_NAME_DRONE}';""")
         
         df_user = execute_to_df(f"""SELECT * FROM "4urney".users WHERE id = '{user_id}';""")
         
@@ -60,11 +68,12 @@ async def webhook(request: HttpRequest, uuid):
                 message = event['message']["text"]
                 message_dt = event['timestamp']
                 
-                retrieval_text = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": MILVUS_COLLECTION_NAME_DRONE})
+                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": MILVUS_COLLECTION_NAME_DRONE})
                 
-                retrieval_text = retrieval_text.json()['retrieval_text']
+                retrieval_text = model_response.json()['retrieval_text']
+                routing = model_response.json()['routing']
 
-                responses_message = call_bot(message, retrieval_text, df_routing_config)
+                responses_message = call_bot(routing=routing, message=message, retrieval_text=retrieval_text, df_routing_config=df_routing_config)
 
                 if responses_message:
                     await reply_message(user_id,reply_token,responses_message,LINE_CHATBOT_API_KEY)
