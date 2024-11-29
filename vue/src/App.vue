@@ -23,7 +23,7 @@ onMounted(async () => {
   //nothing just meme
   console.log(
     "%c%s",
-    "font-size: 100px; color: #ff6347; background: #222; padding: 100px; text-align: center;",
+    "font-size: 13em; color: #ff6347; background: #222; padding: 100px; text-align: center;",
     "👀 I see you creeping... 😏 What you doing here? 🤔"
   );
 
