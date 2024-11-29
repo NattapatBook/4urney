@@ -200,10 +200,10 @@
 </template>
 
 <script>
-import line_logo from "@/assets/img/provider/line_logo.png";
-import messenger_logo from "@/assets/img/provider/messenger_logo.png";
-import instagram_logo from "@/assets/img/provider/instagram_logo.png";
-import tiktok_logo from "@/assets/img/provider/tiktok_logo.png";
+import line_icon from "@/assets/img/provider/line_icon.png";
+import messenger_icon from "@/assets/img/provider/messenger_icon.png";
+import instagram_icon from "@/assets/img/provider/instagram_icon.png";
+import tiktok_icon from "@/assets/img/provider/tiktok_icon.png";
 import DataError from "../tools/dataError.vue";
 export default {
   name: "Component_ListUser_Compact",
@@ -239,10 +239,10 @@ export default {
       isSelectedDataChange: false,
       //tools
       providerIcon: {
-        line: line_logo,
-        messenger: messenger_logo,
-        instagram: instagram_logo,
-        tiktok: tiktok_logo,
+        line: line_icon,
+        messenger: messenger_icon,
+        instagram: instagram_icon,
+        tiktok: tiktok_icon,
       },
     };
   },
