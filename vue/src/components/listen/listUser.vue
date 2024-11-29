@@ -1,6 +1,7 @@
 <template>
   <div :style="{ width: '100%', height: `100%` }">
     <v-card-text
+      class="px-1"
       :style="{
         display: `flex`,
         justifyContent: `space-between`,
@@ -340,7 +341,7 @@
                   :style="{
                     width: `15px`,
                     position: `absolute`,
-                    top: `40px`,
+                    top: `44px`,
                     left: `45px`,
                   }"
                   :src="providerIcon[item.provider]"
@@ -350,11 +351,12 @@
               <!--chat-alert-icon-->
               <div v-if="selectedUser && selectedUser.id !== item.id">
                 <v-icon
+                  class="pa-0"
                   :style="{
                     width: `15px`,
                     position: `absolute`,
-                    top: `10px`,
-                    left: `42px`,
+                    top: `13px`,
+                    left: `43px`,
                     // color: `rgb(254, 56, 147)`,
                     color:
                       item.priority === `high`

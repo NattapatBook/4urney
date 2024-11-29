@@ -10,7 +10,7 @@
     />
     <v-card-text
       id="chatContainer"
-      :style="{ height: `100%`, overflowY: `auto` }"
+      :style="{ height: `100%`, overflowY: `scroll` }"
     >
       <div
         v-for="(item, idx) in chatLogProp"

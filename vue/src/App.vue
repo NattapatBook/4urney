@@ -39,7 +39,10 @@ function sendmessage() {
 <template>
   <div id="app" :style="{ overflowX: 'hidden' }">
     <!-- Background -->
-    <div :class="currentPage === `landing` ? `` : `bg-wave`"></div>
+    <div
+      :class="currentPage === `landing` ? `` : `bg-wave`"
+      :style="{ minHeight: currentPage === `landing` ? `` : `100%` }"
+    ></div>
 
     <!-- LandingPage -->
     <transition name="fade" mode="out-in">
@@ -93,6 +96,7 @@ function sendmessage() {
 body {
   font-family: "Poppins", "Noto Sans Thai", sans-serif;
 }
+
 .background_app {
   overflow: hidden;
   /*background-color: #3a2d4b;*/
@@ -144,8 +148,6 @@ body {
   color: #ffffff;
   font-size: 1.5rem;
   text-align: center;
-  padding: 10px;
-  border-radius: 8px;
   position: absolute;
 }
 

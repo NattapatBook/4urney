@@ -45,33 +45,41 @@
                 )`,
               }"
             >
-              <v-toolbar-title>
+              <v-toolbar-title class="mx-0">
                 <div
                   :style="{
                     display: `flex`,
-                    alignItems: `center`,
+                    justifyContent: `space-between`,
                   }"
                 >
-                  <v-avatar>
-                    <img
-                      :style="{ height: `50px` }"
-                      src="@/assets/img/4urneyLogo.png"
-                    />
-                  </v-avatar>
-
-                  &nbsp;
-                  <span
+                  <div
+                    class="pl-4"
                     :style="{
-                      fontSize: `1.7rem`,
-                      color: `black`,
+                      display: `flex`,
+                      alignItems: `center`,
                     }"
-                    >4urney</span
                   >
+                    <v-avatar>
+                      <img
+                        :style="{ height: `50px` }"
+                        src="@/assets/img/4urneyLogo.png"
+                      />
+                    </v-avatar>
+
+                    &nbsp;
+                    <span
+                      :style="{
+                        fontSize: `1.7rem`,
+                        color: `black`,
+                      }"
+                      >4urney</span
+                    >
+                  </div>
+                  <div class="pr-4">
+                    <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
+                  </div>
                 </div>
               </v-toolbar-title>
-
-              <v-spacer></v-spacer>
-              <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
             </v-toolbar>
 
             <v-list

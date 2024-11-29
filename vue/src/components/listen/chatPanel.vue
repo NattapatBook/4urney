@@ -35,7 +35,7 @@
         <v-container class="px-2">
           <v-row>
             <!--user information-->
-            <v-col :style="{ display: `flex` }" cols="11" class="pa-2">
+            <v-col :style="{ display: `flex` }" cols="10" class="pa-2">
               <div :style="{ display: `flex`, alignItems: `center` }">
                 <!--user-->
                 <div>
@@ -60,7 +60,7 @@
                   :style="{
                     display: `flex`,
                     flexDirection: `column`,
-                    maxWidth: `calc(100%)`,
+                    maxWidth: `calc(70%)`,
                   }"
                 >
                   <span
@@ -71,13 +71,13 @@
                       fontWeight: `500`,
                       fontSize: `1.15rem`,
                     }"
-                    >{{ checkTextTooLong(selectedUser.name, 15) }}</span
+                    >{{ selectedUser.name }}</span
                   >
                 </div>
               </div>
             </v-col>
             <!--v-btn-->
-            <v-col cols="1" class="pa-2">
+            <v-col cols="2" class="pa-2">
               <div
                 :style="{
                   display: `flex`,
@@ -88,7 +88,7 @@
                 <v-menu transition="fab-transition" class="rounded-xl">
                   <template v-slot:activator="{ props }">
                     <v-btn
-                      class="mr-2"
+                      class="no-ripple"
                       icon="mdi-dots-vertical"
                       variant="text"
                       v-bind="props"
@@ -549,4 +549,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.no-ripple .v-ripple__container {
+  pointer-events: none !important;
+}
+</style>

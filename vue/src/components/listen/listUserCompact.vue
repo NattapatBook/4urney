@@ -1,6 +1,7 @@
 <template>
   <div :style="{ width: '100%', height: `100%` }">
     <v-card-text
+      class="px-1"
       :style="{
         display: `flex`,
         justifyContent: `center`,
@@ -27,7 +28,7 @@
     />
     <!-- list user -->
     <v-card-text
-      class="px-0"
+      class="px-0 pt-0"
       :style="{ height: `calc(100% - 80px)`, overflowY: `auto` }"
     >
       <v-card
@@ -79,8 +80,8 @@
                   :style="{
                     width: `15px`,
                     position: `absolute`,
-                    top: `40px`,
-                    left: `45px`,
+                    top: `35px`,
+                    left: `41px`,
                   }"
                   :src="providerIcon[item.provider]"
                   aspect-ratio="1"
@@ -92,8 +93,8 @@
                   :style="{
                     width: `15px`,
                     position: `absolute`,
-                    top: `10px`,
-                    right: `11px`,
+                    top: `5px`,
+                    right: `1px`,
                     // color: `rgb(254, 56, 147)`,
                     color:
                       item.priority === `high`

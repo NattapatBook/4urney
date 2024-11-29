@@ -7,14 +7,14 @@
       no-gutters
       :style="{
         height: `auto`,
-        minHeight: `100vh`,
+        minHeight: `100dvh`,
         width: `100%`,
         justifyItems: `center`,
       }"
     >
       <v-col cols="12">
-        <div :style="{ marginTop: `84px`, width: `100%` }">
-          <v-row class="ma-2">
+        <div :style="{ marginTop: `90px`, width: `100%` }">
+          <v-row class="ma-2" :style="{ paddingInline: `10px` }">
             <!-- list panel -->
             <v-col
               v-if="!hideListuserPanel"
@@ -24,7 +24,7 @@
             >
               <v-card
                 :style="{
-                  height: `calc(100vh - 14vh)`,
+                  height: `calc(100dvh - 110px)`,
                   marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
@@ -51,7 +51,7 @@
               <v-card
                 class="px-0"
                 :style="{
-                  height: `calc(100vh - 14vh)`,
+                  height: `calc(100dvh - 110px)`,
                   marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
@@ -70,19 +70,19 @@
               id="chatPanel"
               :class="fullscreen ? `pa-0` : `pa-1`"
               :style="{
-                height: fullscreen ? '100vh' : '',
+                height: fullscreen ? '100dvh' : '',
                 display: 'grid',
                 position: fullscreen ? 'fixed' : 'relative',
                 top: fullscreen ? '0' : '',
                 left: fullscreen ? '0' : '',
-                width: fullscreen ? '100vw' : 'auto',
+                width: fullscreen ? '100dvw' : 'auto',
                 zIndex: fullscreen ? '999' : '',
               }"
             >
               <v-card
                 :class="fullscreen ? `rounded-0` : ``"
                 :style="{
-                  height: fullscreen ? '100vh' : 'calc(100vh - 14vh)',
+                  height: fullscreen ? '100dvh' : `calc(100dvh - 110px)`,
                   marginBottom: windowWidth > 960 ? '0px' : '15px',
                   borderRadius: '8px',
                 }"
@@ -107,7 +107,7 @@
             >
               <v-card
                 :style="{
-                  height: `calc(100vh - 14vh)`,
+                  height: `calc(100dvh - 110px)`,
                   marginBottom: windowWidth > 960 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
