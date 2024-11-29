@@ -32,7 +32,7 @@
           alignItems: `center`,
         }"
       >
-        <v-container class="px-2">
+        <v-container class="px-2 mx-0" :style="{ maxWidth: `100%` }">
           <v-row>
             <!--user information-->
             <v-col :style="{ display: `flex` }" cols="10" class="pa-2">
