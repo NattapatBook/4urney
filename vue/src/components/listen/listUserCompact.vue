@@ -3,12 +3,16 @@
     <v-card-text
       :style="{
         display: `flex`,
-        justifyContent: `space-between`,
+        justifyContent: `center`,
+        alignItems: `center`,
         height: `80px`,
       }"
     >
       <div>
         <v-btn
+          :size="
+            windowWidth > 960 && windowWidth < 1400 ? `x-small` : `default`
+          "
           @click="minimizeComponents()"
           variant="tonal"
           icon=" mdi-chevron-right"
@@ -23,13 +27,13 @@
     />
     <!-- list user -->
     <v-card-text
-      class="pt-0 px-0"
+      class="px-0"
       :style="{ height: `calc(100% - 80px)`, overflowY: `auto` }"
     >
       <v-card
         @click="clickSelectUser(item)"
         elevation="0"
-        class="rounded-0"
+        class="rounded-0 pa-2"
         v-for="(item, idx) in sortUserItems()"
         :key="`listen_userItems_${item}_${idx}`"
         :style="{
@@ -41,72 +45,72 @@
               : `white`,
         }"
       >
-        <v-container>
-          <v-row>
-            <v-col
-              cols="12"
-              :style="{
-                height: `100%`,
-                display: `flex`,
-                alignItems: `center`,
-                justifyContent: `center`,
-                flexDirection: `column`,
-              }"
-            >
+        <!-- <v-container> -->
+        <v-row>
+          <v-col
+            cols="12"
+            :style="{
+              height: `100%`,
+              display: `flex`,
+              alignItems: `center`,
+              justifyContent: `center`,
+              flexDirection: `column`,
+            }"
+          >
+            <div>
+              <!--user avatar-->
               <div>
-                <!--user avatar-->
-                <div>
-                  <v-avatar>
-                    <v-img
-                      v-if="item.img"
-                      :src="item.img"
-                      aspect-ratio="1"
-                    ></v-img>
-                    <v-img
-                      v-else
-                      :src="`https://ui-avatars.com/api/?name=${item.name}`"
-                      aspect-ratio="1"
-                    ></v-img>
-                  </v-avatar>
-                </div>
-                <!--provider icon-->
-                <div>
+                <v-avatar>
                   <v-img
-                    :style="{
-                      width: `15px`,
-                      position: `absolute`,
-                      top: `40px`,
-                      left: `45px`,
-                    }"
-                    :src="providerIcon[item.provider]"
+                    v-if="item.img"
+                    :src="item.img"
                     aspect-ratio="1"
                   ></v-img>
-                </div>
-                <!--chat-alert-icon-->
-                <div v-if="selectedUser && selectedUser.id !== item.id">
-                  <v-icon
-                    :style="{
-                      width: `15px`,
-                      position: `absolute`,
-                      top: `10px`,
-                      right: `11px`,
-                      // color: `rgb(254, 56, 147)`,
-                      color:
-                        item.priority === `high`
-                          ? `#D6584D`
-                          : item.priority === `medium`
-                          ? `#ffa600`
-                          : item.priority === `low`
-                          ? `#5EB491`
-                          : ``,
-                    }"
-                  >
-                    <!-- mdi-chat-alert -->
-                    mdi-alert-circle
-                  </v-icon>
-                </div>
-                <!--priority-->
-                <!-- <div
+                  <v-img
+                    v-else
+                    :src="`https://ui-avatars.com/api/?name=${item.name}`"
+                    aspect-ratio="1"
+                  ></v-img>
+                </v-avatar>
+              </div>
+              <!--provider icon-->
+              <div>
+                <v-img
+                  :style="{
+                    width: `15px`,
+                    position: `absolute`,
+                    top: `40px`,
+                    left: `45px`,
+                  }"
+                  :src="providerIcon[item.provider]"
+                  aspect-ratio="1"
+                ></v-img>
+              </div>
+              <!--chat-alert-icon-->
+              <div v-if="selectedUser && selectedUser.id !== item.id">
+                <v-icon
+                  :style="{
+                    width: `15px`,
+                    position: `absolute`,
+                    top: `10px`,
+                    right: `11px`,
+                    // color: `rgb(254, 56, 147)`,
+                    color:
+                      item.priority === `high`
+                        ? `#D6584D`
+                        : item.priority === `medium`
+                        ? `#ffa600`
+                        : item.priority === `low`
+                        ? `#5EB491`
+                        : ``,
+                  }"
+                >
+                  <!-- mdi-chat-alert -->
+                  mdi-alert-circle
+                </v-icon>
+              </div>
+              <!--priority-->
+              <!-- <div
               v-if="item.priority"
               :style="{
                 position: `absolute`,
@@ -143,57 +147,57 @@
                 >
               </v-chip>
             </div> -->
-                <!--timestamp-->
-                <div
-                  class="mt-1"
+              <!--timestamp-->
+              <div
+                class="mt-1"
+                :style="{
+                  width: `100%`,
+                  display: `flex`,
+                  justifyContent: `center`,
+                }"
+              >
+                <v-chip
+                  size="x-small"
                   :style="{
                     width: `100%`,
                     display: `flex`,
                     justifyContent: `center`,
                   }"
                 >
-                  <v-chip
-                    size="x-small"
-                    :style="{
-                      width: `100%`,
-                      display: `flex`,
-                      justifyContent: `center`,
-                    }"
-                  >
-                    <v-tooltip text="Tooltip" location="bottom">
-                      <template v-slot:activator="{ props }">
-                        <div
-                          v-bind="props"
+                  <v-tooltip text="Tooltip" location="bottom">
+                    <template v-slot:activator="{ props }">
+                      <div
+                        v-bind="props"
+                        :style="{
+                          whiteSpace: `nowrap`,
+                          overflow: `hidden`,
+                          textOverflow: `ellipsis`,
+                          display: `flex`,
+                          justifyContent: `center`,
+                          alignItems: `center`,
+                        }"
+                      >
+                        <!-- <v-icon :style="{ fontSize: `0.8rem` }"
+                      >mdi-clock</v-icon
+                    >&nbsp; -->
+                        <span
                           :style="{
                             whiteSpace: `nowrap`,
                             overflow: `hidden`,
                             textOverflow: `ellipsis`,
-                            display: `flex`,
-                            justifyContent: `center`,
-                            alignItems: `center`,
                           }"
-                        >
-                          <!-- <v-icon :style="{ fontSize: `0.8rem` }"
-                      >mdi-clock</v-icon
-                    >&nbsp; -->
-                          <span
-                            :style="{
-                              whiteSpace: `nowrap`,
-                              overflow: `hidden`,
-                              textOverflow: `ellipsis`,
-                            }"
-                            >{{ timeSince(item.timestamp, true) }}
-                          </span>
-                        </div>
-                      </template>
-                      <span>{{ new Date(item.timestamp) }} </span>
-                    </v-tooltip>
-                  </v-chip>
-                </div>
+                          >{{ timeSince(item.timestamp, true) }}
+                        </span>
+                      </div>
+                    </template>
+                    <span>{{ new Date(item.timestamp) }} </span>
+                  </v-tooltip>
+                </v-chip>
               </div>
-            </v-col>
-          </v-row>
-        </v-container>
+            </div>
+          </v-col>
+        </v-row>
+        <!-- </v-container> -->
       </v-card>
     </v-card-text>
   </div>

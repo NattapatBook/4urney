@@ -20,6 +20,13 @@ const ws = createPersistentWebSocket("chat_center/chat/", (event) => {
   messages.value.push(event);
 });
 onMounted(async () => {
+  //nothing just meme
+  console.log(
+    "%c%s",
+    "font-size: 100px; color: #ff6347; background: #222; padding: 100px; text-align: center;",
+    "👀 I see you creeping... 😏 What you doing here? 🤔"
+  );
+
   console.log(ws);
 });
 const message = ref("");
@@ -124,7 +131,6 @@ body {
 .bg-wave {
   display: inline-block;
   width: 100%;
-  height: 100vh;
   background: linear-gradient(
     270deg,
     rgba(242, 195, 235, 1) 10%,

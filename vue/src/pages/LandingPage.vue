@@ -209,7 +209,7 @@
           class="landing-page"
           id="landingPage"
           :style="{
-            height: windowWidth > 960 ? `100vh` : `calc(100vh - 10vh)`,
+            height: windowWidth > 960 ? `100vh` : `calc(100vh - 8vh)`,
           }"
         >
           <v-col cols="9" sm="9" md="8" lg="8" xl="6" xxl="6">

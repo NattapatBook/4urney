@@ -68,21 +68,30 @@
             <!-- chat panel -->
             <v-col
               id="chatPanel"
-              class="pa-1"
+              :class="fullscreen ? `pa-0` : `pa-1`"
               :style="{
-                height: `100%`,
+                height: fullscreen ? '100vh' : '',
+                display: 'grid',
+                position: fullscreen ? 'fixed' : 'relative',
+                top: fullscreen ? '0' : '',
+                left: fullscreen ? '0' : '',
+                width: fullscreen ? '100vw' : 'auto',
+                zIndex: fullscreen ? '999' : '',
               }"
             >
               <v-card
+                :class="fullscreen ? `rounded-0` : ``"
                 :style="{
-                  height: `calc(100vh - 14vh)`,
-                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
-                  borderRadius: `8px`,
+                  height: fullscreen ? '100vh' : 'calc(100vh - 14vh)',
+                  marginBottom: windowWidth > 960 ? '0px' : '15px',
+                  borderRadius: '8px',
                 }"
               >
                 <ChatPanel
                   :selected-user-prop="selectedUser"
                   :is-change="isSelectedDataChange"
+                  :fullscreen="fullscreen"
+                  @fullscreen="fullscreen = !fullscreen"
                 />
               </v-card>
             </v-col>
@@ -254,6 +263,7 @@ export default {
         provider: `untitled`,
       },
       isSelectedDataChange: false,
+      fullscreen: false,
     };
   },
   mounted() {
@@ -279,8 +289,12 @@ export default {
       }
     },
     selectUser(user, flag) {
-      this.selectedUser = user;
+      const oldId = this.selectedUser.id;
+      this.selectedUser = user ? user : null;
       this.isSelectedDataChange = flag;
+      if (user && user.id !== `-1` && oldId !== user.id) {
+        this.scrollTo("chatPanel");
+      }
     },
   },
 };
