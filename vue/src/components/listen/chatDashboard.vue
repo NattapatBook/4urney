@@ -113,18 +113,24 @@
                   >
                     {{ camelCaseToTitleCase(key) }}
                   </p>
-                  <p
-                    :style="{
-                      textAlign: `start`,
-                      fontSize: `0.8rem`,
-                      width: `100%`,
-                      whiteSpace: `nowrap`,
-                      overflow: `hidden`,
-                      textOverflow: `ellipsis`,
-                    }"
-                  >
-                    {{ dashboardDataProp.userInformation[key] }}
-                  </p>
+                  <v-tooltip text="Tooltip" location="start">
+                    <template v-slot:activator="{ props }">
+                      <p
+                        v-bind="props"
+                        :style="{
+                          textAlign: `start`,
+                          fontSize: `0.8rem`,
+                          width: `100%`,
+                          whiteSpace: `nowrap`,
+                          overflow: `hidden`,
+                          textOverflow: `ellipsis`,
+                        }"
+                      >
+                        {{ dashboardDataProp.userInformation[key] }}
+                      </p>
+                    </template>
+                    <span> {{ dashboardDataProp.userInformation[key] }}</span>
+                  </v-tooltip>
                 </div>
               </v-col>
             </v-row>

@@ -209,7 +209,7 @@
           class="landing-page"
           id="landingPage"
           :style="{
-            height: `100dvh`,
+            height: windowHeight > 650 ? `100dvh` : `650px`,
           }"
         >
           <v-col cols="9" sm="9" md="8" lg="8" xl="6" xxl="6">
@@ -1339,6 +1339,7 @@
 
     <!-- Footer Section -->
     <v-footer
+      v-if="windowHeight > 650 || scrollPosition >= 60"
       app
       :style="{
         backgroundColor: `rgba(244, 244, 249, ${
