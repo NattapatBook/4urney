@@ -257,7 +257,7 @@
                           cursor: `pointer`,
                         }"
                       >
-                        <div class="text-start my-3">
+                        <div class="text-start my-3 hover-bounce rounded-pill">
                           <v-progress-circular
                             :rotate="0"
                             :color="
