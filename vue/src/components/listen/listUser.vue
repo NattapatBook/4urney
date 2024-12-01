@@ -29,6 +29,7 @@
       >
         <!--filter-->
         <v-menu
+          v-if="windowWidth >= 360"
           v-model="filterMenu"
           :close-on-content-click="false"
           transition="scale-transition"

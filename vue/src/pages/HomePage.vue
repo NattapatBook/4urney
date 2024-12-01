@@ -5,116 +5,115 @@
       align="center"
       class="bg-wave"
       no-gutters
-      :style="{ height: `100dvh`, width: `100%`, display: `flex` }"
+      :style="{
+        height: `auto`,
+        minHeight: `100dvh`,
+        width: `100%`,
+        display: `flex`,
+      }"
     >
-      <v-col
-        cols="12"
-        sm="12"
-        md="10"
-        lg="10"
-        xl="8"
-        xxl="8"
-        :style="{ height: `100%` }"
-      >
-        <div
-          :style="{ marginTop: `90px`, width: `100%`, paddingInline: `20px` }"
-        >
-          <v-card
-            class="rounded-xl"
-            :style="{ height: `calc(100dvh - 15dvh )` }"
-          >
-            <v-card-title>
-              <p class="gradient-text" :style="{ fontWeight: `bold` }">
-                "Explore Our Features"
-              </p>
-              <span :style="{ fontSize: `0.8rem`, color: `grey` }"
-                >Select a category to access tools for your goals.</span
+      <v-col cols="12" sm="12" md="10" lg="10" xl="8" xxl="8">
+        <div :style="{ marginTop: `90px`, width: `100%` }">
+          <v-row class="ma-2" :style="{ paddingInline: `10px` }">
+            <v-col cols="12" class="pa-1" :style="{ height: `100%` }">
+              <v-card
+                class="rounded-xl"
+                :style="{ height: `calc(100dvh - 110px)` }"
               >
-            </v-card-title>
-            <v-card-text
-              class="pa-4 mb-5"
-              :style="{
-                overflowY: `auto`,
-                overflowX: `hidden`,
-                maxHeight: `calc(100% - 100px)`,
-                width: `100%`,
-              }"
-            >
-              <div
-                :style="{ display: `flex`, flexDirection: `column` }"
-                v-for="(key, idx) in Object.keys(menu)"
-                :key="`main_menu_${key}_${idx}`"
-              >
-                <v-container>
-                  <p
-                    class="mb-2"
-                    :style="{
-                      display: `flex`,
-                      alignSelf: `start`,
-                      fontWeight: `bold`,
-                      fontSize: `1.1rem`,
-                    }"
-                  >
-                    {{ menuNamed(key) }}
+                <v-card-title>
+                  <p class="gradient-text" :style="{ fontWeight: `bold` }">
+                    "Explore Our Features"
                   </p>
-                  <v-row>
-                    <v-col
-                      class="mb-5"
-                      :style="{
-                        height: `15rem`,
-                        width: `15rem`,
-                        filter: item.disabled ? `grayscale(1)` : ``,
-                      }"
-                      :cols="
-                        windowWidth > 1500 ? 3 : windowWidth > 960 ? 6 : 12
-                      "
-                      v-for="item in menu[key]"
-                    >
-                      <v-card
-                        :elevation="item.disabled ? `0` : `3`"
-                        :disabled="item.disabled"
-                        @click="clickChangeMenu(item.link)"
-                        class="rounded-lg hover-tilt-glow-wave"
+                  <span :style="{ fontSize: `0.8rem`, color: `grey` }"
+                    >Select a category to access tools for your goals.</span
+                  >
+                </v-card-title>
+                <v-card-text
+                  class="pa-4 mb-5"
+                  :style="{
+                    overflowY: `auto`,
+                    overflowX: `hidden`,
+                    maxHeight: `calc(100% - 100px)`,
+                    width: `100%`,
+                  }"
+                >
+                  <div
+                    :style="{ display: `flex`, flexDirection: `column` }"
+                    v-for="(key, idx) in Object.keys(menu)"
+                    :key="`main_menu_${key}_${idx}`"
+                  >
+                    <v-container>
+                      <p
+                        class="mb-2"
                         :style="{
-                          height: `100%`,
-                          backgroundColor: item.disabled ? `lightgrey` : ``,
-                          filter: item.disabled ? `grayscale(1)` : ``,
+                          display: `flex`,
+                          alignSelf: `start`,
+                          fontWeight: `bold`,
+                          fontSize: `1.1rem`,
                         }"
                       >
-                        <v-card-text
+                        {{ menuNamed(key) }}
+                      </p>
+                      <v-row>
+                        <v-col
+                          class="mb-5"
                           :style="{
-                            display: `flex`,
-                            flexDirection: `column`,
-                            height: `100%`,
+                            height: `15rem`,
+                            width: `15rem`,
+                            filter: item.disabled ? `grayscale(1)` : ``,
                           }"
+                          :cols="
+                            windowWidth > 1500 ? 3 : windowWidth > 960 ? 6 : 12
+                          "
+                          v-for="item in menu[key]"
                         >
-                          <div>
-                            <v-icon
-                              class="gradient-text"
-                              :style="{ fontSize: `2.5rem` }"
-                              >{{ item.icon }}</v-icon
+                          <v-card
+                            :elevation="item.disabled ? `0` : `3`"
+                            :disabled="item.disabled"
+                            @click="clickChangeMenu(item.link)"
+                            class="rounded-lg hover-tilt-glow-wave"
+                            :style="{
+                              height: `100%`,
+                              backgroundColor: item.disabled ? `lightgrey` : ``,
+                              filter: item.disabled ? `grayscale(1)` : ``,
+                            }"
+                          >
+                            <v-card-text
+                              :style="{
+                                display: `flex`,
+                                flexDirection: `column`,
+                                height: `100%`,
+                              }"
                             >
-                          </div>
-                          <div class="long_text_wrap my-3">
-                            <span
-                              :style="{ fontSize: `1.2rem` }"
-                              :class="`gradient-text`"
-                              >{{ item.name }}</span
-                            >
-                          </div>
-                          <div>
-                            <span>{{
-                              truncateText(item.description, 100)
-                            }}</span>
-                          </div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </div>
-            </v-card-text>
-          </v-card>
+                              <div>
+                                <v-icon
+                                  class="gradient-text"
+                                  :style="{ fontSize: `2.5rem` }"
+                                  >{{ item.icon }}</v-icon
+                                >
+                              </div>
+                              <div class="long_text_wrap my-3">
+                                <span
+                                  :style="{ fontSize: `1.2rem` }"
+                                  :class="`gradient-text`"
+                                  >{{ item.name }}</span
+                                >
+                              </div>
+                              <div>
+                                <span>{{
+                                  truncateText(item.description, 100)
+                                }}</span>
+                              </div>
+                            </v-card-text>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
         </div>
       </v-col>
     </v-row>

@@ -16,6 +16,7 @@
     >
       <div class="text-center pa-4">
         <v-dialog
+          close-on-content-click="true"
           v-model="dialog"
           :transition="
             windowWidth > 960
@@ -33,7 +34,7 @@
             <v-btn icon="mdi-menu" v-bind="activatorProps"></v-btn>
           </template>
 
-          <v-card>
+          <v-card :style="{ overflowY: `hidden` }">
             <v-toolbar
               :style="{
                 background: `linear-gradient(
@@ -45,7 +46,7 @@
                 )`,
               }"
             >
-              <v-toolbar-title class="mx-0">
+              <v-toolbar-title class="mx-0" :style="{ width: `100dvw` }">
                 <div
                   :style="{
                     display: `flex`,
@@ -68,6 +69,7 @@
 
                     &nbsp;
                     <span
+                      v-if="windowWidth >= 360"
                       :style="{
                         fontSize: `1.7rem`,
                         color: `black`,
@@ -155,7 +157,10 @@
 
             <v-list-subheader>
               <v-card-text>
-                <span class="gradient-text" :style="{ fontSize: `0.8rem` }"
+                <span
+                  v-if="windowWidth >= 360"
+                  class="gradient-text"
+                  :style="{ fontSize: `0.8rem` }"
                   >4urney</span
                 >
                 <p class="gradient-text">Version 1.0.1 Beta (Demo Edition)</p>
@@ -165,7 +170,7 @@
           </v-card>
         </v-dialog>
       </div>
-      <v-app-bar-title>
+      <v-app-bar-title class="ma-0">
         <div
           :style="{
             display: `flex`,
@@ -186,7 +191,9 @@
               />
             </v-avatar>
             &nbsp;
-            <span :style="{ fontSize: `1.7rem` }">4urney</span>
+            <span v-if="windowWidth >= 360" :style="{ fontSize: `1.7rem` }"
+              >4urney</span
+            >
           </div>
         </div>
       </v-app-bar-title>
