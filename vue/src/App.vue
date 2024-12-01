@@ -37,7 +37,7 @@ function sendmessage() {
 </script>
 
 <template>
-  <div id="app" :style="{ overflowX: 'hidden' }">
+  <div id="app">
     <!-- Background -->
     <div
       :class="currentPage === `landing` ? `` : `bg-wave`"

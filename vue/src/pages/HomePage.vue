@@ -5,13 +5,24 @@
       align="center"
       class="bg-wave"
       no-gutters
-      :style="{ height: `100dvh`, width: `100%`, justifyItems: `center` }"
+      :style="{ height: `100dvh`, width: `100%`, display: `flex` }"
     >
-      <v-col cols="12" sm="12" md="10" lg="10" xl="8" xxl="8">
+      <v-col
+        cols="12"
+        sm="12"
+        md="10"
+        lg="10"
+        xl="8"
+        xxl="8"
+        :style="{ height: `100%` }"
+      >
         <div
           :style="{ marginTop: `90px`, width: `100%`, paddingInline: `20px` }"
         >
-          <v-card class="rounded-xl" :style="{ height: `calc(100vh - 115px)` }">
+          <v-card
+            class="rounded-xl"
+            :style="{ height: `calc(100dvh - 15dvh )` }"
+          >
             <v-card-title>
               <p class="gradient-text" :style="{ fontWeight: `bold` }">
                 "Explore Our Features"
@@ -34,16 +45,18 @@
                 v-for="(key, idx) in Object.keys(menu)"
                 :key="`main_menu_${key}_${idx}`"
               >
-                <p
-                  :style="{
-                    alignSelf: `start`,
-                    fontWeight: `bold`,
-                    fontSize: `1.1rem`,
-                  }"
-                >
-                  {{ menuNamed(key) }}
-                </p>
                 <v-container>
+                  <p
+                    class="mb-2"
+                    :style="{
+                      display: `flex`,
+                      alignSelf: `start`,
+                      fontWeight: `bold`,
+                      fontSize: `1.1rem`,
+                    }"
+                  >
+                    {{ menuNamed(key) }}
+                  </p>
                   <v-row>
                     <v-col
                       class="mb-5"

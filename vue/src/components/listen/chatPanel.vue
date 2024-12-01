@@ -159,11 +159,16 @@
       </v-card-text>
       <v-divider class="mx-3" />
       <!--chat panel-->
-      <div :style="{ height: `calc(100% - 80px - 72px)` }">
-        <Chat :chat-log-prop="chatLogs" :selected-user-props="selectedUser" />
+      <div :style="{ height: `calc(100% - 80px - 56px)` }">
+        <Chat
+          class="py-4"
+          :chat-log-prop="chatLogs"
+          :selected-user-props="selectedUser"
+        />
       </div>
       <!-- text field -->
       <v-card-text
+        class="pt-0"
         :class="
           selectedUser.messageType === `Closed Messages` ? `pb-0 mt-4` : ``
         "

@@ -941,7 +941,12 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#3a6b47` }"
+                            :style="{
+                              color: `#3a6b47`,
+                              whiteSpace: `nowrap`,
+                              overflow: `hidden`,
+                              textOverflow: `ellipsis`,
+                            }"
                           >
                             Starter Plan
                           </h3>
@@ -986,7 +991,12 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#3a5780` }"
+                            :style="{
+                              color: `#3a5780`,
+                              whiteSpace: `nowrap`,
+                              overflow: `hidden`,
+                              textOverflow: `ellipsis`,
+                            }"
                           >
                             Professional Plan
                           </h3>
@@ -1032,7 +1042,12 @@
                         <v-card-title class="justify-center">
                           <h3
                             class="font-weight-bold"
-                            :style="{ color: `#b7860c` }"
+                            :style="{
+                              color: `#b7860c`,
+                              whiteSpace: `nowrap`,
+                              overflow: `hidden`,
+                              textOverflow: `ellipsis`,
+                            }"
                           >
                             Enterprise Plan
                           </h3>

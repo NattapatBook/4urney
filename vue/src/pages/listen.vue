@@ -18,14 +18,14 @@
             <!-- list panel -->
             <v-col
               v-if="!hideListuserPanel"
-              :cols="windowWidth > 1280 ? 3 : windowWidth > 960 ? 4 : 12"
+              :cols="windowWidth > 1280 ? 3 : windowWidth > 1024 ? 4 : 12"
               class="pa-1"
               :style="{ height: `100%` }"
             >
               <v-card
                 :style="{
                   height: `calc(100dvh - 110px)`,
-                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
+                  marginBottom: windowWidth > 1024 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
               >
@@ -52,7 +52,7 @@
                 class="px-0"
                 :style="{
                   height: `calc(100dvh - 110px)`,
-                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
+                  marginBottom: windowWidth > 1024 ? `0px` : `15px`,
                   borderRadius: `8px`,
                 }"
               >
@@ -83,7 +83,7 @@
                 :class="fullscreen ? `rounded-0` : ``"
                 :style="{
                   height: fullscreen ? '100dvh' : `calc(100dvh - 110px)`,
-                  marginBottom: windowWidth > 960 ? '0px' : '15px',
+                  marginBottom: windowWidth > 1024 ? '0px' : '15px',
                   borderRadius: '8px',
                 }"
               >
@@ -98,21 +98,27 @@
             <!-- dashboard panel -->
             <v-col
               id="dashboard"
-              :cols="windowWidth > 1280 ? 4 : windowWidth > 960 ? 4 : 12"
+              :cols="windowWidth > 1280 ? 4 : windowWidth > 1024 ? 4 : 12"
               class="pa-1"
               :style="{
                 height: `100%`,
-                display: testDash ? `none` : ``,
+                display:
+                  !selectedUser || selectedUser.id === `-1` ? `none` : ``,
               }"
             >
               <v-card
                 :style="{
-                  height: `calc(100dvh - 110px)`,
-                  marginBottom: windowWidth > 960 ? `0px` : `15px`,
+                  height: windowWidth > 1024 ? `calc(100dvh - 110px)` : `100%`,
+                  marginBottom: windowWidth > 1024 ? `0px` : `15px`,
                   borderRadius: `8px`,
+                  overflowY: `auto`,
                 }"
               >
-                Dash
+                <ChatDashboard
+                  :selected-user-prop="selectedUser"
+                  :is-change="isSelectedDataChange"
+                  :dashboard-data-prop="dashboardData"
+                />
               </v-card>
             </v-col>
           </v-row>
@@ -123,19 +129,19 @@
 </template>
 
 <script>
+import ChatDashboard from "@/components/listen/chatDashboard.vue";
 import ChatPanel from "@/components/listen/chatPanel.vue";
 import ListUser from "@/components/listen/listUser.vue";
 import ListUserCompact from "@/components/listen/listUserCompact.vue";
 
 export default {
   name: "listen",
-  components: { ListUser, ListUserCompact, ChatPanel },
+  components: { ListUser, ListUserCompact, ChatPanel, ChatDashboard },
   data() {
     return {
       windowWidth: 0,
       windowHeight: 0,
       hideListuserPanel: false,
-      testDash: false,
       userItems: [
         {
           agent: "Agent1",
@@ -262,8 +268,33 @@ export default {
         isUrgent: false,
         provider: `untitled`,
       },
+      //
       isSelectedDataChange: false,
       fullscreen: false,
+      //dashboard
+      dashboardData: {
+        dissatisfaction: 3,
+        intentSummary: [
+          "ลูกค้าต้องการทราบสูตรปุ๋ยที่เหมาะสำหรับเร่งรากสัปปะรด",
+          "ลูกค้าสนใจเกี่ยวกับบอท เช่น เพศของบอท, บอททำงานที่ไหน",
+          "บอทเป็นส่วนหนึ่งของบริษัท Chia Tai Group Co.,Ltd. และมีหน้าที่ให้ข้อมูลเกี่ยวกับปุ๋ยและโดรน",
+          "ลูกค้ามีความสนใจที่จะสอบถามเกี่ยวกับปุ๋ยหรือโดรนจากบริษัท Chia Tai Group Co.,Ltd.",
+        ],
+        priority: "medium",
+        satisfaction: 75,
+        totalMessage: 189278342,
+        totalSession: 2123,
+        urgent: 30,
+        id: "U32afe3db274f527b57262faf86bb1359",
+        userInformation: {
+          birthday: "5/5/1985",
+          citizenId: "2 2000 00000 00 2",
+          email: "pasith@4plus.co.th",
+          gender: "Male",
+          name: "Pasith Thanapatpaisarn",
+          phoneNumber: "089-555-0101",
+        },
+      },
     };
   },
   mounted() {
