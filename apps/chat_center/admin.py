@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.db.models import OuterRef, Count
 
-from apps.chat_center.models import Organization, OrganizationMember
+from apps.chat_center.models import Organization, OrganizationMember, Customer, Message
+
 # from apps.chat_center.models import Customer, Case, Topic, TopicHandler
 
 
@@ -9,6 +10,8 @@ from apps.chat_center.models import Organization, OrganizationMember
 
 admin.site.register(Organization)
 admin.site.register(OrganizationMember)
+admin.site.register(Customer)
+admin.site.register(Message)
 # class CustomerAdmin(admin.ModelAdmin):
 #     list_display = ['platform_uid', 'id', 'platform', 'platform_name', 'case_count']
 #     list_display_links = ['platform_uid']
