@@ -18,7 +18,7 @@ urlpatterns = [
     path('admin_reply_post/', admin_reply_post),
     path('admin_reply_post_test/', admin_reply_post_test),
     path('change_message_type/', change_message_type),
-    path('change_message_typr_test/', change_message_type_test),
+    path('change_message_type_test/', change_message_type_test),
     path('list_dashboard/<id>', list_dashboard),
     path('list_dashboard_test/<id>', list_dashboard_test),
     path('get_user/', get_user_detail)
