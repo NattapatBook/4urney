@@ -449,7 +449,7 @@ export default {
     },
     clickLogout() {
       axios
-        .get(`api/chat_center/logout/`)
+        .get(`api/control/logout/`)
         .then((res) => {
           console.log(res.data);
           this.$emit("navigate", "landing");

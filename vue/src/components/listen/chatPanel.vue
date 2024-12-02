@@ -336,7 +336,7 @@ export default {
     },
     getListMessage(id) {
       axios
-        .get(`api/chat_center/list_message/${id}`)
+        .get(`api/chat_center/list_message_test/${id}`)
         .then((res) => {
           console.log(res.data);
           this.chatLogs = res.data.chatLogs;

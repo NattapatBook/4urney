@@ -217,7 +217,7 @@ export default {
     //getData
     getListUser() {
       axios
-        .get(`api/chat_center/list_user/`)
+        .get(`api/chat_center/list_user_test/`)
         .then((res) => {
           console.log(res.data);
           this.userItems = res.data;
@@ -228,7 +228,7 @@ export default {
     },
     getListDashboard(id) {
       axios
-        .get(`api/chat_center/list_dashboard/${id}`)
+        .get(`api/chat_center/list_dashboard_test/${id}`)
         .then((res) => {
           console.log(res.data);
           this.dashboardData = res.data;
