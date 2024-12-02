@@ -430,15 +430,13 @@ def list_dashboard_test(request, id):
         return JsonResponse({"error": "Dashboard not found"}, status=400)
 
     response_data = {
-        "dashboard": {
-            "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
-            "intentSummary": [dashboard.intentsummary] if dashboard.intentsummary else [],
-            "priority": dashboard.priority if dashboard.priority else None,
-            "satisfaction": dashboard.satisfaction if dashboard.satisfaction is not None else 0,
-            "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
-            "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
-            "urgent": dashboard.urgent if dashboard.urgent is not None else 0
-        },
+        "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
+        "intentSummary": [dashboard.intentsummary] if dashboard.intentsummary else [],
+        "priority": dashboard.priority if dashboard.priority else None,
+        "satisfaction": dashboard.satisfaction if dashboard.satisfaction is not None else 0,
+        "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
+        "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
+        "urgent": dashboard.urgent if dashboard.urgent is not None else 0,
         "id": dashboard.id,
         "userInformation": {
             "birthday": dashboard.birthday if dashboard.birthday else "untitled",
