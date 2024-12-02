@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import AppLayout from "./components/layouts/AppLayout.vue";
+import axios from "axios";
 
 import LandingPage from "./pages/LandingPage.vue";
 
@@ -26,13 +27,26 @@ onMounted(async () => {
     "font-size: 13em; color: #ff6347; background: #222; padding: 100px; text-align: center;",
     "👀 I see you creeping... 😏 What you doing here? 🤔"
   );
-
+  //checkLogin
+  checkLogin();
   console.log(ws);
 });
 const message = ref("");
 function sendmessage() {
   ws.send(message.value);
   message.value = "";
+}
+
+function checkLogin() {
+  axios
+    .get(`api/chat_center/get_user/`)
+    .then((res) => {
+      console.log(res.data);
+      currentPage.value = `home`;
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 }
 </script>
 
