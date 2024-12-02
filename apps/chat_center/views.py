@@ -13,11 +13,13 @@ import requests
 import pytz
 from datetime import datetime
 
+from openai import organization
 from rest_framework import status
 from rest_framework.response import Response
 from twisted.python.runtime import platform
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard
+from apps.webhook_line.models import LineIntegration
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -189,12 +191,13 @@ def admin_reply_post(request):
     conn.close()
     return JsonResponse(formatted_data, safe=False)
 
+@csrf_exempt
 def admin_reply_post_test(request):
     data = json.loads(request.body)
     id = data.get('id')
     message = data.get('message')
 
-    user_id = request.session.get('user_id')
+    username = request.user
 
     if not id or not message:
         return JsonResponse({"error": "Missing 'id' or 'message' in request"}, status=400)
@@ -204,7 +207,7 @@ def admin_reply_post_test(request):
         return JsonResponse({"error": "Customer not found"}, status=400)
 
     try:
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(username=username)
     except User.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=400)
 
@@ -217,6 +220,8 @@ def admin_reply_post_test(request):
         organization_id=customer.organization_id,
     )
 
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id).first().line_chatbot_api_key
     Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
 
     headers = {
@@ -464,3 +469,4 @@ def get_user_detail(request):
     else:
         return JsonResponse({"detail": "Authentication credentials were not provided."},
                         status=status.HTTP_401_UNAUTHORIZED)
+
