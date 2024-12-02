@@ -16,7 +16,7 @@ from datetime import datetime
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.chat_center.models import User, OrganizationMember
+from apps.chat_center.models import User, OrganizationMember, Customer, Message
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -53,9 +53,27 @@ def list_user(request):
 
 @login_required
 def list_user_test(request):
-    users = User.objects.all()
-    data = serialize('json', users)
-    return JsonResponse(data, safe=False)
+    customers = Customer.objects.all()
+    customer_list = []
+    for customer in customers:
+        customer_data = {
+            "id": customer.platform_id,
+            "img": customer.img if customer.img else "",
+            "name": customer.name if customer.name else "",
+            "tag": customer.tag if customer.tag else "",
+            "priority": customer.priority if customer.priority else "",
+            "lastestMsg": customer.lastest_msg if customer.lastest_msg else "",
+            "timestamp": customer.timestamp.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if customer.timestamp else "",
+            "isUrgent": customer.is_urgent if customer.is_urgent is not None else False,
+            "provider": customer.provider if customer.provider else "",
+            "agent": customer.agent if customer.agent else "",
+            "messageType": customer.message_type if customer.message_type else "",
+            "replyToken": customer.reply_token if customer.reply_token else None
+        }
+        customer_list.append(customer_data)
+
+    # Return the response as JSON
+    return JsonResponse(customer_list, safe=False)
 
 def list_message(request, user_id):
     conn = psycopg2.connect(**DB_CONFIG)
@@ -87,6 +105,33 @@ def list_message(request, user_id):
     conn.close()
 
     return JsonResponse(data, safe=False)
+
+def list_message_test(request, user_id):
+    try:
+        customer = Customer.objects.get(platform_id=user_id)
+        message_type = customer.message_type if customer.message_type else "Unknown Message Type"
+    except Customer.DoesNotExist:
+        return JsonResponse({"error": "Customer not found"}, status=400)
+    messages = Message.objects.filter(platform_id=customer).order_by('timestamp')
+    chat_logs = []
+    for message in messages:
+        if message.timestamp:
+            message_timestamp = message.timestamp.astimezone(tz)
+            timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+        else:
+            timestamp_str = ""
+        chat_log = {
+            "id": message.platform_id.platform_id if message.platform_id else "",  # Link to the customer platform_id
+            "msg": message.message if message.message else "",
+            "by": message.by if message.by else "unknown",
+            "timestamp": timestamp_str
+        }
+        chat_logs.append(chat_log)
+    response_data = {
+        "messageType": message_type,
+        "chatLogs": chat_logs
+    }
+    return JsonResponse(response_data, safe=False)
 
 def admin_reply_post(request):
     data = request.data
@@ -143,6 +188,68 @@ def admin_reply_post(request):
     conn.close()
     return JsonResponse(formatted_data, safe=False)
 
+def admin_reply_post_test(request):
+    data = json.loads(request.body)
+    id = data.get('id')
+    message = data.get('message')
+
+    user_id = request.session.get('user_id')
+
+    if not id or not message:
+        return JsonResponse({"error": "Missing 'id' or 'message' in request"}, status=400)
+    try:
+        customer = Customer.objects.get(platform_id=id)
+    except Customer.DoesNotExist:
+        return JsonResponse({"error": "Customer not found"}, status=400)
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=400)
+
+    new_message = Message.objects.create(
+        platform_id=customer,
+        message=message,
+        by='admin',
+        user=user,
+        timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+        organization_id=customer.organization_id,
+    )
+
+    Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
+
+    headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': Authorization
+    }
+
+    data_to_send = {
+        "to": id,
+        "messages": [
+            {
+                "type": "text",
+                "text": message
+            }
+        ]
+    }
+
+    response = requests.post(LINE_API, headers=headers, data=json.dumps(data_to_send))
+
+    messages = Message.objects.filter(platform_id=customer).order_by('-timestamp')
+
+    tz = pytz.timezone('Asia/Bangkok')  # Ensure the timezone for formatting timestamps
+    formatted_data = []
+    for msg in messages:
+        formatted_data.append({
+            "id": msg.platform_id.platform_id if msg.platform_id else "",
+            "msg": msg.message if msg.message else "",
+            "by": msg.by if msg.by else "",
+            "timestamp": msg.timestamp.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z"),
+            "user": msg.user.username if msg.user else ""
+        })
+
+    return JsonResponse(formatted_data, safe=False)
+
 def change_message_type(request):
     if request.method == 'POST':
         data = request.json()
@@ -195,6 +302,55 @@ def change_message_type(request):
             conn.close()
 
             return JsonResponse({'messageType': 'Closed Messages', 'listUser': formatted_data})
+
+def change_message_type_test(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = data.get('id')
+        message_type = data.get('messageType')
+
+        if not id or not message_type:
+            return JsonResponse({'error': 'Missing required parameters'}, status=400)
+
+        try:
+            customer = Customer.objects.get(platform_id=id)
+        except Customer.DoesNotExist:
+            return JsonResponse({'error': 'Customer not found'}, status=404)
+
+        if message_type == 'Closed Messages':
+            customer.message_type = 'Opened Messages'
+            customer.save()
+
+            customers = Customer.objects.filter(message_type='Opened Messages')
+            customers_data = [{
+                'platform_id': customer.platform_id,
+                'messageType': customer.message_type,
+                'timestamp': customer.timestamp.astimezone(tz).strftime(
+                    "%Y-%m-%d %H:%M:%S%z"),
+                'name': customer.name,  # Include any other fields you need
+                'tag': customer.tag,
+                'priority': customer.priority
+            } for customer in customers]
+
+            return JsonResponse({'messageType': 'Opened Messages', 'listCustomer': customers_data})
+        elif message_type == 'Opened Messages':
+            customer.message_type = 'Closed Messages'
+            customer.save()
+
+            customers = Customer.objects.filter(message_type='Closed Messages')
+            customers_data = [{
+                'platform_id': customer.platform_id,
+                'messageType': customer.message_type,
+                'timestamp': customer.timestamp.astimezone(tz).strftime(
+                    "%Y-%m-%d %H:%M:%S%z"),
+                'name': customer.name,  # Include any other fields you need
+                'tag': customer.tag,
+                'priority': customer.priority
+            } for customer in customers]
+
+            return JsonResponse({'messageType': 'Closed Messages', 'listCustomer': customers_data})
+        else:
+            return JsonResponse({'error': 'Invalid messageType'}, status=400)
 
 def list_dashboard(request, id):
     print(id)

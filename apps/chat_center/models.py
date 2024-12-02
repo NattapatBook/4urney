@@ -199,3 +199,22 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.by} at {self.timestamp}"
+
+class Dashboard(models.Model):
+    platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=1000, null=True, blank=True)
+    gender = models.CharField(max_length=1000, null=True, blank=True)
+    phonenumber = models.CharField(max_length=1000, null=True, blank=True)
+    citizenid = models.CharField(max_length=1000, null=True, blank=True)
+    birthday = models.CharField(max_length=1000, null=True, blank=True)
+    email = models.CharField(max_length=1000, null=True, blank=True)
+    satisfaction = models.IntegerField(null=True, blank=True)
+    dissatisfaction = models.IntegerField(null=True, blank=True)
+    totalsession = models.IntegerField(null=True, blank=True)
+    totalmessage = models.IntegerField(null=True, blank=True)
+    urgent = models.IntegerField(null=True, blank=True)
+    priority = models.CharField(max_length=1000, null=True, blank=True)
+    intentsummary = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name if self.name else self.id
