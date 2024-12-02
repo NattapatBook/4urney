@@ -7,12 +7,12 @@
             icon
           }}</v-icon>
         </p>
-        <p :style="{ fontSize: '0.8rem', color: `${textColor}` }">
+        <p :style="{ fontSize: `${messageSize}`, color: `${textColor}` }">
           {{ message }}
         </p>
         <p
           v-if="subMessage"
-          :style="{ fontSize: '0.8rem', color: `${textColor}` }"
+          :style="{ fontSize: `${subMessageSize}`, color: `${textColor}` }"
         >
           {{ subMessage }}
         </p>
@@ -35,6 +35,14 @@ export default {
     },
     iconSize: {
       default: ``,
+      type: String,
+    },
+    messageSize: {
+      default: `0.8rem`,
+      type: String,
+    },
+    subMessageSize: {
+      default: `0.8rem`,
       type: String,
     },
     textColor: {

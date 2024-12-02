@@ -226,7 +226,7 @@ export default {
           console.error(err);
         });
     },
-    getListDashboard() {
+    getListDashboard(id) {
       axios
         .get(`api/chat_center/list_dashboard/${id}`)
         .then((res) => {

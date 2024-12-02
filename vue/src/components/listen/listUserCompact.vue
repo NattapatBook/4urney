@@ -25,6 +25,8 @@
       :style="{ height: `calc(100% - 80px)` }"
       v-if="userItems.length < 1"
       :message="`No Data`"
+      :messageSize="`0.5rem`"
+      :iconSize="`2rem`"
     />
     <!-- list user -->
     <v-card-text

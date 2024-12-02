@@ -11,6 +11,8 @@ import { createPersistentWebSocket } from "@/utils/websocket";
 import Listen from "./pages/listen.vue";
 
 const currentPage = ref("landing");
+//dev test - by pass login
+//const currentPage = ref("home");
 
 function navigateTo(page) {
   currentPage.value = page;
