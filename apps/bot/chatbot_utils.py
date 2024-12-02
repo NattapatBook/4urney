@@ -7,13 +7,13 @@ from apps.bot.routing_utils import intent_routing_using_huggingface #  for furth
 from apps.bot.model_utils import get_openai_model
 from apps.bot.chain_utils import get_multi_routing_chain
 
-def call_bot(routing: str, message: str, retrieval_text: str, df_routing_config: pd.DataFrame):
+def call_bot(chat_history: str, routing: str, message: str, retrieval_text: str, df_routing_config: pd.DataFrame):
     
     # routing = "พูดคุยหรือสอบถามทั่วไป"
     
-    conversation = get_multi_routing_chain(routing=routing, retrieval_text=retrieval_text, df=df_routing_config, model=get_openai_model())
+    prompt_template = get_multi_routing_chain(chat_history=chat_history, routing=routing, retrieval_text=retrieval_text, df=df_routing_config, model=get_openai_model())
     
-    reply_message = conversation.predict(input=message)
+    reply_message = prompt_template.invoke({"input": message})
     
     return reply_message
 

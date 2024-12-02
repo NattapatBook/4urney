@@ -1,37 +1,35 @@
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferWindowMemory
 
-def get_multi_routing_chain(routing, retrieval_text, df, model):
+def get_multi_routing_chain(chat_history, routing, retrieval_text, df, model):
     """
     Multi-routing RAG chain
     """
 
-    memory=ConversationBufferWindowMemory(k=5)
-
     rag_text = f"""
+    # Current conversation: 
+        {chat_history}
+        
     # Your knowledge: 
         {retrieval_text}
     """
 
     qa_text = """
-    # Current conversation: 
-        {history}
-
-        {input}
+    Question: {input}
+    Answer: 
     """
 
     template = str(df[df.routing == routing]['prompt'].values[0]) + '\n' + str(rag_text) + '\n' + str(qa_text)
 
     # print(template)
 
-    prompt = PromptTemplate(input_variables=['history', 'input'], template=template)
+    prompt_template = PromptTemplate(template=template, input_variables=['input'])
 
-    conversation = ConversationChain(
-        llm=model,
-        prompt=prompt,
-        verbose=False,
-        memory=memory
-    )
+    # conversation = ConversationChain(
+    #     llm=model,
+    #     prompt=prompt,
+    #     verbose=False
+    # )
+    prompt_and_model = prompt_template | model
 
-    return conversation
+    return prompt_and_model
