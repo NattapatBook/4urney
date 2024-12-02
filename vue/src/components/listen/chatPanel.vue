@@ -129,6 +129,7 @@
                     </v-list-item>
                     <v-list-item class="pa-0">
                       <v-card
+                        @click="clickChangeMessageType()"
                         class="pa-4"
                         elevation="0"
                         :style="{
@@ -200,6 +201,28 @@
         ></v-text-field>
       </v-card-text>
     </div>
+    <!--snackbar-->
+    <v-snackbar
+      v-model="snackbarAlert"
+      timeout="5000"
+      :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
+      location="top"
+      location-strategy="connected"
+    >
+      <span>
+        <v-icon v-if="snackbarSuccess"
+          >mdi-checkbox-marked-circle-outline</v-icon
+        >
+        <v-icon v-else>mdi-alert-circle</v-icon>
+        {{ snackbarMsg }}
+      </span>
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="white" text v-bind="attrs" @click="snackbarAlert = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -258,6 +281,10 @@ export default {
       msgBox: ``,
       chatLogs: [],
       messageType: `Closed Messages`,
+      //snackbar
+      snackbarAlert: false,
+      snackbarSuccess: false,
+      snackbarMsg: "untitled",
     };
   },
   mounted() {
@@ -328,8 +355,23 @@ export default {
       }
     },
     clickSendMsg() {
-      alert(this.msgBox);
-      this.msgBox = ``;
+      axios
+        .post(`api/chat_center/admin_reply_post_test/`, {
+          id: this.selectedUser.id,
+          message: `${this.msgBox}`,
+        })
+        .then((res) => {
+          console.log(res.data);
+          this.msgBox = ``;
+          //update message then scroll to bottom
+          //this.scrollToBottom()
+        })
+        .catch((err) => {
+          console.error(err);
+          this.snackbarMsg = err;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
+        });
     },
     clickFullScreen() {
       this.$emit(`fullscreen`);
@@ -344,6 +386,26 @@ export default {
         })
         .catch((err) => {
           console.error(err);
+        });
+    },
+    clickChangeMessageType() {
+      axios
+        .post(`api/chat_center/change_message_type_test/`, {
+          id: this.selectedUser.id,
+          messageType: this.messageType,
+        })
+        .then((res) => {
+          console.log(res.data);
+          this.messageType = res.data.messageType;
+          this.snackbarMsg = `${this.selectedUser.name}'s chat session has been successfully ${res.data.messageType}`;
+          this.snackbarSuccess = true;
+          this.snackbarAlert = true;
+        })
+        .catch((err) => {
+          console.error(err);
+          this.snackbarMsg = err;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
         });
     },
   },
