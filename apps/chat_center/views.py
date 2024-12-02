@@ -431,7 +431,7 @@ def list_dashboard_test(request, id):
 
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
-        "intentSummary": [dashboard.intentsummary] if dashboard.intentsummary else [],
+        "intentSummary": eval(dashboard.intentsummary) if dashboard.intentsummary else [],
         "priority": dashboard.priority if dashboard.priority else None,
         "satisfaction": dashboard.satisfaction if dashboard.satisfaction is not None else 0,
         "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
