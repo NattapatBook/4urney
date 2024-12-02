@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 
 # from apps.chat_center.views import my_api, CustomerViewSet
 from apps.chat_center.views import list_user, list_message, admin_reply_post, change_message_type, list_user_test, \
-    list_dashboard, get_user_detail, list_message_test, admin_reply_post_test, change_message_type_test
+    list_dashboard, get_user_detail, list_message_test, admin_reply_post_test, change_message_type_test, \
+    list_dashboard_test
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -19,6 +20,7 @@ urlpatterns = [
     path('change_message_type/', change_message_type),
     path('change_message_typr_test/', change_message_type_test),
     path('list_dashboard/<id>', list_dashboard),
+    path('list_dashboard_test/<id>', list_dashboard_test),
     path('get_user/', get_user_detail)
     # *router.urls,
 ]

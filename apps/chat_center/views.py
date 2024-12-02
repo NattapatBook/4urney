@@ -15,8 +15,9 @@ from datetime import datetime
 
 from rest_framework import status
 from rest_framework.response import Response
+from twisted.python.runtime import platform
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -415,6 +416,36 @@ def list_dashboard(request, id):
             }
         }
         return JsonResponse(data, safe=False)
+
+def list_dashboard_test(request, id):
+    # Fetch the dashboard data (assuming you're querying a single record, e.g., the one with id="-1")
+    try:
+        dashboard = Dashboard.objects.get(platform_id=id)
+    except Dashboard.DoesNotExist:
+        return JsonResponse({"error": "Dashboard not found"}, status=400)
+
+    response_data = {
+        "dashboard": {
+            "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
+            "intentSummary": [dashboard.intentsummary] if dashboard.intentsummary else [],
+            "priority": dashboard.priority if dashboard.priority else None,
+            "satisfaction": dashboard.satisfaction if dashboard.satisfaction is not None else 0,
+            "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
+            "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
+            "urgent": dashboard.urgent if dashboard.urgent is not None else 0
+        },
+        "id": dashboard.id,
+        "userInformation": {
+            "birthday": dashboard.birthday if dashboard.birthday else "untitled",
+            "citizenId": dashboard.citizenid if dashboard.citizenid else "untitled",
+            "email": dashboard.email if dashboard.email else "untitled",
+            "gender": dashboard.gender if dashboard.gender else "untitled",
+            "name": dashboard.name if dashboard.name else "untitled",
+            "phoneNumber": dashboard.phonenumber if dashboard.phonenumber else "untitled"
+        }
+    }
+
+    return JsonResponse(response_data)
 
 def get_user_detail(request):
     if request.user.is_authenticated:
