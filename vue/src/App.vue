@@ -79,7 +79,7 @@ function checkLogin() {
     <transition name="fade" mode="out-in">
       <AppLayout
         v-if="currentPage !== 'landing'"
-        :user="{}"
+        :user="userData"
         @navigate="navigateTo"
       >
         <transition name="minimal-fade" mode="out-in">
