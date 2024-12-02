@@ -133,7 +133,7 @@ async def webhook(request: HttpRequest, uuid):
     user_new_message = await sync_to_async(Message.objects.create)(
         platform_id=customer,
         message=message,
-        by='user',
+        by='customer',
         # user=None,
         timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
         organization_id=organization,
