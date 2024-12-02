@@ -22,8 +22,6 @@ from apps.webhook_line.verification import verify_line_signature
 from apps.webhook_line.models import LineIntegration
 from apps.chat_center.models import Message, Customer, Organization
 
-# LINE_CHATBOT_API_KEY = os.environ.get('LINE_CHATBOT_API_KEY')
-# LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
@@ -36,7 +34,6 @@ LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
 # Create your views here.
 @csrf_exempt
 async def webhook(request: HttpRequest, uuid):
-    
     line_integration = await sync_to_async(LineIntegration.objects.get)(uuid=uuid)
     LINE_CHATBOT_API_KEY = line_integration.line_chatbot_api_key
     LINE_CHANNEL_SECRET = line_integration.line_channel_secret
@@ -56,6 +53,7 @@ async def webhook(request: HttpRequest, uuid):
         data = None
 
     if data:
+        # print(data)
         event = data['events'][0]
         user_id = event['source']['userId']
         message_type = event['message']['type']

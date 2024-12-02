@@ -2,8 +2,6 @@ import os
 import pandas as pd
 from langsmith.anonymizer import create_anonymizer
 
-from apps.bot.rag_utils import hugging_face_embeddings, get_milvus_retriever
-from apps.bot.routing_utils import intent_routing_using_huggingface #  for further development
 from apps.bot.model_utils import get_openai_model
 from apps.bot.chain_utils import get_multi_routing_chain
 
