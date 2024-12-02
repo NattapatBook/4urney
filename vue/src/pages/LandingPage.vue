@@ -195,7 +195,7 @@
       <v-btn
         class="get-login-btn rounded-lg px-5 py-2"
         color="primary"
-        @click="$emit('navigate', 'home')"
+        @click="clickLogin()"
         >Login</v-btn
       >
     </div>
@@ -422,6 +422,7 @@
                         color="primary"
                         elevation="10"
                         :style="{ width: `15em` }"
+                        @click="clickLogin()"
                       >
                         Login
                       </v-btn>
@@ -1461,7 +1462,12 @@
           <!-- <v-btn text @click="interestingDialog = false">Cancel</v-btn> -->
           <div
             class="pa-10"
-            :style="{ display: `flex`, justifyContent: `center` }"
+            :style="{
+              display: `flex`,
+              justifyContent: `center`,
+              alignItems: `center`,
+              width: `100%`,
+            }"
           >
             <v-btn
               @click="clickInterestingRequest()"
@@ -1608,6 +1614,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
@@ -1944,6 +1951,16 @@ export default {
       this.snackbarMsg = `Success! We'll contact you as soon as possible.`;
       this.snackbarSuccess = true;
       this.snackbarAlert = true;
+    },
+    clickLogin() {
+      axios
+        .get(`/api/control/login`)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
   },
 };
