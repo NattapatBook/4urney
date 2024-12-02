@@ -376,6 +376,18 @@
 <script>
 import axios from "axios";
 export default {
+  props: {
+    user: {
+      type: Object,
+      default: () => {
+        return {
+          email: `untitled`,
+          name: `untitled`,
+          role: `untitled`,
+        };
+      },
+    },
+  },
   data() {
     return {
       // responsive
@@ -388,11 +400,6 @@ export default {
         { name: "Dashboard", icon: `mdi-view-dashboard` },
         { name: "Feature 5", icon: `mdi-numeric-5-box` },
       ],
-      user: {
-        email: `admin@4nalyze.com`,
-        name: `Apichit Luanjaiboontham`,
-        role: `superuser`,
-      },
       dialog: false,
       notification: [
         {
@@ -442,7 +449,7 @@ export default {
     },
     clickLogout() {
       axios
-        .get(`api/chat_center/get_user/`)
+        .get(`api/chat_center/logout/`)
         .then((res) => {
           console.log(res.data);
           this.$emit("navigate", "landing");

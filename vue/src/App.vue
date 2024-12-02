@@ -39,11 +39,19 @@ function sendmessage() {
   message.value = "";
 }
 
+const userData = ref({
+  email: `untitled`,
+  name: `untitled`,
+  role: `untitled`,
+});
 function checkLogin() {
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
       console.log(res.data);
+      userData.value.email = res.data.email;
+      userData.value.name = res.data.email;
+      userData.value.role = `Test-Member`;
       currentPage.value = `home`;
     })
     .catch((err) => {
@@ -69,7 +77,11 @@ function checkLogin() {
 
     <!-- App Layout -->
     <transition name="fade" mode="out-in">
-      <AppLayout v-if="currentPage !== 'landing'" @navigate="navigateTo">
+      <AppLayout
+        v-if="currentPage !== 'landing'"
+        :user="{}"
+        @navigate="navigateTo"
+      >
         <transition name="minimal-fade" mode="out-in">
           <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
           <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
