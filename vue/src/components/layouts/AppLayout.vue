@@ -119,7 +119,7 @@
               <v-list-item class="pt-0">
                 <div class="pt-0">
                   <v-btn
-                    @click="$emit('navigate', 'landing')"
+                    @click="clickLogout()"
                     :style="{
                       color: `white`,
                       background: `rgb(254,56,147)`,
@@ -438,6 +438,17 @@ export default {
     },
     clickChangeMenu(menu) {
       this.$emit(`navigate`, menu);
+    },
+    clickLogout() {
+      axios
+        .get(`api/chat_center/get_user/`)
+        .then((res) => {
+          console.log(res.data);
+          this.$emit("navigate", "landing");
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
   },
 };

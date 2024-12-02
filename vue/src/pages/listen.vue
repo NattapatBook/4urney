@@ -142,120 +142,7 @@ export default {
       windowWidth: 0,
       windowHeight: 0,
       hideListuserPanel: false,
-      userItems: [
-        {
-          agent: "Agent1",
-          id: "888",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "T1_test_line_lastest_message",
-          messageType: "Closed Messages",
-          name: "T1_test_line",
-          priority: "medium",
-          provider: "line",
-          replyToken: null,
-          tag: "",
-          timestamp: "2023-04-03 17:00:04+07:00",
-        },
-        {
-          agent: "Agent2",
-          id: "999",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "T2_test_messenger_lastest_message",
-          messageType: "Closed Messages",
-          name: "T2_test_messenger",
-          priority: "medium",
-          provider: "messenger",
-          replyToken: null,
-          tag: "",
-          timestamp: "2023-04-03 17:00:04+07:00",
-        },
-        {
-          agent: "Agent3",
-          id: "111",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "T3_test_instagram_lastest_message",
-          messageType: "Closed Messages",
-          name: "T3_test_instagram",
-          priority: "low",
-          provider: "instagram",
-          replyToken: null,
-          tag: "",
-          timestamp: "2023-04-03 17:00:04+07:00",
-        },
-        {
-          agent: "Agent4",
-          id: "222",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "T4_test_tiktok_lastest_message",
-          messageType: "Closed Messages",
-          name: "T4_test_tiktok",
-          priority: "low",
-          provider: "tiktok",
-          replyToken: null,
-          tag: "",
-          timestamp: "2023-04-03 17:00:04+07:00",
-        },
-        {
-          agent: "Agent4",
-          id: "8989123897",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "T4_test_tiktok_lastest_message",
-          messageType: "Closed Messages",
-          name: "T5_test_line",
-          priority: "low",
-          provider: "tiktok",
-          replyToken: null,
-          tag: "",
-          timestamp: "2024-07-18 13:22:40.086815+07:00",
-        },
-        {
-          agent: "Me",
-          id: "982349299",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "Hi",
-          messageType: "Closed Messages",
-          name: "BAS",
-          priority: "high",
-          provider: "line",
-          replyToken: null,
-          tag: "VIP",
-          timestamp: "2023-04-03 17:00:04+07:00",
-        },
-        {
-          agent: "Me",
-          id: "982349232",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "Hello",
-          messageType: "Opened Messages",
-          name: "Bamnardo",
-          priority: "high",
-          provider: "line",
-          replyToken: null,
-          tag: "VVIP",
-          timestamp: "2024-04-03 17:00:04+07:00",
-        },
-        {
-          agent: "Me",
-          id: "242378958",
-          img: "",
-          isUrgent: false,
-          lastestMsg: "Yoo !",
-          messageType: "Closed Messages",
-          name: "JobJoob",
-          priority: "high",
-          provider: "line",
-          replyToken: null,
-          tag: "VIP",
-          timestamp: "2024-04-03 17:00:04+07:00",
-        },
-      ],
+      userItems: [],
       //selectedUser
       selectedUser: {
         id: `-1`,
@@ -273,26 +160,21 @@ export default {
       fullscreen: false,
       //dashboard
       dashboardData: {
-        dissatisfaction: 3,
-        intentSummary: [
-          "ลูกค้าต้องการทราบสูตรปุ๋ยที่เหมาะสำหรับเร่งรากสัปปะรด",
-          "ลูกค้าสนใจเกี่ยวกับบอท เช่น เพศของบอท, บอททำงานที่ไหน",
-          "บอทเป็นส่วนหนึ่งของบริษัท Chia Tai Group Co.,Ltd. และมีหน้าที่ให้ข้อมูลเกี่ยวกับปุ๋ยและโดรน",
-          "ลูกค้ามีความสนใจที่จะสอบถามเกี่ยวกับปุ๋ยหรือโดรนจากบริษัท Chia Tai Group Co.,Ltd.",
-        ],
-        priority: "medium",
-        satisfaction: 75,
-        totalMessage: 189278342,
-        totalSession: 2123,
-        urgent: 30,
-        id: "U32afe3db274f527b57262faf86bb1359",
+        dissatisfaction: 0,
+        intentSummary: [],
+        priority: "untitled",
+        satisfaction: 0,
+        totalMessage: 0,
+        totalSession: 0,
+        urgent: 0,
+        id: "-1",
         userInformation: {
-          birthday: "5/5/1985",
-          citizenId: "2 2000 00000 00 2",
-          email: "pasith@4plus.co.th",
-          gender: "Male",
-          name: "Pasith Thanapatpaisarn",
-          phoneNumber: "089-555-0101",
+          birthday: "untitled",
+          citizenId: "untitled",
+          email: "untitled",
+          gender: "untitled",
+          name: "untitled",
+          phoneNumber: "untitled",
         },
       },
     };
@@ -303,6 +185,9 @@ export default {
       window.addEventListener("resize", this.onResize);
     });
     this.onResize();
+
+    //getData
+    this.getListUser();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
@@ -325,7 +210,31 @@ export default {
       this.isSelectedDataChange = flag;
       if (user && user.id !== `-1` && oldId !== user.id) {
         this.scrollTo("chatPanel");
+        this.getListDashboard(user.id);
       }
+    },
+    //getData
+    getListUser() {
+      axios
+        .get(`api/chat_center/list_user/`)
+        .then((res) => {
+          console.log(res.data);
+          this.userItems = res.data;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
+    getListDashboard() {
+      axios
+        .get(`api/chat_center/list_dashboard/${id}`)
+        .then((res) => {
+          console.log(res.data);
+          this.dashboardData = res.data;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
   },
 };
