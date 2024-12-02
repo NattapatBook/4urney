@@ -1953,14 +1953,15 @@ export default {
       this.snackbarAlert = true;
     },
     clickLogin() {
-      axios
-        .get(`/api/control/login`)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      window.open(`/api/control/login/`, `_self`);
+      //   axios
+      //     .get(`/api/control/login`)
+      //     .then((res) => {
+      //       console.log(res);
+      //     })
+      //     .catch((err) => {
+      //       console.log(err);
+      //     });
     },
   },
 };
