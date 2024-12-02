@@ -193,7 +193,7 @@ class Message(models.Model):
     platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField(null=True, blank=True)
     by = models.CharField(max_length=255, null=True, blank=True) # user or customer
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True) # user => admin(a,b,c) , bot(a,b,c)
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True) # user => admin(a,b,c) , bot(a,b,c)
     timestamp = models.DateTimeField(null=True, blank=True)
     organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
 
