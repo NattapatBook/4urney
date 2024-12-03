@@ -58,6 +58,7 @@ async def webhook(request: HttpRequest, uuid):
         user_id = event['source']['userId']
         message_type = event['message']['type']
         reply_token = event['replyToken']
+        username = get_username(user_id, LINE_CHATBOT_API_KEY)
         
         latest_messages = await sync_to_async(list)(Message.objects.filter(platform_id=user_id).all().order_by('-timestamp')[:10])
         
@@ -113,7 +114,7 @@ async def webhook(request: HttpRequest, uuid):
     new_customer = await sync_to_async(Customer.objects.update_or_create)(
         platform_id=user_id, 
         defaults = {
-            'name':'', 
+            'name':username, 
             'lastest_msg':message, 
             'timestamp':datetime.now(pytz.timezone('Asia/Bangkok')),
             'provider':'line', 
