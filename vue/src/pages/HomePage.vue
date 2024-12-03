@@ -157,7 +157,7 @@ export default {
             description: `Get expert product information directly from an intelligent chatbot.`,
             link: {
               internal: false,
-              src: `https://chiatai-drone-appgit-gpngqdgp9g3kxnutrkkyeh.streamlit.app/`,
+              src: `http://fourplus.asuscomm.com:48502/`,
             },
             disabled: false,
           },
