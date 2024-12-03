@@ -165,6 +165,7 @@
           class="py-4"
           :chat-log-prop="chatLogs"
           :selected-user-props="selectedUser"
+          :key="`chatPanel_chat_update_${isUpdate}`"
         />
       </div>
       <!-- text field -->
@@ -285,6 +286,7 @@ export default {
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: "untitled",
+      isUpdate: false,
     };
   },
   mounted() {
@@ -377,6 +379,7 @@ export default {
       this.$emit(`fullscreen`);
     },
     getListMessage(id) {
+      this.isUpdate = !this.isUpdate;
       axios
         .get(`api/chat_center/list_message_test/${id}`)
         .then((res) => {

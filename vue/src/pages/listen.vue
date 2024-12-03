@@ -235,6 +235,24 @@ export default {
         })
         .catch((err) => {
           console.error(err);
+          this.dashboardData = {
+            dissatisfaction: 0,
+            intentSummary: [],
+            priority: "untitled",
+            satisfaction: 0,
+            totalMessage: 0,
+            totalSession: 0,
+            urgent: 0,
+            id: "-1",
+            userInformation: {
+              birthday: "untitled",
+              citizenId: "untitled",
+              email: "untitled",
+              gender: "untitled",
+              name: "untitled",
+              phoneNumber: "untitled",
+            },
+          };
         });
     },
   },
