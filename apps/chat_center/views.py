@@ -30,7 +30,7 @@ DB_CONFIG = {
 }
 
 LINE_CHATBOT_API_KEY = os.environ.get('LINE_CHATBOT_API_KEY')
-LINE_API = 'https://api.line.me/v2/bot/message/reply'
+LINE_API = 'https://api.line.me/v2/bot/message/push'
 
 tz = pytz.timezone('Asia/Bangkok')
 
