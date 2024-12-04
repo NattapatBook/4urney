@@ -7,7 +7,7 @@ import LandingPage from "./pages/LandingPage.vue";
 
 import HomePage from "./pages/HomePage.vue";
 
-import { createPersistentWebSocket } from "@/utils/websocket";
+// import { createPersistentWebSocket } from "@/utils/websocket";
 import Listen from "./pages/listen.vue";
 
 const currentPage = ref("landing");
@@ -18,10 +18,10 @@ function navigateTo(page) {
   currentPage.value = page;
 }
 
-const messages = ref([]);
-const ws = createPersistentWebSocket("chat_center/chat", (event) => {
-  messages.value.push(event);
-});
+// const messages = ref([]);
+// const ws = createPersistentWebSocket("chat_center/chat", (event) => {
+//   messages.value.push(event);
+// });
 onMounted(async () => {
   //nothing just meme
   console.log(
@@ -31,13 +31,13 @@ onMounted(async () => {
   );
   //checkLogin
   checkLogin();
-  console.log(ws);
+  // console.log(ws);
 });
-const message = ref("");
-function sendmessage() {
-  ws.send(message.value);
-  message.value = "";
-}
+// const message = ref("");
+// function sendmessage() {
+//   ws.send(message.value);
+//   message.value = "";
+// }
 
 const userData = ref({
   email: `untitled`,
@@ -48,7 +48,7 @@ function checkLogin() {
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
-      console.log(res.data);
+      //console.log(res.data);
       userData.value.email = res.data.email;
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;

@@ -69,3 +69,41 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             timestamp=datetime.now(),
             organization_id=organization_id
         )
+
+# TestDataConsumer สำหรับการส่งข้อมูลทดสอบ
+import json
+from datetime import datetime
+class TestDataConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        # เชื่อมต่อ WebSocket
+        await self.accept()
+
+    async def receive(self, text_data):
+        # รับข้อความจาก WebSocket
+        data = json.loads(text_data)
+        
+        # ตรวจสอบว่าเป็นคำขอสำหรับข้อมูลหรือไม่
+        if data.get('type') == 'fetch_test_data':
+            # ข้อมูลที่ต้องการส่งกลับ
+            testArr = [
+                {
+                    "id": "-1", 
+                    "img": "",
+                    "name": "test", 
+                    "tag": "", 
+                    "priority": "",
+                    "lastestMsg": "test_lastest_msg", 
+                    "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S+0700'),
+                    "isUrgent": False,
+                    "provider": "tiktok", 
+                    "agent": "Me",
+                    "messageType": "Opened Messages",
+                    "replyToken": "-1"
+                }
+            ]
+
+            # ส่งข้อมูลกลับไปยัง WebSocket
+            await self.send(text_data=json.dumps({
+                'type': 'test_data',
+                'data': testArr
+            }))
