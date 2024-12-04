@@ -19,7 +19,7 @@ function navigateTo(page) {
 }
 
 const messages = ref([]);
-const ws = createPersistentWebSocket("chat_center/chat/", (event) => {
+const ws = createPersistentWebSocket("chat_center/chat", (event) => {
   messages.value.push(event);
 });
 onMounted(async () => {
