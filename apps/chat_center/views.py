@@ -1,3 +1,4 @@
+from asgiref.sync import async_to_sync
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
 from django.forms import model_to_dict
@@ -12,6 +13,7 @@ import sys
 import requests
 import pytz
 from datetime import datetime
+from channels.layers import get_channel_layer
 
 from openai import organization
 from rest_framework import status
@@ -203,6 +205,7 @@ def admin_reply_post_test(request):
         return JsonResponse({"error": "Missing 'id' or 'message' in request"}, status=400)
     try:
         customer = Customer.objects.get(platform_id=id)
+        message_type = customer.message_type if customer.message_type else "Unknown Message Type"
     except Customer.DoesNotExist:
         return JsonResponse({"error": "Customer not found"}, status=400)
 
@@ -254,7 +257,27 @@ def admin_reply_post_test(request):
             "user": msg.user.username if msg.user else ""
         })
 
-    return JsonResponse(formatted_data, safe=False)
+    channel_layer = get_channel_layer()
+    group_name = str(customer.organization_id)
+
+    response_data = {
+        "id": id,
+        "messageType": message_type,
+        "chatLogs": formatted_data
+    }
+
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            'type': 'send_json',
+            'event': {
+                'type': 'message_update',
+                'formatted_data': response_data
+            }
+        }
+    )
+
+    return JsonResponse(response_data, safe=False)
 
 def change_message_type(request):
     if request.method == 'POST':
