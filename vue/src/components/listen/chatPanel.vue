@@ -379,13 +379,16 @@ export default {
       this.$emit(`fullscreen`);
     },
     getListMessage(id) {
-      this.isUpdate = !this.isUpdate;
       axios
         .get(`api/chat_center/list_message_test/${id}`)
         .then((res) => {
           console.log(res.data);
           this.chatLogs = res.data.chatLogs;
           this.messageType = res.data.messageType;
+          return this.$nextTick();
+        })
+        .then(() => {
+          this.isUpdate = !this.isUpdate;
         })
         .catch((err) => {
           console.error(err);
