@@ -37,7 +37,6 @@
                   :user-items="userItems"
                 />
               </v-card>
-              <v-btn @click="fetchTestData">Get Test Data</v-btn>
             </v-col>
             <!-- hide list panel -->
             <v-col
@@ -130,7 +129,6 @@
 </template>
 
 <script>
-import { createPersistentWebSocket } from "@/utils/websocket";
 import ChatDashboard from "@/components/listen/chatDashboard.vue";
 import ChatPanel from "@/components/listen/chatPanel.vue";
 import ListUser from "@/components/listen/listUser.vue";
@@ -182,15 +180,6 @@ export default {
       },
     };
   },
-  //test_socket
-  created() {
-    this.socket = createPersistentWebSocket("test-data", (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "test_data") {
-        this.userItems = data.data;
-      }
-    });
-  },
   mounted() {
     // responsive
     this.$nextTick(() => {
@@ -203,13 +192,8 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
-    this.socket.close();
   },
   methods: {
-    fetchTestData() {
-      const request = { type: "fetch_test_data" };
-      this.socket.send(request);
-    },
     // Resizes the window and updates window dimensions
     onResize() {
       this.windowWidth = window.innerWidth;

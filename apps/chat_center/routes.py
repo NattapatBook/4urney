@@ -1,6 +1,3 @@
-from apps.chat_center.consumer import ChatConsumer,TestDataConsumer
+from apps.chat_center.consumer import ChatConsumer
 
-routes=[  
-    ('chat', ChatConsumer),
-    ('test-data', TestDataConsumer)
-    ]
+routes=[('chat',ChatConsumer)]
