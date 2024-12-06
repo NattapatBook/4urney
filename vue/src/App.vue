@@ -7,7 +7,7 @@ import LandingPage from "./pages/LandingPage.vue";
 
 import HomePage from "./pages/HomePage.vue";
 
-// import { createPersistentWebSocket } from "@/utils/websocket";
+import { createPersistentWebSocket } from "@/utils/websocket";
 import Listen from "./pages/listen.vue";
 
 const currentPage = ref("landing");
@@ -18,10 +18,10 @@ function navigateTo(page) {
   currentPage.value = page;
 }
 
-// const messages = ref([]);
-// const ws = createPersistentWebSocket("chat_center/chat", (event) => {
-//   messages.value.push(event);
-// });
+const messages = ref([]);
+const ws = createPersistentWebSocket("chat_center/chat", (event) => {
+  messages.value.push(event);
+});
 onMounted(async () => {
   //nothing just meme
   console.log(
@@ -31,13 +31,15 @@ onMounted(async () => {
   );
   //checkLogin
   checkLogin();
-  // console.log(ws);
+  //testSocket
+  console.log(ws);
 });
-// const message = ref("");
-// function sendmessage() {
-//   ws.send(message.value);
-//   message.value = "";
-// }
+
+const message = ref("");
+function sendmessage() {
+  ws.send(message.value);
+  message.value = "";
+}
 
 const userData = ref({
   email: `untitled`,
@@ -72,6 +74,7 @@ function checkLogin() {
     <transition name="fade" mode="out-in">
       <div :key="`landing_app_${currentPage}`">
         <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
+        <input v-model="message" @keydown.enter="sendmessage" />{{ messages }}
       </div>
     </transition>
 
