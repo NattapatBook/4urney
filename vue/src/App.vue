@@ -19,7 +19,7 @@ function navigateTo(page) {
 }
 
 const messages = ref([]);
-const ws = createPersistentWebSocket("chat_center/chat/", (event) => {
+const ws = createPersistentWebSocket("chat_center/chat", (event) => {
   messages.value.push(event);
 });
 onMounted(async () => {
@@ -31,8 +31,10 @@ onMounted(async () => {
   );
   //checkLogin
   checkLogin();
+  //testSocket
   console.log(ws);
 });
+
 const message = ref("");
 function sendmessage() {
   ws.send(message.value);
@@ -48,7 +50,7 @@ function checkLogin() {
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
-      console.log(res.data);
+      //console.log(res.data);
       userData.value.email = res.data.email;
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;
@@ -72,6 +74,7 @@ function checkLogin() {
     <transition name="fade" mode="out-in">
       <div :key="`landing_app_${currentPage}`">
         <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
+        <!-- <input v-model="message" @keydown.enter="sendmessage" />{{ messages }} -->
       </div>
     </transition>
 
