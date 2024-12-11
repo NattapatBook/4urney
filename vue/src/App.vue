@@ -74,7 +74,7 @@ function checkLogin() {
     <transition name="fade" mode="out-in">
       <div :key="`landing_app_${currentPage}`">
         <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
-        <input v-model="message" @keydown.enter="sendmessage" />{{ messages }}
+        <!-- <input v-model="message" @keydown.enter="sendmessage" />{{ messages }} -->
       </div>
     </transition>
 
