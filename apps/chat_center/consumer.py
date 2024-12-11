@@ -2,30 +2,18 @@ from datetime import datetime
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from asgiref.sync import sync_to_async
-from psycopg2 import connect
 
-from apps.chat_center.models import OrganizationMember
-from models import Organization, Message, Customer
+from apps.chat_center.models import OrganizationMember, Organization, Message, Customer
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        # self.channel_name
-        # self.channel_layer
-        # self.group_name = 'hello'
-        # await self.channel_layer.group_add(self.group_name, self.channel_name)
-        # await self.accept()
-
-        # self.scope['user']
-
-        self.scope['user']
-        membership = OrganizationMember.objects.filter(user=self.scope['user']).first()
+        qs = OrganizationMember.objects.filter(user=self.scope['user'])
+        membership = await database_sync_to_async(qs.first)()
         # เก็ย orgs ไว้ใน session กรณีหลาย orgs
 
         if membership:
-            # self.organization_id = membership.organization_id
-            self.group_name = membership.organization_id
+            self.group_name = f'organization_{membership.organization_id}'
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
         else:
