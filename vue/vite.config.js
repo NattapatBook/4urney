@@ -3,6 +3,7 @@ import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   server: {
+    host: "0.0.0.0",
     proxy: {
       '/api': 'http://localhost:8000',
       '/admin': 'http://localhost:8000',

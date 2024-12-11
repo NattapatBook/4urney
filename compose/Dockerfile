@@ -1,11 +1,11 @@
-FROM node:22-slim as base-vue
+FROM node:22-slim AS base-vue
 
 WORKDIR /app/
 
 COPY ./vue/package.json /app/
 RUN npm install
 
-FROM python:3.12-slim as base-python
+FROM python:3.12-slim AS base-python
 
 # [required for runserver in docker]
 # to ensures the python output i.e. the stdout and stderr streams are sent straight to terminal (e.g. your container log)
@@ -18,7 +18,7 @@ COPY ./requirements.txt /requirements.txt
 RUN pip3 install -r /requirements.txt
 RUN pip3 install gunicorn uvicorn[standard]
 
-FROM base-vue as built-vue
+FROM base-vue AS built-vue
 COPY ./vue/src/ /app/src/
 COPY ./vue/public/ /app/public/
 COPY ./vue/*config.js /app/
@@ -26,7 +26,7 @@ COPY ./vue/jsconfig.json /app/
 COPY ./vue/index.html /app/
 RUN npm run build
 
-FROM base-python as built-python
+FROM base-python AS built-python
 COPY ./ /app/
 COPY --from=built-vue /app/dist/ /app/vue/dist/
 
