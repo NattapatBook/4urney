@@ -258,8 +258,7 @@ def admin_reply_post_test(request):
         })
 
     channel_layer = get_channel_layer()
-    organization = Organization.objects.filter(name=customer.organization_id).first()
-    group_name = f'organization_{organization.id}'
+    group_name = f'organization_{organization_member.organization.id}'
 
     response_data = {
         "id": id,
