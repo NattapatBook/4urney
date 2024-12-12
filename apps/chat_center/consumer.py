@@ -75,7 +75,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def send_json_to_client(self, event):
         # event should be the actual message content you want to send to the WebSocket client
         data = event.get('event')
-        print(data)
+        print('Websocket get data', data)
         if data:
             await self.send_json(data)
         else:
