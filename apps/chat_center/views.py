@@ -20,7 +20,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from twisted.python.runtime import platform
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, Organization
 from apps.webhook_line.models import LineIntegration
 
 DB_CONFIG = {
@@ -258,7 +258,8 @@ def admin_reply_post_test(request):
         })
 
     channel_layer = get_channel_layer()
-    group_name = str(customer.organization_id)
+    organization = Organization.objects.filter(name=customer.organization_id).first()
+    group_name = f'organization_{organization.id}'
 
     response_data = {
         "id": id,
@@ -269,8 +270,9 @@ def admin_reply_post_test(request):
     async_to_sync(channel_layer.group_send)(
         group_name,
         {
-            'type': 'send_json',
+            'type': 'send_json_to_client',
             'event': {
+                'id': id,
                 'type': 'message_update',
                 'formatted_data': response_data
             }
