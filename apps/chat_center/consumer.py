@@ -7,14 +7,15 @@ from apps.chat_center.models import OrganizationMember, Message, Customer
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        print(self.scope['user'])
+        print(self.scope['user'], type(self.scope['user']))
         qs = OrganizationMember.objects.filter(user=self.scope['user'])
         membership = await database_sync_to_async(qs.first)()
         # เก็ย orgs ไว้ใน session กรณีหลาย orgs
         if membership:
             self.group_name = f'organization_{membership.organization_id}'
-            print(self.group_name)
+            print(self.group_name, self.channel_name)
             await self.channel_layer.group_add(self.group_name, self.channel_name)
+            print('after group add')
             await self.accept()
         else:
             await self.accept()
