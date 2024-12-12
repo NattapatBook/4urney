@@ -3,8 +3,7 @@ from datetime import datetime
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from apps.chat_center.models import OrganizationMember, Organization, Message, Customer
-import json
+from apps.chat_center.models import OrganizationMember, Message, Customer
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -14,6 +13,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # เก็ย orgs ไว้ใน session กรณีหลาย orgs
         if membership:
             self.group_name = f'organization_{membership.organization_id}'
+            print(self.group_name)
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
         else:
@@ -58,7 +58,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             organization_id=self.organization_id
         )
 
-        # Handle 'message_update' event if necessary
         if content.get('event') == 'message_update':
             formatted_data = content.get('formatted_data')
             if formatted_data:

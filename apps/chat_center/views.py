@@ -1,26 +1,19 @@
 from asgiref.sync import async_to_sync
 from django.contrib.auth.decorators import login_required
-from django.core.serializers import serialize
 from django.forms import model_to_dict
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views import View
-from django.shortcuts import render
 import os
 import psycopg2
 import json
-import sys
 import requests
 import pytz
 from datetime import datetime
 from channels.layers import get_channel_layer
 
-from openai import organization
 from rest_framework import status
-from rest_framework.response import Response
-from twisted.python.runtime import platform
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, Organization
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard
 from apps.webhook_line.models import LineIntegration
 
 DB_CONFIG = {

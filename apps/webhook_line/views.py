@@ -1,30 +1,23 @@
-from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
-from http.client import responses
 import os
-from uu import decode
 
 from datetime import datetime
-import pytz
 import requests
-import time
 import json, pytz
 
 from channels.layers import get_channel_layer
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.views import APIView
 from langsmith import Client
 from asgiref.sync import sync_to_async
 
 from apps.bot.chatbot_utils import call_bot, set_anonymizer
-from apps.bot.connection_utils import execute_script, execute_to_df
+from apps.bot.connection_utils import execute_to_df
 
 from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
 from apps.webhook_line.models import LineIntegration
-from apps.chat_center.models import Message, Customer, Organization, OrganizationMember, User
+from apps.chat_center.models import Message, Customer, Organization
 
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
