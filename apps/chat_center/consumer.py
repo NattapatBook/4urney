@@ -7,18 +7,22 @@ from apps.chat_center.models import OrganizationMember, Message, Customer
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        print(self.scope['user'], type(self.scope['user']))
-        qs = OrganizationMember.objects.filter(user=self.scope['user'])
-        membership = await database_sync_to_async(qs.first)()
-        # เก็ย orgs ไว้ใน session กรณีหลาย orgs
-        if membership:
-            self.group_name = f'organization_{membership.organization_id}'
-            print(self.group_name, self.channel_name)
-            await self.channel_layer.group_add(self.group_name, self.channel_name)
-            print('after group add')
-            await self.accept()
-        else:
-            await self.accept()
+        try:
+            print("WebSocket connection attempt for user:", self.scope['user'])
+            qs = OrganizationMember.objects.filter(user=self.scope['user'])
+            membership = await database_sync_to_async(qs.first)()
+            # เก็ย orgs ไว้ใน session กรณีหลาย orgs
+            if membership:
+                self.group_name = f'organization_{membership.organization_id}'
+                print(f"Adding channel {self.channel_name} to group {self.group_name}")
+                await self.channel_layer.group_add(self.group_name, self.channel_name)
+                await self.accept()
+                print(f"WebSocket connection accepted for group: {self.group_name}")
+            else:
+                await self.accept()
+                await self.close()
+        except Exception as e:
+            print(f"Error during connection: {str(e)}")
             await self.close()
 
     # async def receive_json(self, content, **kwargs):
