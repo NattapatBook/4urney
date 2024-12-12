@@ -22,7 +22,7 @@ COGNITO_DOMAIN = settings.ENV('COGNITO_DOMAIN', default='')
 COGNITO_APP_CLIENT_ID = settings.ENV('COGNITO_APP_CLIENT_ID', default='')
 COGNITO_APP_CLIENT_SECRET = settings.ENV('COGNITO_APP_CLIENT_SECRET', default='')
 COGNITO_REDIRECT_URL = (
-        (f'https://{settings.HOST_NAME}' if settings.HOST_NAME else 'http://localhost:8000') +
+        (f'https://{settings.HOST_NAME}' if settings.HOST_NAME else 'http://localhost:8080') +
         '/api/control/redirect/'
 )
 
