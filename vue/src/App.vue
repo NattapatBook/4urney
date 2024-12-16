@@ -4,11 +4,10 @@ import AppLayout from "./components/layouts/AppLayout.vue";
 import axios from "axios";
 
 import LandingPage from "./pages/LandingPage.vue";
-
 import HomePage from "./pages/HomePage.vue";
-
-import { createPersistentWebSocket } from "@/utils/websocket";
+// import { createPersistentWebSocket } from "@/utils/websocket";
 import Listen from "./pages/listen.vue";
+import TestUpload from "./pages/testUpload.vue";
 
 const currentPage = ref("landing");
 //dev test - by pass login
@@ -18,48 +17,70 @@ function navigateTo(page) {
   currentPage.value = page;
 }
 
-const messages = ref([]);
-const ws = createPersistentWebSocket("chat_center/chat", (event) => {
-  messages.value.push(event);
-});
-onMounted(async () => {
-  //nothing just meme
-  console.log(
-    "%c%s",
-    "font-size: 13em; color: #ff6347; background: #222; padding: 100px; text-align: center;",
-    "👀 I see you creeping... 😏 What you doing here? 🤔"
-  );
-  //checkLogin
-  checkLogin();
-  //testSocket
-  console.log(ws);
-});
-
-const message = ref("");
-function sendmessage() {
-  ws.send(message.value);
-  message.value = "";
-}
-
 const userData = ref({
   email: `untitled`,
   name: `untitled`,
   role: `untitled`,
 });
+
+// const socket = ref(null); // Reference for the WebSocket
+
+// function openSocket() {
+//   const { websocket, send, close } = createPersistentWebSocket(
+//     "chat_center/chat",
+//     (event) => {
+//       const data = JSON.parse(event.data);
+
+//       if (data.type === "message_update") {
+//         console.log("Received updated chat logs:", data.formatted_data);
+
+//         // Update your frontend (e.g., display chat logs)
+//         updateChatLogs(data.formatted_data);
+//       }
+//     }
+//   );
+
+//   socket.value = { websocket, send, close };
+//   console.log("WebSocket connection established");
+// }
+
+// function updateChatLogs(formattedData) {
+//   // Update the frontend UI with new chat logs
+//   console.log("Updating chat logs on UI:", formattedData);
+
+//   // Example: You might store this in a reactive reference
+//   // chatLogs.value = formattedData.chatLogs;
+// }
+
 function checkLogin() {
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
-      //console.log(res.data);
+      console.log(res.data);
+      // Update user data on successful login
       userData.value.email = res.data.email;
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;
       currentPage.value = `home`;
     })
+    // .then(() => {
+    //   // Open WebSocket connection
+    //   console.log("TEST");
+    //   openSocket();
+    // })
     .catch((err) => {
       console.error(err);
     });
 }
+
+onMounted(async () => {
+  console.log(
+    "%c%s",
+    "font-size: 13em; color: #ff6347; background: #222; padding: 100px; text-align: center;",
+    "👀 I see you creeping... 😏 What you doing here? 🤔"
+  );
+  checkLogin();
+});
 </script>
 
 <template>
@@ -88,6 +109,10 @@ function checkLogin() {
         <transition name="minimal-fade" mode="out-in">
           <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
           <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
+          <TestUpload
+            v-else-if="currentPage === `Feature 5`"
+            @navigate="navigateTo"
+          />
         </transition>
       </AppLayout>
     </transition>

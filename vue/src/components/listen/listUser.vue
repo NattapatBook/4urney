@@ -350,7 +350,14 @@
                 ></v-img>
               </div>
               <!--chat-alert-icon-->
-              <div v-if="selectedUser && selectedUser.id !== item.id">
+              <div
+                :key="`listUser_alert_${item.id}_${item.timestamp}`"
+                v-if="
+                  selectedUser &&
+                  selectedUser.id !== item.id &&
+                  checkLatest(item.id, item.timestamp)
+                "
+              >
                 <v-icon
                   class="pa-0"
                   :style="{
@@ -358,15 +365,15 @@
                     position: `absolute`,
                     top: `13px`,
                     left: `43px`,
-                    // color: `rgb(254, 56, 147)`,
-                    color:
-                      item.priority === `high`
-                        ? `#D6584D`
-                        : item.priority === `medium`
-                        ? `#ffa600`
-                        : item.priority === `low`
-                        ? `#5EB491`
-                        : ``,
+                    color: `rgb(254, 56, 147)`,
+                    //color:
+                    // item.priority === `high`
+                    // ? `#D6584D`
+                    // : item.priority === `medium`
+                    // ? `#ffa600`
+                    // : item.priority === `low`
+                    // ? `#5EB491`
+                    // : ``,
                   }"
                 >
                   <!-- mdi-chat-alert -->
@@ -764,6 +771,15 @@ export default {
       }
 
       return short ? `now` : "just now";
+    },
+    checkLatest(id, time) {
+      const storedData = JSON.parse(localStorage.getItem("chatData")) || [];
+
+      const item = storedData.find((entry) => entry.id === id);
+      if (item) {
+        return new Date(item.timestamp) < new Date(time);
+      }
+      return false;
     },
   },
 };

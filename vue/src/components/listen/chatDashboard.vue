@@ -399,8 +399,8 @@ export default {
     isChange(newValue, oldValue) {
       if (newValue !== oldValue) {
         this.selectedUser = JSON.parse(JSON.stringify(this.selectedUserProp));
-        console.log(this.selectedUserProp);
-        console.log(this.isChange);
+        // console.log(this.selectedUserProp);
+        // console.log(this.isChange);
       }
     },
   },

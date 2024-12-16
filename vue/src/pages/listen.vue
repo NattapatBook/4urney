@@ -88,6 +88,7 @@
                 }"
               >
                 <ChatPanel
+                  ref="chat_panel_ref"
                   :selected-user-prop="selectedUser"
                   :is-change="isSelectedDataChange"
                   :fullscreen="fullscreen"
@@ -134,10 +135,16 @@ import ChatPanel from "@/components/listen/chatPanel.vue";
 import ListUser from "@/components/listen/listUser.vue";
 import ListUserCompact from "@/components/listen/listUserCompact.vue";
 import axios from "axios";
+import { createPersistentWebSocket } from "@/utils/websocket";
 
 export default {
   name: "listen",
-  components: { ListUser, ListUserCompact, ChatPanel, ChatDashboard },
+  components: {
+    ListUser,
+    ListUserCompact,
+    ChatPanel,
+    ChatDashboard,
+  },
   data() {
     return {
       windowWidth: 0,
@@ -178,6 +185,7 @@ export default {
           phoneNumber: "untitled",
         },
       },
+      socket: null,
     };
   },
   mounted() {
@@ -188,6 +196,7 @@ export default {
     this.onResize();
 
     //getData
+    this.openSocket();
     this.getListUser();
   },
   beforeDestroy() {
@@ -210,6 +219,7 @@ export default {
       this.selectedUser = user ? user : null;
       this.isSelectedDataChange = flag;
       if (user && user.id !== `-1` && oldId !== user.id) {
+        this.updateTimestamp(user.id, user.timestamp);
         this.scrollTo("chatPanel");
         this.getListDashboard(user.id);
       }
@@ -219,8 +229,9 @@ export default {
       axios
         .get(`api/chat_center/list_user_test/`)
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           this.userItems = res.data;
+          this.saveToLocalStorage(this.userItems);
         })
         .catch((err) => {
           console.error(err);
@@ -230,7 +241,7 @@ export default {
       axios
         .get(`api/chat_center/list_dashboard_test/${id}`)
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           this.dashboardData = res.data;
         })
         .catch((err) => {
@@ -254,6 +265,52 @@ export default {
             },
           };
         });
+    },
+    openSocket() {
+      const { websocket, send, close } = createPersistentWebSocket(
+        "chat_center/chat",
+        (event) => {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "message_update") {
+            this.userItems = data.formatted_data;
+            this.saveToLocalStorage(this.userItems);
+            if (this.selectedUser && this.selectedUser.id !== `-1`) {
+              const item = this.findById(this.selectedUser.id);
+              if (item.timestamp !== this.selectedUser.timestamp) {
+                this.selectUser(item, this.isSelectedDataChange);
+                this.$refs.chat_panel_ref.updateLastestChat();
+              }
+            }
+          }
+        }
+      );
+      this.socket = { websocket, send, close };
+      console.log("WebSocket connection established");
+    },
+    findById(id) {
+      return this.userItems.find((item) => item.id === id);
+    },
+    saveToLocalStorage(data) {
+      const reducedData = data.map((item) => ({
+        id: item.id,
+        timestamp: item.timestamp,
+      }));
+
+      //reduce to 1000 history
+      const latestData = reducedData.slice(-1000);
+
+      localStorage.setItem("chatData", JSON.stringify(latestData));
+    },
+    updateTimestamp(id, newTimestamp) {
+      const storedData = JSON.parse(localStorage.getItem("chatData")) || [];
+      const index = storedData.findIndex((item) => item.id === id);
+      if (index !== -1) {
+        storedData[index].timestamp = newTimestamp;
+        localStorage.setItem("chatData", JSON.stringify(storedData));
+      } else {
+        console.warn(`id not found!`);
+      }
     },
   },
 };

@@ -241,7 +241,7 @@ export default {
   watch: {
     chatLogProp: {
       handler() {
-        console.log(`chatLogChange`);
+        // console.log(`chatLogChange`);
         this.scrollToBottom();
       },
       deep: true,
@@ -294,7 +294,7 @@ export default {
       return short ? `now` : "just now";
     },
     scrollToBottom() {
-      console.log(`scroll`);
+      // console.log(`scroll`);
       const chatContainer = document.getElementById("chatContainer");
       if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight;

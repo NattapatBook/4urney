@@ -16,7 +16,7 @@
     >
       <div class="text-center pa-4">
         <v-dialog
-          close-on-content-click="true"
+          :close-on-content-click="true"
           v-model="dialog"
           :transition="
             windowWidth > 960
@@ -451,7 +451,7 @@ export default {
       axios
         .get(`api/control/logout/`)
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           this.$emit("navigate", "landing");
         })
         .catch((err) => {

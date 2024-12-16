@@ -238,6 +238,7 @@ export default {
     selectedUserProp: {
       type: Object,
       default: null,
+      deep: true,
     },
     isChange: {
       type: Boolean,
@@ -363,7 +364,7 @@ export default {
           message: `${this.msgBox}`,
         })
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           this.msgBox = ``;
           //update message then scroll to bottom
           //this.scrollToBottom()
@@ -382,7 +383,7 @@ export default {
       axios
         .get(`api/chat_center/list_message_test/${id}`)
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           this.chatLogs = res.data.chatLogs;
           this.messageType = res.data.messageType;
           return this.$nextTick();
@@ -401,7 +402,7 @@ export default {
           messageType: this.messageType,
         })
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           this.messageType = res.data.messageType;
           this.snackbarMsg = `${this.selectedUser.name}'s chat session has been successfully ${res.data.messageType}`;
           this.snackbarSuccess = true;
@@ -413,6 +414,9 @@ export default {
           this.snackbarSuccess = false;
           this.snackbarAlert = true;
         });
+    },
+    updateLastestChat(item) {
+      this.getListMessage(this.selectedUser.id);
     },
   },
 };
