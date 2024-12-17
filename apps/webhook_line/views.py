@@ -1,6 +1,7 @@
 from channels.db import database_sync_to_async
 import os
 
+import pandas as pd
 from datetime import datetime
 import requests
 import json, pytz
@@ -16,7 +17,7 @@ from apps.bot.connection_utils import execute_to_df
 
 from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
-from apps.webhook_line.models import LineIntegration
+from apps.webhook_line.models import LineIntegration, RoutingChain
 from apps.chat_center.models import Message, Customer, Organization
 
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
@@ -90,11 +91,15 @@ async def webhook(request: HttpRequest, uuid):
         for message in latest_messages:
             chat_history += f"{message.by}: {message.message}" + '\n'
         
-        df_routing_config = execute_to_df(f"""SELECT * FROM "4urney".routing_chain WHERE project_name = '{MILVUS_COLLECTION_NAME_DRONE}';""")
+        # get routing config
+        routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(knowledge_base=MILVUS_COLLECTION_NAME_DRONE).values()))()
+        df_routing_config = pd.DataFrame(routing_configs)
         
-        df_user = execute_to_df(f"""SELECT * FROM "4urney".users WHERE id = '{user_id}';""")
+        # get user config
+        df_user = await sync_to_async(lambda: list(Customer.objects.filter(platform_id=user_id).values()))()
+        df_user = pd.DataFrame(df_user)
         
-        if df_user['messageType'].values != 'Opened Messages' or df_user.empty:
+        if df_user['message_type'].values != 'Opened Messages' or df_user.empty:
 
             if message_type == "text":
                 """
@@ -103,7 +108,7 @@ async def webhook(request: HttpRequest, uuid):
                 message = event['message']["text"]
                 message_dt = event['timestamp']
                 
-                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": MILVUS_COLLECTION_NAME_DRONE})
+                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": MILVUS_COLLECTION_NAME_DRONE, "candidate_labels": list(df_routing_config['routing'])})
 
                 retrieval_text = model_response.json()['retrieval_text']
                 routing = model_response.json()['routing']
