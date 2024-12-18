@@ -364,10 +364,13 @@ export default {
           message: `${this.msgBox}`,
         })
         .then((res) => {
-          // console.log(res.data);
           this.msgBox = ``;
-          //update message then scroll to bottom
-          //this.scrollToBottom()
+          this.chatLogs = res.data.chatLogs.reverse();
+          // this.messageType = res.data.messageType;
+          return this.$nextTick();
+        })
+        .then(() => {
+          this.isUpdate = !this.isUpdate;
         })
         .catch((err) => {
           console.error(err);

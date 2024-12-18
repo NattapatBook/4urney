@@ -250,8 +250,8 @@ def admin_reply_post_test(request):
             "user": msg.user.username if msg.user else ""
         })
 
-    channel_layer = get_channel_layer()
-    group_name = f'organization_{organization_member.organization.id}'
+    # channel_layer = get_channel_layer()
+    # group_name = f'organization_{organization_member.organization.id}'
 
     response_data = {
         "id": id,
@@ -259,17 +259,17 @@ def admin_reply_post_test(request):
         "chatLogs": formatted_data
     }
 
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        {
-            'type': 'send_json_to_client',
-            'event': {
-                'id': id,
-                'type': 'message_update',
-                'formatted_data': response_data
-            }
-        }
-    )
+    # async_to_sync(channel_layer.group_send)(
+    #     group_name,
+    #     {
+    #         'type': 'send_json_to_client',
+    #         'event': {
+    #             'id': id,
+    #             'type': 'message_update',
+    #             'formatted_data': response_data
+    #         }
+    #     }
+    # )
 
     return JsonResponse(response_data, safe=False)
 
