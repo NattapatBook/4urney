@@ -175,6 +175,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": (r := REDIS_HOST.split(':')) and [(r[0], int(r[1]))],
+            "ssl": True,
         },
     },
 }
