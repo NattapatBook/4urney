@@ -2,7 +2,7 @@ import datetime
 
 from rest_framework import serializers
 
-from apps.chat_center.models import Customer
+from apps.chat_center.models import Customer, UploadedFile
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -27,3 +27,8 @@ class CustomerSerializer(serializers.ModelSerializer):
                 required=False,
             )
         )
+
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedFile
+        fields = ['file']

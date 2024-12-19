@@ -19,6 +19,7 @@ import os
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.static import static
 
 # automatically register url from each app
 api_urlpatterns = [
@@ -32,4 +33,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/control/', include('control.urls')),
     path('api/', include(api_urlpatterns)),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

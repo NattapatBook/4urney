@@ -1,3 +1,5 @@
+import csv
+
 from asgiref.sync import async_to_sync
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
@@ -11,10 +13,13 @@ import pytz
 from datetime import datetime
 from channels.layers import get_channel_layer
 
-from rest_framework import status
+from rest_framework import status, permissions
+from rest_framework.permissions import AllowAny
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile
 from apps.webhook_line.models import LineIntegration
+from apps.chat_center.serializers import FileUploadSerializer
+from rest_framework.views import APIView
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -485,3 +490,84 @@ def get_user_detail(request):
         return JsonResponse({"detail": "Authentication credentials were not provided."},
                         status=status.HTTP_401_UNAUTHORIZED)
 
+
+class FileUploadView(APIView):
+    queryset = UploadedFile.objects.all()  # Modify as needed
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = FileUploadSerializer(data=request.data)
+
+        if serializer.is_valid():
+            uploaded_file = serializer.save()
+
+            if uploaded_file.file.name.endswith('.csv'):
+                try:
+                    with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:
+                        csv_reader = csv.DictReader(file)
+                        rows = list(csv_reader)
+
+                        data = rows[:5]
+                        print(data)
+
+                        return JsonResponse({"message": "File uploaded and processed successfully!", "data": data},
+                                            status=200)
+                except Exception as e:
+                    return JsonResponse({"message": "Failed to read the CSV file", "error": str(e)}, status=400)
+
+            return JsonResponse({"message": "Uploaded file is not a CSV"}, status=400)
+
+        return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
+
+# class FileUploadView(APIView):
+#     queryset = UploadedFile.objects.all()  # Modify as needed
+#
+#     permission_classes = [AllowAny]
+#
+#     def post(self, request, *args, **kwargs):
+#         # Serialize the uploaded file
+#         serializer = FileUploadSerializer(data=request.data)
+#
+#         if serializer.is_valid():
+#             uploaded_file = serializer.save()
+#
+#             # Rename the file before saving
+#             if uploaded_file.file:
+#                 file_path = uploaded_file.file.path
+#                 base_name, extension = os.path.splitext(uploaded_file.file.name)
+#
+#                 # Define your new file name logic here
+#                 new_file_name = f"test_upload_file{extension}"
+#
+#                 # Construct the new file path
+#                 new_file_path = os.path.join(os.path.dirname(file_path), new_file_name)
+#
+#                 # Rename the file
+#                 os.rename(file_path, new_file_path)
+#
+#                 # Update the file path in the model
+#                 uploaded_file.file.name = os.path.join('uploads', new_file_name)  # Adjust as needed for your file path logic
+#                 uploaded_file.save()
+#
+#             # Read the CSV file after saving it
+#             if uploaded_file.file.name.endswith('.csv'):
+#                 try:
+#                     # Open the uploaded CSV file and read its content
+#                     with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:
+#                         csv_reader = csv.DictReader(file)  # This assumes the CSV has a header row
+#                         rows = list(csv_reader)  # Convert the CSV content to a list of dictionaries
+#
+#                         # Process the CSV content as needed
+#                         # For demonstration, let's just return the first 5 rows
+#                         data = rows[:5]
+#                         print(data)
+#
+#                         return JsonResponse({"message": "File uploaded, renamed, and processed successfully!", "data": data},
+#                                             status=200)
+#                 except Exception as e:
+#                     return JsonResponse({"message": "Failed to read the CSV file", "error": str(e)}, status=400)
+#
+#             return JsonResponse({"message": "Uploaded file is not a CSV"}, status=400)
+#
+#         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)

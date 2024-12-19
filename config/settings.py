@@ -67,6 +67,9 @@ INSTALLED_APPS = [
     'migrator.apps.MigratorConfig',  # help handle post_final_migrate signal
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 MIDDLEWARE = [
     'config.healthcheck.HealthCheckMiddleware',
     'django.middleware.security.SecurityMiddleware',
