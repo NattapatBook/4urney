@@ -72,11 +72,12 @@ STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 AWS_ACCESS_KEY_ID = ENV('AWS_ACCESS_KEY_ID', str, '')
 AWS_SECRET_ACCESS_KEY = ENV('AWS_SECRET_ACCESS_KEY', str, '')
-AWS_STORAGE_BUCKET_NAME = ENV('AWS_STORAGE_BUCKET_NAME', str, '4urney-dev-data-model')
-AWS_S3_REGION_NAME = ENV('AWS_S3_REGION_NAME', str, 'ap-southeast-1')
+AWS_STORAGE_BUCKET_NAME = ENV('AWS_STORAGE_BUCKET_NAME', str, '')
+AWS_S3_REGION_NAME = ENV('AWS_S3_REGION_NAME', str, '')
 
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
+print('Bucket name',AWS_STORAGE_BUCKET_NAME)
 STORAGES = {
     'default': {
         'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
