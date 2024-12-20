@@ -77,6 +77,7 @@ AWS_S3_REGION_NAME = ENV('AWS_S3_REGION_NAME', str, '')
 
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
+print('Redis Address', ENV('REDIS_ADDRESS', str, 'redis://redis:6379'))
 print('Bucket name',AWS_STORAGE_BUCKET_NAME)
 STORAGES = {
     'default': {
