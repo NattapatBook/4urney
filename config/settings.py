@@ -65,7 +65,6 @@ INSTALLED_APPS = [
         for app_name in PROJECT_APPS
     ],
     'migrator.apps.MigratorConfig',  # help handle post_final_migrate signal
-    'storages',
 ]
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
