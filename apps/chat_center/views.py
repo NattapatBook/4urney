@@ -505,21 +505,21 @@ class FileUploadView(APIView):
             print(f"Uploaded file name: {uploaded_file.file.name}")
             print(f"File stored at: {uploaded_file.file.url}")
 
-            if uploaded_file.file.name.endswith('.csv'):
-                try:
-                    with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:
-                        csv_reader = csv.DictReader(file)
-                        rows = list(csv_reader)
+            # if uploaded_file.file.name.endswith('.csv'):
+            #     try:
+            #         with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:
+            #             csv_reader = csv.DictReader(file)
+            #             rows = list(csv_reader)
+            #
+            #             data = rows[:5]
+            #             print(data)
+            #
+            #             return JsonResponse({"message": "File uploaded and processed successfully!", "data": data},
+            #                                 status=200)
+            #     except Exception as e:
+            #         return JsonResponse({"message": "Failed to read the CSV file", "error": str(e)}, status=400)
 
-                        data = rows[:5]
-                        print(data)
-
-                        return JsonResponse({"message": "File uploaded and processed successfully!", "data": data},
-                                            status=200)
-                except Exception as e:
-                    return JsonResponse({"message": "Failed to read the CSV file", "error": str(e)}, status=400)
-
-            return JsonResponse({"message": "Uploaded file is not a CSV"}, status=400)
+            return JsonResponse({"message": "File uploaded and processed successfully!"}, status=200)
 
         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
 
