@@ -32,7 +32,7 @@ COPY --from=built-vue /app/dist/ /app/vue/dist/
 
 RUN python3 manage.py check
 RUN python3 manage.py migrate --plan
-# RUN python3 manage.py collectstatic --no-input
+RUN python3 manage.py collectstatic --no-input
 
 CMD gunicorn config.asgi --keep-alive 60
 
