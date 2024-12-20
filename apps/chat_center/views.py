@@ -502,6 +502,9 @@ class FileUploadView(APIView):
         if serializer.is_valid():
             uploaded_file = serializer.save()
 
+            print(f"Uploaded file name: {uploaded_file.file.name}")
+            print(f"File stored at: {uploaded_file.file.url}")
+
             if uploaded_file.file.name.endswith('.csv'):
                 try:
                     with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:

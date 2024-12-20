@@ -65,10 +65,25 @@ INSTALLED_APPS = [
         for app_name in PROJECT_APPS
     ],
     'migrator.apps.MigratorConfig',  # help handle post_final_migrate signal
+    'storages',
 ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_ACCESS_KEY_ID = ENV('AWS_ACCESS_KEY_ID', str, '')
+AWS_SECRET_ACCESS_KEY = ENV('AWS_SECRET_ACCESS_KEY', str, '')
+AWS_STORAGE_BUCKET_NAME = ENV('AWS_STORAGE_BUCKET_NAME', str, '')
+AWS_S3_REGION_NAME = ENV('AWS_S3_REGION_NAME', str, '')
+
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# AWS_S3_OBJECT_PARAMETERS = {
+#     'CacheControl': 'max-age=86400',
+# }
+# AWS_DEFAULT_ACL = 'public-read'
+
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MIDDLEWARE = [
     'config.healthcheck.HealthCheckMiddleware',
