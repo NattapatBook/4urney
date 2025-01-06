@@ -231,7 +231,7 @@ def file_upload_to(instance, filename):
     return os.path.join(organization_name, filename)
 
 class UploadedFile(models.Model):
-    file = models.FileField(upload_to='uploads/')
+    file = models.FileField(upload_to=file_upload_to)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
