@@ -393,12 +393,12 @@ export default {
       // responsive
       windowWidth: 0,
       items: [
-        { name: "home", icon: `mdi-home` },
-        { name: "listen", icon: `mdi-message` },
-        { name: "channel manage", icon: `mdi-account-file` },
-        { name: "user manage", icon: `mdi-account` },
+        { name: "Explore Feature", icon: `mdi-home` },
+        // { name: "listen", icon: `mdi-message` },
+        // { name: "channel manage", icon: `mdi-account-file` },
+        // { name: "user manage", icon: `mdi-account` },
         { name: "Dashboard", icon: `mdi-view-dashboard` },
-        { name: "Feature 5", icon: `mdi-numeric-5-box` },
+        { name: "Configuration", icon: `mdi-cog` },
       ],
       dialog: false,
       notification: [

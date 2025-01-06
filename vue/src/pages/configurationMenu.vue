@@ -122,95 +122,35 @@
 
 <script>
 export default {
-  name: "homePage",
+  name: "configurationMenu",
   data() {
     return {
       windowWidth: 0,
       windowHeight: 0,
       menu: {
-        Communication: [
+        Configuration: [
           {
-            icon: `mdi-chat-outline`,
-            name: `Agent Console`,
-            description: `Seamlessly connect with customers from multiple channels in one place.`,
-            link: {
-              internal: true,
-              src: `listen`,
-            },
-            disabled: false,
-          },
-          {
-            icon: `mdi-chat-outline`,
-            name: `Internal Chatbot`,
-            description: `Chat with your own Gen-AI Chatbot.`,
-            link: {
-              internal: true,
-              src: `listen`,
-            },
-            disabled: true,
-          },
-        ],
-        Data_Insight: [
-          {
-            icon: `mdi-database`,
-            name: `Chat with Data`,
-            description: `Dive deep into enterprise data to uncover key insights and serve users effectively.`,
-            link: {
-              internal: false,
-              src: `http://fourplus.asuscomm.com:8501/`,
-            },
-            disabled: false,
-          },
-          {
-            icon: `mdi-robot`,
-            name: `Product Insider`,
-            description: `Get expert product information directly from an intelligent chatbot.`,
-            link: {
-              internal: false,
-              src: `http://fourplus.asuscomm.com:8502/`,
-            },
-            disabled: false,
-          },
-        ],
-        Design_Partner: [
-          {
-            icon: `mdi-facebook`,
-            name: `Facebook Ads with AI`,
-            description: `Leverage AI to craft engaging and optimized Facebook ad campaigns.`,
+            icon: `mdi-account-cog`,
+            name: `User Management`,
+            description: `Manage user roles, permissions, and account settings.`,
             disabled: true,
           },
           {
-            icon: `mdi-google`,
-            name: `Google Ads with AI`,
-            description: `Enhance your Google Ads strategy using AI-driven content creation.`,
+            icon: `mdi-source-branch`,
+            name: `Channel Management`,
+            description: `Configure and monitor communication channels.`,
             disabled: true,
           },
           {
-            icon: `mdi-lightbulb`,
-            name: `AI-Powered Product Design`,
-            description: `Collaborate with AI to innovate and design your next big product.`,
-            disabled: true,
-          },
-        ],
-        Dashboard_Solutions: [
-          {
-            icon: `mdi-view-dashboard`,
-            name: `Smart Dashboard Finder`,
-            description: `Quickly locate relevant dashboards to address inquiries and needs.`,
+            icon: `mdi-brain`,
+            name: `AI Management`,
+            description: `Oversee AI configurations, settings, and performance.`,
             disabled: true,
           },
           {
-            icon: `mdi-chart-areaspline`,
-            name: `AI-Enhanced Dashboards`,
-            description: `Utilize Copilot to create dynamic Power BI dashboards effortlessly.`,
-            disabled: true,
-          },
-        ],
-        Support_Function: [
-          {
-            icon: `mdi-account-group`,
-            name: `Human Resource`,
-            description: `Quickly locate relevant dashboards to address inquiries and needs.`,
+            icon: `mdi-database-settings`,
+            name: `Data Management`,
+            description: `Organize, analyze, and manage your data effectively.`,
             disabled: true,
           },
         ],
