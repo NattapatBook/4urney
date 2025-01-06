@@ -8,10 +8,11 @@ import HomePage from "./pages/HomePage.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 import Listen from "./pages/listen.vue";
 import TestUpload from "./pages/testUpload.vue";
+import ConfigurationMenu from "./pages/configurationMenu.vue";
 
 const currentPage = ref("landing");
 //dev test - by pass login
-//const currentPage = ref("home");
+//const currentPage = ref("Explore Feature");
 
 function navigateTo(page) {
   currentPage.value = page;
@@ -61,7 +62,7 @@ function checkLogin() {
       userData.value.email = res.data.email;
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;
-      currentPage.value = `home`;
+      currentPage.value = `Explore Feature`;
     })
     // .then(() => {
     //   // Open WebSocket connection
@@ -107,12 +108,16 @@ onMounted(async () => {
         @navigate="navigateTo"
       >
         <transition name="minimal-fade" mode="out-in">
-          <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
-          <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
-          <TestUpload
-            v-else-if="currentPage === `Feature 5`"
+          <HomePage
+            v-if="currentPage === 'Explore Feature'"
             @navigate="navigateTo"
           />
+          <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
+          <ConfigurationMenu v-else-if="currentPage === `Configuration`" />
+          <!-- <TestUpload
+            v-else-if="currentPage === `Feature 5`"
+            @navigate="navigateTo"
+          /> -->
         </transition>
       </AppLayout>
     </transition>

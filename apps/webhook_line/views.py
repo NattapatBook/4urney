@@ -17,8 +17,8 @@ from apps.bot.connection_utils import execute_to_df
 
 from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
-from apps.webhook_line.models import LineIntegration, RoutingChain
-from apps.chat_center.models import Message, Customer, Organization
+from apps.webhook_line.models import LineIntegration
+from apps.chat_center.models import Message, Customer, Organization, RoutingChain
 
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
