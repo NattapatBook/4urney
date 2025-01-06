@@ -138,7 +138,7 @@ async def webhook(request: HttpRequest, uuid):
                 await reply_message(user_id, reply_token,
                                 "ขออภัยด้วยค่ะ ฉันไม่สามารถเข้าใจ sticker ที่คุณส่งมา กรุณาส่งเป็นข้อความแทนนะคะ",
                                 LINE_CHATBOT_API_KEY)  # Insert Channel access token
-                
+
         else: 
             print("Admin is already Open Messaged with the customer.")
  

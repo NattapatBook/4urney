@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from django.contrib.auth.models import User, Group
 from django.db import models
@@ -220,9 +221,16 @@ class Dashboard(models.Model):
         return self.name if self.name else self.id
 
 
+def file_upload_to(instance, filename):
+    organization_member = instance.organization_member
+    organization_name = organization_member.organization.name if organization_member else "default"
+
+    return os.path.join(organization_name, filename)
+
 class UploadedFile(models.Model):
-    file = models.FileField(upload_to='uploads/')
+    file = models.FileField(upload_to=file_upload_to)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    organization_member = models.ForeignKey('OrganizationMember', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.file.name

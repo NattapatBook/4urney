@@ -497,10 +497,14 @@ class FileUploadView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        print(request.user)
+        organization_member = OrganizationMember.objects.filter(user=request.user).first()
+        organization_name = organization_member.organization.name
         serializer = FileUploadSerializer(data=request.data)
 
         if serializer.is_valid():
-            uploaded_file = serializer.save()
+            uploaded_file = serializer.save(organization_member=organization_member)
+
 
             print(f"Uploaded file name: {uploaded_file.file.name}")
             print(f"File stored at: {uploaded_file.file.url}")

@@ -32,3 +32,8 @@ class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = UploadedFile
         fields = ['file']
+
+    def create(self, validated_data):
+        organization_member = validated_data.pop('organization_member', None)
+        uploaded_file = UploadedFile.objects.create(organization_member=organization_member, **validated_data)
+        return uploaded_file
