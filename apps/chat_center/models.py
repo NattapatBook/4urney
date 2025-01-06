@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 
 from django.db.models import Q
 
+class INDUSTRY(models.TextChoices):
+    AGRICULTURE = 'AGRICULTURE'
+    HR = 'HR'
 
 # Create your models here.
 # class PLATFORM(models.TextChoices):
@@ -226,3 +229,17 @@ class UploadedFile(models.Model):
 
     def __str__(self):
         return self.file.name
+  
+    
+class RoutingChain(models.Model):
+    bot_id = models.CharField(max_length=1000, primary_key=True)
+    bot_name = models.CharField(max_length=255)
+    routing = models.CharField(max_length=255)
+    prompt = models.TextField(null=True, blank=True)
+    industry = models.CharField(choices=INDUSTRY.choices, max_length=100)
+    retrieve_image = models.BooleanField(null=True, blank=True)
+    knowledge_base = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Bot Name: {self.bot_name} KB: {self.knowledge_base}"
