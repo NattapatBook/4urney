@@ -145,9 +145,9 @@ export default {
             description: `Chat with your own Gen-AI Chatbot.`,
             link: {
               internal: true,
-              src: `listen`,
+              src: `internalChatbot`,
             },
-            disabled: true,
+            disabled: false,
           },
         ],
         Data_Insight: [

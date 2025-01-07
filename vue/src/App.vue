@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage.vue";
 import Listen from "./pages/listen.vue";
 import TestUpload from "./pages/testUpload.vue";
 import ConfigurationMenu from "./pages/configurationMenu.vue";
+import InternalChatbot from "./pages/internalChatbot.vue";
 
 const currentPage = ref("landing");
 //dev test - by pass login
@@ -113,11 +114,12 @@ onMounted(async () => {
             @navigate="navigateTo"
           />
           <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
+          <InternalChatbot v-else-if="currentPage === `internalChatbot`" />
           <ConfigurationMenu v-else-if="currentPage === `Configuration`" />
-          <!-- <TestUpload
-            v-else-if="currentPage === `Feature 5`"
+          <TestUpload
+            v-else-if="currentPage === `Upload_Test`"
             @navigate="navigateTo"
-          /> -->
+          />
         </transition>
       </AppLayout>
     </transition>

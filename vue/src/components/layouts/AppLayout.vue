@@ -396,9 +396,9 @@ export default {
         { name: "Explore Feature", icon: `mdi-home` },
         // { name: "listen", icon: `mdi-message` },
         // { name: "channel manage", icon: `mdi-account-file` },
-        // { name: "user manage", icon: `mdi-account` },
         { name: "Dashboard", icon: `mdi-view-dashboard` },
         { name: "Configuration", icon: `mdi-cog` },
+        // { name: "Upload_Test", icon: `mdi-upload` },
       ],
       dialog: false,
       notification: [
