@@ -98,6 +98,25 @@ AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 #     },
 # }
 
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    'staticfiles': {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+if AWS_STORAGE_BUCKET_NAME := ENV('AWS_STORAGE_BUCKET_NAME', str, ''):
+    STORAGES['default']['BACKEND'] = 'storages.backends.s3boto3.S3Boto3Storage'
+
+
+# AWS_STATIC_STORAGE = (
+#     S3Boto3Storage(bucket_name=bucket_name)
+#     if (bucket_name := ENV('AWS_STATIC_STORAGE_BUCKET_NAME', str, ''))
+#     else None
+# )
+
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

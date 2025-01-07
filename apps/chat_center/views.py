@@ -15,9 +15,10 @@ from channels.layers import get_channel_layer
 
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny
+# from sympy import line_integrate
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile
-from apps.webhook_line.models import LineIntegration
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain
+from apps.webhook_line.models import LineIntegration, LineConnection
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
 
@@ -578,3 +579,34 @@ class FileUploadView(APIView):
 #             return JsonResponse({"message": "Uploaded file is not a CSV"}, status=400)
 #
 #         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
+
+def create_bot(request):
+    data = json.loads(request.body)
+    bot_name = data.get('bot_name')
+    routing = data.get('routing')
+    prompt = data.get('prompt')
+    industry = data.get('industry')
+    retrieve_image = data.get('retrieve_image')
+    knowledge_base = data.get('knowledge_base')
+    line_integration = data.get('line_integration')
+
+    RoutingChain.objects.create(
+        bot_name= bot_name,
+        routing = routing,
+        prompt = prompt,
+        industry = industry,
+        retrieve_image = retrieve_image,
+        knowledge_base = knowledge_base,
+        is_active = False,
+        created_at = datetime.now(),
+    )
+
+    bot_id = RoutingChain.objects.filter(bot_name=bot_name).values('id')
+    line_integration_id = LineIntegration.objects.filter(user_id=line_integration).values('uuid')
+
+    LineConnection.objects.create(
+        bot_id=bot_id,
+        uuid=line_integration_id,
+    )
+
+    return JsonResponse({"message": "Create bot successfully!"}, status=200)

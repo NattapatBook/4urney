@@ -233,6 +233,7 @@ def file_upload_to(instance, filename):
 class UploadedFile(models.Model):
     file = models.FileField(upload_to=file_upload_to)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    organization_member = models.ForeignKey(OrganizationMember, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.file.name
