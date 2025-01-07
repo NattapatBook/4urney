@@ -239,7 +239,7 @@ class UploadedFile(models.Model):
 
 
 class RoutingChain(models.Model):
-    bot_id = models.CharField(max_length=1000, primary_key=True)
+    id = models.AutoField(primary_key=True)
     bot_name = models.CharField(max_length=255)
     routing = models.CharField(max_length=255)
     prompt = models.TextField(null=True, blank=True)
