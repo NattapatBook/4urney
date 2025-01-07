@@ -115,11 +115,11 @@ onMounted(async () => {
           />
           <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
           <InternalChatbot v-else-if="currentPage === `internalChatbot`" />
-          <ConfigurationMenu v-else-if="currentPage === `Configuration`" />
-          <TestUpload
-            v-else-if="currentPage === `Upload_Test`"
+          <ConfigurationMenu
+            v-else-if="currentPage === `Configuration`"
             @navigate="navigateTo"
           />
+          <TestUpload v-else-if="currentPage === `Upload_Test`" />
         </transition>
       </AppLayout>
     </transition>
