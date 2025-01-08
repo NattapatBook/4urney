@@ -12,7 +12,7 @@
         v-model="searchMessage"
         clearable
         multiple
-        label="Search with message"
+        label="Enter name to search"
         variant="outlined"
         hide-details
         :density="`comfortable`"
@@ -665,16 +665,17 @@ export default {
         agent: this.agentsSelected,
         searchMessage: this.searchMessage,
       };
+
       // Pre-process filter criteria
       const providerSet = new Set(filter.provider.map((p) => p.toLowerCase()));
       const messageType = filter.messageType.toLowerCase(); // Lowercase for case insensitivity
       const prioritySet = new Set(filter.priority);
       const tagSet = new Set(filter.tag);
       const agentSet = new Set(filter.agent);
+      const searchMessage = filter.searchMessage.trim().toLowerCase(); // Normalize search query
 
       // Filter items
       const filteredItems = userItems.filter((item) => {
-        // Short-circuit evaluation
         return (
           (providerSet.size === 0 ||
             providerSet.has(item.provider.toLowerCase())) &&
@@ -683,7 +684,9 @@ export default {
             item.messageType.toLowerCase() === messageType) &&
           (prioritySet.size === 0 || prioritySet.has(item.priority)) &&
           (tagSet.size === 0 || tagSet.has(item.tag)) &&
-          (agentSet.size === 0 || agentSet.has(item.agent))
+          (agentSet.size === 0 || agentSet.has(item.agent)) &&
+          (searchMessage === "" ||
+            item.name.toLowerCase().includes(searchMessage)) // Filter by name
         );
       });
 

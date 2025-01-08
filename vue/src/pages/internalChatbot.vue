@@ -29,7 +29,7 @@
                   borderRadius: `8px`,
                 }"
               >
-                <ListUser
+                <ListChatbot
                   class="shake"
                   @selectUser="selectUser"
                   @minimize="hideListuserPanel = !hideListuserPanel"
@@ -56,7 +56,7 @@
                   borderRadius: `8px`,
                 }"
               >
-                <ListUserCompact
+                <ListChatbotCompact
                   class="shake"
                   @selectUser="selectUser"
                   @minimize="hideListuserPanel = !hideListuserPanel"
@@ -131,8 +131,6 @@
               >
                 <ChatPanel
                   ref="chat_panel_ref"
-                  :selected-user-prop="selectedUser"
-                  :is-change="isSelectedDataChange"
                   :fullscreen="fullscreen"
                   @fullscreen="fullscreen = !fullscreen"
                 />
@@ -147,19 +145,18 @@
 
 <script>
 import ChatPanel from "@/components/listen/chatPanel.vue";
-import ListUser from "@/components/listen/listUser.vue";
-import ListUserCompact from "@/components/listen/listUserCompact.vue";
 // import axios from "axios";
 import ChatSession from "@/components/internalChatbot/chatSession.vue";
+import ListChatbot from "@/components/internalChatbot/listChatbot.vue";
+import ListChatbotCompact from "@/components/internalChatbot/listChatbotCompact.vue";
 
 export default {
   name: "listen",
   components: {
-    ListUser,
-    ListUserCompact,
+    ListChatbot,
+    ListChatbotCompact,
     ChatPanel,
     ChatSession,
-    // ChatDashboard,
   },
   data() {
     return {
@@ -172,14 +169,15 @@ export default {
         id: `-1`,
         img: ``,
         name: `untitled`,
-        tag: `untitled`,
-        priority: `untitled`,
-        lastestMsg: `untitled`,
-        timestamp: new Date(),
-        isUrgent: false,
-        provider: `untitled`,
+        industry: `untitled`,
+        mastery: `untitled`,
+        isActive: true,
+        // tag: `untitled`,
+        // priority: `untitled`,
+        // lastestMsg: `untitled`,
+        // isUrgent: false,
+        // provider: `untitled`,
       },
-      //
       isSelectedDataChange: false,
       fullscreen: false,
       //dashboard
@@ -241,18 +239,52 @@ export default {
     getListUser() {
       this.userItems = [
         {
-          id: "999",
-          img: "",
-          name: "Test Bot 1",
-          tag: "",
-          priority: "",
-          lastestMsg: "เทส1",
-          timestamp: "2024-12-12 14:58:39+0700",
-          isUrgent: false,
-          provider: "line",
-          agent: "Me",
-          messageType: "Closed Messages",
-          replyToken: "021f861c27bb4325829b9f55ed3cb1fa",
+          id: `999`,
+          img: ``,
+          name: `Test Bot_1`,
+          industry: `Industry1`,
+          mastery: `Mastery1`,
+          isActive: true,
+          // priority: `untitled`,
+          // lastestMsg: `untitled`,
+          // isUrgent: false,
+          // provider: `untitled`,
+        },
+        {
+          id: `888`,
+          img: ``,
+          name: `Test Bot`,
+          industry: `Industry`,
+          mastery: `Mastery`,
+          isActive: false,
+          // priority: `untitled`,
+          // lastestMsg: `untitled`,
+          // isUrgent: false,
+          // provider: `untitled`,
+        },
+        {
+          id: `777`,
+          img: ``,
+          name: `Bamm Bot`,
+          industry: `Developer`,
+          mastery: `Frontend Master`,
+          isActive: true,
+          // priority: `untitled`,
+          // lastestMsg: `untitled`,
+          // isUrgent: false,
+          // provider: `untitled`,
+        },
+        {
+          id: `666`,
+          img: ``,
+          name: `LONG NAMEEEEEEEEEEEEEEEEEEEEeeLONG NAMEEEEEEEEEEEEEEEEEEEEeeLONG NAMEEEEEEEEEEEEEEEEEEEEee`,
+          industry: `LONG NAMEEEEEEEEEEEEEEEEEEEEee`,
+          mastery: `LONG NAMEEEEEEEEEEEEEEEEEEEEee`,
+          isActive: false,
+          // priority: `untitled`,
+          // lastestMsg: `untitled`,
+          // isUrgent: false,
+          // provider: `untitled`,
         },
       ];
     },

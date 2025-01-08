@@ -147,7 +147,7 @@ export default {
               internal: true,
               src: `internalChatbot`,
             },
-            disabled: true,
+            disabled: false,
           },
         ],
         Data_Insight: [
