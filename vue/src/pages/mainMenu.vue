@@ -122,7 +122,7 @@
 
 <script>
 export default {
-  name: "homePage",
+  name: "mainMenu",
   data() {
     return {
       windowWidth: 0,

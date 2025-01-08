@@ -23,7 +23,7 @@
       }"
     >
       <!--customer profile-->
-      <div>
+      <div :style="{ height: `100%` }">
         <v-card-text
           class="px-1 py-0"
           :style="{
@@ -44,20 +44,6 @@
                 }"
                 cols="12"
               >
-                <!-- <div>
-                  <v-avatar>
-                    <v-img
-                      v-if="selectedUser.img"
-                      :src="selectedUser.img"
-                      aspect-ratio="1"
-                    ></v-img>
-                    <v-img
-                      v-else
-                      :src="`https://ui-avatars.com/api/?name=${selectedUser.name}`"
-                      aspect-ratio="1"
-                    ></v-img>
-                  </v-avatar>
-                </div> -->
                 <div>
                   <span
                     :style="{
@@ -74,6 +60,7 @@
                   <v-tooltip text="Tooltip" location="bottom">
                     <template v-slot:activator="{ props }">
                       <v-btn
+                        @click="clickNewChat()"
                         v-bind="props"
                         text
                         :icon="`mdi-chat-plus`"
@@ -93,77 +80,124 @@
           </v-container>
         </v-card-text>
         <v-divider class="mx-3" />
-        <v-card-text class="px-2 py-0">
-          <v-container>
-            <!-- Today Section -->
-            <div v-if="groupedChats.today.length">
-              <h3>Today</h3>
-              <v-list>
-                <v-list-item v-for="chat in groupedChats.today" :key="chat.id">
-                  <v-list-item-title>{{ chat.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    formatDate(chat.lastConversationTime)
-                  }}</v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </div>
+        <v-card-text
+          class="px-2 py-0"
+          :style="{
+            overflowY: `auto`,
+            height: `calc(100% - 80px)`,
+          }"
+        >
+          <v-container class="px-0">
+            <div
+              v-for="(chats, key) in groupedChats"
+              :key="`session_chat_${key}`"
+            >
+              <div v-if="chats.length">
+                <!-- Section Header -->
+                <v-chip class="my-2">
+                  <h3 class="mb-0" :style="{ textTransform: `capitalize` }">
+                    {{ key === `previous7Days` ? `Previous 7 Days` : key }}
+                  </h3>
+                </v-chip>
 
-            <!-- Yesterday Section -->
-            <div v-if="groupedChats.yesterday.length">
-              <h3>Yesterday</h3>
-              <v-list>
+                <!-- Chat List -->
                 <v-list-item
-                  v-for="chat in groupedChats.yesterday"
-                  :key="chat.id"
+                  class="rounded-xl"
+                  v-for="chat in chats"
+                  :key="`chatSession_${key}_${chat.id}`"
+                  :class="chatSelected.id === chat.id ? `` : `hover-gradient`"
+                  link
+                  @click="
+                    chatSelected.id === chat.id
+                      ? (chatSelected = {
+                          id: -1,
+                          name: `untitled`,
+                          lastConversationTime: new Date(),
+                        })
+                      : (chatSelected = { ...chat })
+                  "
+                  :style="
+                    chatSelected.id === chat.id
+                      ? {
+                          backgroundColor: `rgb(255, 168, 199)`,
+                          color: `white`,
+                        }
+                      : {}
+                  "
                 >
-                  <v-list-item-title>{{ chat.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    formatDate(chat.lastConversationTime)
-                  }}</v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </div>
+                  <v-row align="center">
+                    <!-- Empty Column for Alignment (Optional) -->
+                    <v-col class="px-0"></v-col>
 
-            <!-- Previous 7 Days Section -->
-            <div v-if="groupedChats.previous7Days.length">
-              <h3>Previous 7 Days</h3>
-              <v-list>
-                <v-list-item
-                  v-for="chat in groupedChats.previous7Days"
-                  :key="chat.id"
-                >
-                  <v-list-item-title>{{ chat.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    formatDate(chat.lastConversationTime)
-                  }}</v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </div>
+                    <!-- Chat Details -->
+                    <v-col class="px-0" cols="8">
+                      <v-list-item-title>{{ chat.name }}</v-list-item-title>
+                      <v-list-item-subtitle>
+                        {{ formatDate(chat.lastConversationTime) }}
+                      </v-list-item-subtitle>
+                    </v-col>
 
-            <!-- Older Section -->
-            <div v-if="groupedChats.older.length">
-              <h3>Older</h3>
-              <v-list>
-                <v-list-item v-for="chat in groupedChats.older" :key="chat.id">
-                  <v-list-item-title>{{ chat.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    formatDate(chat.lastConversationTime)
-                  }}</v-list-item-subtitle>
+                    <!-- Action Menu -->
+                    <v-col class="px-0">
+                      <v-menu transition="fab-transition" class="rounded-xl">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            class="no-ripple"
+                            icon="mdi-dots-vertical"
+                            variant="text"
+                            v-bind="props"
+                          ></v-btn>
+                        </template>
+
+                        <!-- Action List -->
+                        <v-list class="pa-0 rounded-lg">
+                          <!-- Rename Action -->
+                          <v-list-item class="pa-0" @click="clickRename(chat)">
+                            <v-card
+                              class="pa-4 d-flex align-center"
+                              elevation="0"
+                            >
+                              <v-icon>mdi-pencil</v-icon>
+                              <span class="ms-2">Rename</span>
+                            </v-card>
+                          </v-list-item>
+
+                          <!-- Delete Action -->
+                          <v-list-item class="pa-0" @click="clickDelete(chat)">
+                            <v-card
+                              class="pa-4 d-flex align-center"
+                              elevation="0"
+                            >
+                              <v-icon>mdi-delete</v-icon>
+                              <span class="ms-2">Delete</span>
+                            </v-card>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
+                    </v-col>
+                  </v-row>
                 </v-list-item>
-              </v-list>
+              </div>
             </div>
           </v-container>
         </v-card-text>
       </div>
     </div>
+    <ChatSessionDialog
+      v-model="dialog"
+      :mode="dialogMode"
+      :item="dialogItem"
+      @apply="applyFromDialog"
+    />
   </div>
 </template>
 
 <script>
 import DataError from "../tools/dataError.vue";
+import ChatSessionDialog from "./chatSessionDialog.vue";
 export default {
   name: "Component_chatSession",
-  components: { DataError },
+  components: { DataError, ChatSessionDialog },
   props: {
     selectedUserProp: {
       type: Object,
@@ -198,6 +232,11 @@ export default {
         // isUrgent: false,
         // provider: `untitled`,
       },
+      chatSelected: {
+        id: -1,
+        name: `untitled`,
+        lastConversationTime: new Date(),
+      },
       chatSessionItem: [
         {
           id: 1,
@@ -212,16 +251,26 @@ export default {
         {
           id: 3,
           name: `test_3`,
-          lastConversationTime: new Date("2024-12-30T20:15:00"), // Dec/30/2024 8:15 PM
+          lastConversationTime: new Date("2025-01-06T20:15:00"), // Jan/6/2025 8:15 PM
         },
         {
           id: 4,
           name: `test_4`,
-          lastConversationTime: new Date("2024-11-15T14:00:00"), // Nov/15/2024 2:00 PM
+          lastConversationTime: new Date("2025-01-01T14:00:00"), // Jan/1/2025 2:00 PM
         },
         {
           id: 5,
           name: `test_5`,
+          lastConversationTime: new Date("2025-01-02T09:30:00"), // Jan/2/2025 9:30 AM
+        },
+        {
+          id: 6,
+          name: `test_6`,
+          lastConversationTime: new Date("2024-10-05T09:30:00"), // Oct/5/2024 9:30 AM
+        },
+        {
+          id: 7,
+          name: `test_7`,
           lastConversationTime: new Date("2024-10-05T09:30:00"), // Oct/5/2024 9:30 AM
         },
       ],
@@ -230,6 +279,13 @@ export default {
         yesterday: [],
         previous7Days: [],
         older: [],
+      },
+      dialog: false,
+      dialogMode: `untitled`,
+      dialogItem: {
+        id: -1,
+        name: `untitled`,
+        lastConversationTime: new Date(),
       },
     };
   },
@@ -240,6 +296,8 @@ export default {
       window.addEventListener("resize", this.onResize);
     });
     this.onResize();
+
+    this.groupChats();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
@@ -351,8 +409,35 @@ export default {
         timeStyle: "short",
       }).format(date);
     },
+    clickRename(item) {
+      this.dialogMode = `rename`;
+      this.dialogItem = { ...item };
+      this.dialog = true;
+    },
+    clickDelete(item) {
+      this.dialogMode = `delete`;
+      this.dialogItem = { ...item };
+      this.dialog = true;
+    },
+    clickNewChat() {
+      this.dialogMode = `newChat`;
+      this.dialog = true;
+    },
+    applyFromDialog(item) {
+      console.log(item);
+    },
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.hover-gradient {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-gradient:hover {
+  transform: scale(1.01);
+  z-index: 999;
+  color: rgb(255, 168, 199);
+}
+</style>

@@ -22,12 +22,14 @@
               >
                 <v-card-title>
                   <p class="gradient-text" :style="{ fontWeight: 'bold' }">
-                    "Configuration Settings"
+                    "Your Dashboard Tools"
                   </p>
                   <span :style="{ fontSize: '0.8rem', color: 'grey' }">
-                    Customize and manage settings to suit your preferences.
+                    Access insights and tools to manage your progress
+                    efficiently.
                   </span>
                 </v-card-title>
+
                 <v-card-text
                   class="pa-4 mb-5"
                   :style="{
@@ -122,47 +124,141 @@
 
 <script>
 export default {
-  name: "configurationMenu",
+  name: "dashboardMenu",
   data() {
     return {
       windowWidth: 0,
       windowHeight: 0,
       menu: {
-        Configuration: [
+        Support_case_insights: [
           {
-            icon: `mdi-account-cog`,
-            name: `User Management`,
-            description: `Manage user roles, permissions, and account settings.`,
+            icon: `mdi-view-dashboard`,
+            name: `Support Case`,
+            description:
+              "Analyze and track support cases to uncover actionable insights.",
+            link: {
+              internal: false,
+              src: `https://dashboard.4nalyze.com/#/views/CustomerSupportCaseDemo/CustomerSupportCasesDemo?:iid=2`,
+            },
+            disabled: false,
+          },
+        ],
+        Untitled2: [
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
             disabled: true,
           },
           {
-            icon: `mdi-source-branch`,
-            name: `Channel Management`,
-            description: `Configure and monitor communication channels.`,
-            disabled: true,
-          },
-          {
-            icon: `mdi-brain`,
-            name: `AI Management`,
-            description: `Oversee AI configurations, settings, and performance.`,
-            disabled: true,
-          },
-          {
-            icon: `mdi-database-settings`,
-            name: `Data Management`,
-            description: `Organize, analyze, and manage your data effectively.`,
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
             disabled: true,
           },
         ],
-        Test: [
+        Untitled3: [
           {
-            icon: `mdi-upload`,
-            name: `Upload_Test`,
-            description: `Only for developer`,
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
             link: {
               internal: true,
-              src: `Upload_Test`,
+              src: `listen`,
             },
+            disabled: true,
+          },
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+        ],
+        Untitled4: [
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+        ],
+        Untitled5: [
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
+          },
+          {
+            icon: `mdi-view-dashboard`,
+            name: `Untitled`,
+            description: `Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: true,
           },
         ],
       },

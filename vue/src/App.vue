@@ -4,12 +4,13 @@ import AppLayout from "./components/layouts/AppLayout.vue";
 import axios from "axios";
 
 import LandingPage from "./pages/LandingPage.vue";
-import HomePage from "./pages/HomePage.vue";
+import MainMenu from "./pages/mainMenu.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 import Listen from "./pages/listen.vue";
 import TestUpload from "./pages/testUpload.vue";
 import ConfigurationMenu from "./pages/configurationMenu.vue";
 import InternalChatbot from "./pages/internalChatbot.vue";
+import DashboardMenu from "./pages/dashboardMenu.vue";
 
 const currentPage = ref("landing");
 //dev test - by pass login
@@ -109,12 +110,16 @@ onMounted(async () => {
         @navigate="navigateTo"
       >
         <transition name="minimal-fade" mode="out-in">
-          <HomePage
+          <MainMenu
             v-if="currentPage === 'Explore Feature'"
             @navigate="navigateTo"
           />
           <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
           <InternalChatbot v-else-if="currentPage === `internalChatbot`" />
+          <DashboardMenu
+            v-else-if="currentPage === `Dashboard`"
+            @navigate="navigateTo"
+          />
           <ConfigurationMenu
             v-else-if="currentPage === `Configuration`"
             @navigate="navigateTo"

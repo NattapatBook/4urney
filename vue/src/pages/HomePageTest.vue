@@ -21,12 +21,12 @@
                 :style="{ height: `calc(100dvh - 110px)` }"
               >
                 <v-card-title>
-                  <p class="gradient-text" :style="{ fontWeight: 'bold' }">
-                    "Configuration Settings"
+                  <p class="gradient-text" :style="{ fontWeight: `bold` }">
+                    "Explore Our Features"
                   </p>
-                  <span :style="{ fontSize: '0.8rem', color: 'grey' }">
-                    Customize and manage settings to suit your preferences.
-                  </span>
+                  <span :style="{ fontSize: `0.8rem`, color: `grey` }"
+                    >Select a category to access tools for your goals.</span
+                  >
                 </v-card-title>
                 <v-card-text
                   class="pa-4 mb-5"
@@ -122,47 +122,96 @@
 
 <script>
 export default {
-  name: "configurationMenu",
+  name: "homePage",
   data() {
     return {
       windowWidth: 0,
       windowHeight: 0,
       menu: {
-        Configuration: [
+        Communication: [
           {
-            icon: `mdi-account-cog`,
-            name: `User Management`,
-            description: `Manage user roles, permissions, and account settings.`,
+            icon: `mdi-chat-outline`,
+            name: `Agent Console`,
+            description: `Seamlessly connect with customers from multiple channels in one place.`,
+            link: {
+              internal: true,
+              src: `listen`,
+            },
+            disabled: false,
+          },
+          {
+            icon: `mdi-chat-outline`,
+            name: `Internal Chatbot`,
+            description: `Chat with your own Gen-AI Chatbot.`,
+            link: {
+              internal: true,
+              src: `internalChatbot`,
+            },
+            disabled: false,
+          },
+        ],
+        Data_Insight: [
+          {
+            icon: `mdi-database`,
+            name: `Chat with Data`,
+            description: `Dive deep into enterprise data to uncover key insights and serve users effectively.`,
+            link: {
+              internal: false,
+              src: `http://fourplus.asuscomm.com:8501/`,
+            },
+            disabled: false,
+          },
+          {
+            icon: `mdi-robot`,
+            name: `Product Insider`,
+            description: `Get expert product information directly from an intelligent chatbot.`,
+            link: {
+              internal: false,
+              src: `http://fourplus.asuscomm.com:8502/`,
+            },
+            disabled: false,
+          },
+        ],
+        Design_Partner: [
+          {
+            icon: `mdi-facebook`,
+            name: `Facebook Ads with AI`,
+            description: `Leverage AI to craft engaging and optimized Facebook ad campaigns.`,
             disabled: true,
           },
           {
-            icon: `mdi-source-branch`,
-            name: `Channel Management`,
-            description: `Configure and monitor communication channels.`,
+            icon: `mdi-google`,
+            name: `Google Ads with AI`,
+            description: `Enhance your Google Ads strategy using AI-driven content creation.`,
             disabled: true,
           },
           {
-            icon: `mdi-brain`,
-            name: `AI Management`,
-            description: `Oversee AI configurations, settings, and performance.`,
-            disabled: true,
-          },
-          {
-            icon: `mdi-database-settings`,
-            name: `Data Management`,
-            description: `Organize, analyze, and manage your data effectively.`,
+            icon: `mdi-lightbulb`,
+            name: `AI-Powered Product Design`,
+            description: `Collaborate with AI to innovate and design your next big product.`,
             disabled: true,
           },
         ],
-        Test: [
+        Dashboard_Solutions: [
           {
-            icon: `mdi-upload`,
-            name: `Upload_Test`,
-            description: `Only for developer`,
-            link: {
-              internal: true,
-              src: `Upload_Test`,
-            },
+            icon: `mdi-view-dashboard`,
+            name: `Smart Dashboard Finder`,
+            description: `Quickly locate relevant dashboards to address inquiries and needs.`,
+            disabled: true,
+          },
+          {
+            icon: `mdi-chart-areaspline`,
+            name: `AI-Enhanced Dashboards`,
+            description: `Utilize Copilot to create dynamic Power BI dashboards effortlessly.`,
+            disabled: true,
+          },
+        ],
+        Support_Function: [
+          {
+            icon: `mdi-account-group`,
+            name: `Human Resource`,
+            description: `Quickly locate relevant dashboards to address inquiries and needs.`,
+            disabled: true,
           },
         ],
       },
