@@ -29,6 +29,8 @@ LANGCHAIN_ENDPOINT=os.environ.get('LANGCHAIN_ENDPOINT')
 LANGCHAIN_API_KEY=os.environ.get('LANGCHAIN_API_KEY')
 LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
 
+client = Client(anonymizer=set_anonymizer())
+
 tz = pytz.timezone('Asia/Bangkok')
 
 
@@ -64,8 +66,6 @@ async def webhook(request: HttpRequest, uuid):
     
     organization_id = line_integration.organization_id
     organization = await sync_to_async(Organization.objects.get)(id=organization_id)
-    
-    client = Client(anonymizer=set_anonymizer())
     
     # print(request.headers)
     try:
