@@ -3,7 +3,7 @@ import csv
 from asgiref.sync import async_to_sync
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
 import psycopg2
@@ -581,32 +581,76 @@ class FileUploadView(APIView):
 #         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
 
 def create_bot(request):
-    data = json.loads(request.body)
-    bot_name = data.get('bot_name')
-    routing = data.get('routing')
-    prompt = data.get('prompt')
-    industry = data.get('industry')
-    retrieve_image = data.get('retrieve_image')
-    knowledge_base = data.get('knowledge_base')
-    line_integration = data.get('line_integration')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_name = data.get('bot_name')
+        routing = data.get('routing')
+        prompt = data.get('prompt')
+        industry = data.get('industry')
+        retrieve_image = data.get('retrieve_image')
+        knowledge_base = data.get('knowledge_base')
+        line_integration_uuid = data.get('line_integration')
 
-    RoutingChain.objects.create(
-        bot_name= bot_name,
-        routing = routing,
-        prompt = prompt,
-        industry = industry,
-        retrieve_image = retrieve_image,
-        knowledge_base = knowledge_base,
-        is_active = False,
-        created_at = datetime.now(),
-    )
+        routing_chain = RoutingChain.objects.create(
+            bot_name=bot_name,
+            routing=routing,
+            prompt=prompt,
+            industry=industry,
+            retrieve_image=retrieve_image,
+            knowledge_base=knowledge_base,
+            is_active=False,
+            created_at=datetime.now(),
+        )
 
-    bot_id = RoutingChain.objects.filter(bot_name=bot_name).values('id')
-    line_integration_id = LineIntegration.objects.filter(user_id=line_integration).values('uuid')
+        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+        if not line_integration:
+            return JsonResponse({"message": "Line integration not found!"}, status=404)
 
-    LineConnection.objects.create(
-        bot_id=bot_id,
-        uuid=line_integration_id,
-    )
+        LineConnection.objects.create(
+            bot_id=routing_chain,
+            uuid=line_integration,
+        )
 
-    return JsonResponse({"message": "Create bot successfully!"}, status=200)
+        return JsonResponse({"message": "Create bot successfully!"}, status=200)
+    else:
+        bot_name = 'test'
+        routing = 'test'
+        prompt = 'test'
+        industry = 'AGRICULTURE'
+        retrieve_image = False
+        knowledge_base = 'test'
+        line_integration_uuid = '16fd2706-8baf-433b-82eb-8c7fada847da'
+
+        routing_chain = RoutingChain.objects.create(
+            bot_name=bot_name,
+            routing=routing,
+            prompt=prompt,
+            industry=industry,
+            retrieve_image=retrieve_image,
+            knowledge_base=knowledge_base,
+            is_active=False,
+            created_at=datetime.now(),
+        )
+
+        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+        if not line_integration:
+            return JsonResponse({"message": "Line integration not found!"}, status=404)
+
+        LineConnection.objects.create(
+            bot_id=routing_chain,
+            uuid=line_integration,
+        )
+
+        return JsonResponse({"message": "Create bot successfully!"}, status=200)
+
+def list_line_integration(request):
+    line_integrations = LineIntegration.objects.all()
+    uuids = [integration.uuid for integration in line_integrations]
+
+    return JsonResponse(uuids, safe=False)
+
+def list_industry_choices(request):
+    industry_choices = RoutingChain._meta.get_field('industry').choices
+    industry_values = [choice[0] for choice in industry_choices]
+
+    return JsonResponse(industry_values, safe=False)
