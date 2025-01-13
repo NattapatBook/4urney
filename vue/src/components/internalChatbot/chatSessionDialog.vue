@@ -90,7 +90,7 @@ export default {
       type: Object,
       default: () => {
         return {
-          id: -1,
+          id: `-1`,
           name: `untitled`,
           lastConversationTime: new Date(),
         };

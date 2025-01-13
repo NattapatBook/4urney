@@ -93,9 +93,11 @@
                 }"
               >
                 <ChatSession
+                  ref="chat_session_ref"
                   :selected-user-prop="selectedUser"
                   :is-change="isSelectedDataChange"
                   :dashboard-data-prop="dashboardData"
+                  @changeChatSession="changeChatSession"
                 />
               </v-card>
             </v-col>
@@ -129,8 +131,11 @@
                   borderRadius: '8px',
                 }"
               >
-                <ChatPanel
+                <ChatPanelBot
                   ref="chat_panel_ref"
+                  :selected-user-prop="selectedUser"
+                  :selected-chat-prop="chatSelected"
+                  :is-change="isSelectedDataChange"
                   :fullscreen="fullscreen"
                   @fullscreen="fullscreen = !fullscreen"
                 />
@@ -144,19 +149,21 @@
 </template>
 
 <script>
-import ChatPanel from "@/components/listen/chatPanel.vue";
 // import axios from "axios";
 import ChatSession from "@/components/internalChatbot/chatSession.vue";
 import ListChatbot from "@/components/internalChatbot/listChatbot.vue";
 import ListChatbotCompact from "@/components/internalChatbot/listChatbotCompact.vue";
+import ChatPanelBot from "@/components/internalChatbot/chatPanelBot.vue";
+// import chatPanelChatBot from "@/components/listen/chatPanelChatBot.vue";
 
 export default {
   name: "listen",
   components: {
     ListChatbot,
     ListChatbotCompact,
-    ChatPanel,
     ChatSession,
+    ChatPanelBot,
+    // chatPanelChatBot,
   },
   data() {
     return {
@@ -199,6 +206,11 @@ export default {
           phoneNumber: "untitled",
         },
       },
+      chatSelected: {
+        id: `-1`,
+        name: `untitled`,
+        lastConversationTime: new Date(),
+      },
       socket: null,
     };
   },
@@ -228,11 +240,20 @@ export default {
       }
     },
     selectUser(user, flag) {
+      // Remove old chat session
+      this.removeChatSessionItem();
+
       const oldId = this.selectedUser.id;
       this.selectedUser = user ? user : null;
       this.isSelectedDataChange = flag;
-      if (user && user.id !== `-1` && oldId !== user.id) {
-        this.scrollTo("chatSession");
+
+      if (user && user.id != -1 && oldId !== user.id) {
+        this.$nextTick(() => {
+          const chatSession = document.getElementById("chatSession");
+          if (chatSession && chatSession.style.display !== "none") {
+            this.scrollTo("chatSession");
+          }
+        });
       }
     },
     //getData
@@ -290,6 +311,29 @@ export default {
     },
     findById(id) {
       return this.userItems.find((item) => item.id === id);
+    },
+    changeChatSession(item) {
+      const oldId = this.chatSelected.id;
+
+      this.chatSelected = { ...item };
+
+      if (
+        this.chatSelected &&
+        this.chatSelected.id !== `-1` &&
+        oldId !== this.chatSelected.id
+      ) {
+        this.$nextTick(() => {
+          this.scrollTo("chatPanel");
+        });
+      }
+    },
+    removeChatSessionItem() {
+      this.chatSelected = {
+        id: `-1`,
+        name: `untitled`,
+        lastConversationTime: new Date(),
+      };
+      this.$refs.chat_session_ref.removeChatSessionItem();
     },
   },
 };
