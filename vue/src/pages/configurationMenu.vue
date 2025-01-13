@@ -145,7 +145,11 @@ export default {
             icon: `mdi-brain`,
             name: `AI Management`,
             description: `Oversee AI configurations, settings, and performance.`,
-            disabled: true,
+            disabled: false,
+            link: {
+              internal: true,
+              src: `AI_Management`,
+            },
           },
           {
             icon: `mdi-database-settings`,
