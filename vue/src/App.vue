@@ -4,10 +4,10 @@ import AppLayout from "./components/layouts/AppLayout.vue";
 import axios from "axios";
 import LandingPage from "./pages/LandingPage.vue";
 import MainMenu from "./pages/mainMenu.vue";
-import Listen from "./pages/listen.vue";
+import Listen from "./pages/communication/listen.vue";
 import TestUpload from "./pages/testUpload.vue";
 import ConfigurationMenu from "./pages/configurationMenu.vue";
-import InternalChatbot from "./pages/internalChatbot.vue";
+import InternalChatbot from "./pages/communication/internalChatbot.vue";
 import DashboardMenu from "./pages/dashboardMenu.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 
