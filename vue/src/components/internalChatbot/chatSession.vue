@@ -107,15 +107,7 @@
                   :key="`chatSession_${key}_${chat.id}`"
                   :class="chatSelected.id === chat.id ? `` : `hover-gradient`"
                   link
-                  @click="
-                    chatSelected.id === chat.id
-                      ? (chatSelected = {
-                          id: -1,
-                          name: `untitled`,
-                          lastConversationTime: new Date(),
-                        })
-                      : (chatSelected = { ...chat })
-                  "
+                  @click="clickSelectChatSession(chat)"
                   :style="
                     chatSelected.id === chat.id
                       ? {
@@ -233,7 +225,7 @@ export default {
         // provider: `untitled`,
       },
       chatSelected: {
-        id: -1,
+        id: `-1`,
         name: `untitled`,
         lastConversationTime: new Date(),
       },
@@ -283,7 +275,7 @@ export default {
       dialog: false,
       dialogMode: `untitled`,
       dialogItem: {
-        id: -1,
+        id: `-1`,
         name: `untitled`,
         lastConversationTime: new Date(),
       },
@@ -425,6 +417,25 @@ export default {
     },
     applyFromDialog(item) {
       console.log(item);
+    },
+    clickSelectChatSession(item) {
+      if (this.chatSelected.id === item.id) {
+        this.chatSelected = {
+          id: `-1`,
+          name: `untitled`,
+          lastConversationTime: new Date(),
+        };
+      } else {
+        this.chatSelected = { ...item };
+      }
+      this.$emit(`changeChatSession`, this.chatSelected);
+    },
+    removeChatSessionItem() {
+      this.chatSelected = {
+        id: `-1`,
+        name: `untitled`,
+        lastConversationTime: new Date(),
+      };
     },
   },
 };
