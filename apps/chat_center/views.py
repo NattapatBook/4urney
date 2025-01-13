@@ -11,6 +11,7 @@ import json
 import requests
 import pytz
 from datetime import datetime
+import pandas as pd
 from channels.layers import get_channel_layer
 
 from rest_framework import status, permissions
@@ -21,6 +22,8 @@ from apps.chat_center.models import User, OrganizationMember, Customer, Message,
 from apps.webhook_line.models import LineIntegration, LineConnection
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
+from dotenv import load_dotenv
+from INGESTION.function import *
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -579,6 +582,49 @@ class FileUploadView(APIView):
 #             return JsonResponse({"message": "Uploaded file is not a CSV"}, status=400)
 #
 #         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
+
+
+def embedded_data(request):
+    load_dotenv()
+
+    bucket_name = os.environ['AWS_STORAGE_BUCKET_NAME']
+
+    save_dir = './downloads/'
+    s3_url = "https://4urney-dev-data-model.s3.amazonaws.com/Demo/EC_EI_008_S2.xlsx"
+    bucket_name, object_name = extract_bucket_and_object(s3_url)
+    save_file_in_original_format(bucket_name, object_name, save_dir)
+
+    org_name, file_name, file_path, collection_name = get_file_details(object_name, save_dir)
+
+    connections.connect("default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
+
+    file_extension = object_name.split('.')[-1]
+
+    if file_extension == 'xlsx':
+        print('Processing Excel file...')
+
+        whole_df = process_excel(file_path)
+        data_ingestion_df(data=whole_df, collection_name=collection_name)
+
+    elif file_extension == 'csv':
+        print('Processing CSV file...')
+
+        ready_data = process_csv(file_path)
+        data_ingestion_df(data=ready_data, collection_name=collection_name)
+
+    elif file_extension == 'pdf':
+        print('Processing PDF file...')
+
+        docs = process_pdf(file_path)
+        read_push_document(model_embedder=None, docs=docs, collection_name=collection_name)
+
+    else:
+        print('Unknown file type.')
+
+    delete_save_dir(save_dir)
+
+    return JsonResponse({"message": "Embedded file successfully!"}, status=200)
+
 
 def create_bot(request):
     if request.method == 'POST':
