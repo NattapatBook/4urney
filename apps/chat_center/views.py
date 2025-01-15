@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 import os
 import psycopg2
 import json
@@ -18,12 +19,14 @@ from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny
 # from sympy import line_integrate
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, ChatSummarize, ChatUserSatisfaction, ChatUserUrgent
 from apps.webhook_line.models import LineIntegration, LineConnection
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
 from dotenv import load_dotenv
+from langchain_community.chat_models import ChatOpenAI
 from INGESTION.function import *
+from utility.function import *
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -709,3 +712,84 @@ def list_upload_file(request):
         file['file_name'] = file['file'].split('/')[-1]
 
     return JsonResponse(file_details, safe=False)
+
+
+def summarize_dashboard(request):
+    user_id = 'U32afe3db274f527b57262faf86bb1359'
+    # data = json.loads(request.body)
+    # user_id = data.get('user_id')
+
+    llms = ChatOpenAI(
+        temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4"  # Model version
+    )
+    customer = Customer.objects.get(platform_id=user_id)
+    # Task 1: Summarize conversations
+    df_msgs = pd.DataFrame(list(Message.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp', 'organization_id')))
+
+    df_sums_query = ChatSummarize.objects.filter(platform_id=user_id)
+
+    if df_sums_query.exists():
+        df_sums = pd.DataFrame(
+            list(df_sums_query.values('platform_id', 'summarize', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_sums = pd.DataFrame(columns=['platform_id', 'summarize', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize")
+    ChatSummarize.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "summarize": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    # Task 2: Score customer satisfaction
+    df_sats_query = ChatUserSatisfaction.objects.filter(platform_id=user_id)
+
+    if df_sats_query.exists():
+        df_sats = pd.DataFrame(
+            list(df_sats_query.values('platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_sats = pd.DataFrame(columns=['platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction")
+
+    ChatUserSatisfaction.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "satisfaction": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    # Task 3: Identify urgent user interactions
+    df_urg_query = ChatUserUrgent.objects.filter(platform_id=user_id)
+
+    if df_urg_query.exists():
+        df_urg = pd.DataFrame(
+            list(df_urg_query.values('platform_id', 'urgent', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_urg = pd.DataFrame(columns=['platform_id', 'urgent', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_urgent", "urgent")
+
+    ChatUserUrgent.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "urgent": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    return JsonResponse({"message": "Test"}, status=200)

@@ -259,7 +259,7 @@ class RoutingChain(models.Model):
 class ChatSummarize(models.Model):
     platform_id = models.CharField(max_length=1000, primary_key=True)
     summarize = models.TextField(null=True, blank=True)
-    latest_msg_date = models.DateTimeField(null=True, blank=True)
+    lastest_msg_date = models.DateTimeField(null=True, blank=True)
     generated_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -269,7 +269,7 @@ class ChatSummarize(models.Model):
 class ChatUserSatisfaction(models.Model):
     platform_id = models.CharField(max_length=1000, primary_key=True)
     satisfaction = models.IntegerField(null=True, blank=True)
-    latest_msg_date = models.DateTimeField(null=True, blank=True)
+    lastest_msg_date = models.DateTimeField(null=True, blank=True)
     generated_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -279,7 +279,7 @@ class ChatUserSatisfaction(models.Model):
 class ChatUserUrgent(models.Model):
     platform_id = models.CharField(max_length=1000, primary_key=True)
     urgent = models.IntegerField(null=True, blank=True)
-    latest_msg_date = models.DateTimeField(null=True, blank=True)
+    lastest_msg_date = models.DateTimeField(null=True, blank=True)
     generated_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
