@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.schema import Document as LangChainDocument
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index.core import SimpleDirectoryReader

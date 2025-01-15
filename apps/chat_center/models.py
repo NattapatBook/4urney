@@ -254,3 +254,33 @@ class RoutingChain(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.bot_name}"
+
+
+class ChatSummarize(models.Model):
+    platform_id = models.CharField(max_length=1000, primary_key=True)
+    summarize = models.TextField(null=True, blank=True)
+    latest_msg_date = models.DateTimeField(null=True, blank=True)
+    generated_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.platform_id}"
+
+
+class ChatUserSatisfaction(models.Model):
+    platform_id = models.CharField(max_length=1000, primary_key=True)
+    satisfaction = models.IntegerField(null=True, blank=True)
+    latest_msg_date = models.DateTimeField(null=True, blank=True)
+    generated_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.platform_id}"
+
+
+class ChatUserUrgent(models.Model):
+    platform_id = models.CharField(max_length=1000, primary_key=True)
+    urgent = models.IntegerField(null=True, blank=True)
+    latest_msg_date = models.DateTimeField(null=True, blank=True)
+    generated_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.platform_id}"

@@ -700,3 +700,12 @@ def list_industry_choices(request):
     industry_values = [choice[0] for choice in industry_choices]
 
     return JsonResponse(industry_values, safe=False)
+
+
+def list_upload_file(request):
+    file_details = UploadedFile.objects.values('file', 'uploaded_at', 'collection_name', 'embedded_date')
+    for file in file_details:
+        file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
+        file['file_name'] = file['file'].split('/')[-1]
+
+    return JsonResponse(file_details, safe=False)
