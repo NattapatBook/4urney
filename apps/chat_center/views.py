@@ -1,4 +1,5 @@
 import csv
+import threading
 
 from asgiref.sync import async_to_sync
 from django.contrib.auth.decorators import login_required
@@ -6,6 +7,9 @@ from django.forms import model_to_dict
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.views import View
+from django.db import connections
+from django.shortcuts import get_object_or_404
 import os
 import psycopg2
 import json
@@ -14,6 +18,7 @@ import pytz
 from datetime import datetime
 import pandas as pd
 from channels.layers import get_channel_layer
+import asyncio
 
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny
@@ -519,48 +524,6 @@ class FileUploadView(APIView):
         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
 
 
-def embedded_data(request):
-    load_dotenv()
-
-    bucket_name = os.environ['AWS_STORAGE_BUCKET_NAME']
-
-    save_dir = './downloads/'
-    s3_url = "https://4urney-dev-data-model.s3.amazonaws.com/Demo/EC_EI_008_S2.xlsx"
-    bucket_name, object_name = extract_bucket_and_object(s3_url)
-    save_file_in_original_format(bucket_name, object_name, save_dir)
-
-    org_name, file_name, file_path, collection_name = get_file_details(object_name, save_dir)
-
-    connections.connect("default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
-
-    file_extension = object_name.split('.')[-1]
-
-    if file_extension == 'xlsx':
-        print('Processing Excel file...')
-
-        whole_df = process_excel(file_path)
-        data_ingestion_df(data=whole_df, collection_name=collection_name)
-
-    elif file_extension == 'csv':
-        print('Processing CSV file...')
-
-        ready_data = process_csv(file_path)
-        data_ingestion_df(data=ready_data, collection_name=collection_name)
-
-    elif file_extension == 'pdf':
-        print('Processing PDF file...')
-
-        docs = process_pdf(file_path)
-        read_push_document(model_embedder=None, docs=docs, collection_name=collection_name)
-
-    else:
-        print('Unknown file type.')
-
-    delete_save_dir(save_dir)
-
-    return JsonResponse({"message": "Embedded file successfully!"}, status=200)
-
-
 def create_bot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -638,7 +601,7 @@ def list_industry_choices(request):
 
 
 def list_upload_file(request):
-    file_details = UploadedFile.objects.values('file', 'uploaded_at', 'collection_name', 'embedded_date')
+    file_details = list(UploadedFile.objects.values('file', 'uploaded_at', 'collection_name', 'embedded_date', 'status'))
     for file in file_details:
         file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
         file['file_name'] = file['file'].split('/')[-1]
@@ -725,3 +688,146 @@ def summarize_dashboard(request):
     )
 
     return JsonResponse({"message": "Done"}, status=200)
+
+async def process_file_async(file_path, file_extension, collection_name, uploaded_file):
+    if file_extension == 'xlsx':
+        print('Processing Excel file...')
+        whole_df = await asyncio.to_thread(process_excel, file_path)
+        await asyncio.to_thread(data_ingestion_df, data=whole_df, collection_name=collection_name)
+    elif file_extension == 'csv':
+        print('Processing CSV file...')
+        ready_data = await asyncio.to_thread(process_csv, file_path)
+        await asyncio.to_thread(data_ingestion_df, data=ready_data, collection_name=collection_name)
+    elif file_extension == 'pdf':
+        print('Processing PDF file...')
+        docs = await asyncio.to_thread(process_pdf, file_path)
+        await asyncio.to_thread(read_push_document, model_embedder=None, docs=docs, collection_name=collection_name)
+    else:
+        print('Unknown file type.')
+
+    # Update the UploadedFile model
+    uploaded_file.collection_name = collection_name
+    uploaded_file.embedded_date = datetime.now()
+    await asyncio.to_thread(uploaded_file.save)
+
+# class EmbeddedDataView(View):
+#     async def get(self, request, *args, **kwargs):
+#         load_dotenv()
+#
+#         bucket_name = os.environ['AWS_STORAGE_BUCKET_NAME']
+#         save_dir = './downloads/'
+#
+#         # Fetch file from S3 (this is an I/O-bound operation and can be async)
+#         s3_url = "https://4urney-dev-data-model.s3.amazonaws.com/Demo/EC_EI_008_S2.xlsx"
+#         bucket_name, object_name = extract_bucket_and_object(s3_url)
+#         await asyncio.to_thread(save_file_in_original_format, bucket_name, object_name, save_dir)
+#
+#         org_name, file_name, file_path, collection_name = get_file_details(object_name, save_dir)
+#
+#         # Connect to Milvus asynchronously (Database connection can be offloaded to a thread)
+#         await asyncio.to_thread(connections.connect, "default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
+#
+#         # Get the UploadedFile instance to update
+#         uploaded_file = await asyncio.to_thread(UploadedFile.objects.get, file__exact=object_name)
+#
+#         file_extension = object_name.split('.')[-1]
+#
+#         # Process the file asynchronously (offload long-running tasks to separate threads)
+#         await process_file_async(file_path, file_extension, collection_name, uploaded_file)
+#
+#         # Cleanup after processing (run in a separate thread)
+#         await asyncio.to_thread(delete_save_dir, save_dir)
+#
+#         return JsonResponse({"message": "Embedded file successfully!"}, status=200)
+
+
+class TaskStatusView(View):
+    def get(self, request, *args, **kwargs):
+        # file_name = kwargs.get('file_name')
+
+        file_name = 'Demo/EC_EI_008_S2.xlsx'
+        uploaded_file = get_object_or_404(UploadedFile, file__exact=file_name)
+
+        if uploaded_file.embedded_date:
+            return JsonResponse({"status": "Completed", "embedded_date": uploaded_file.embedded_date})
+        else:
+            return JsonResponse({"status": "Pending"})
+
+def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id):
+    uploaded_file = UploadedFile.objects.get(id=uploaded_file_id)
+
+    if file_extension == 'xlsx':
+        print('Processing Excel file...')
+        whole_df = process_excel(file_path)
+        data_ingestion_df(data=whole_df, collection_name=collection_name)
+    elif file_extension == 'csv':
+        print('Processing CSV file...')
+        ready_data = process_csv(file_path)
+        data_ingestion_df(data=ready_data, collection_name=collection_name)
+    elif file_extension == 'pdf':
+        print('Processing PDF file...')
+        docs = process_pdf(file_path)
+        read_push_document(model_embedder=None, docs=docs, collection_name=collection_name)
+    else:
+        print('Unknown file type.')
+
+    uploaded_file.collection_name = collection_name
+    uploaded_file.embedded_date = datetime.now()
+    uploaded_file.status = 'Completed'
+    uploaded_file.save()
+    save_dir = './downloads/'
+    delete_save_dir(save_dir)
+    print('Done')
+
+class EmbeddedDataView(View):
+    def get(self, request, *args, **kwargs):
+        load_dotenv()
+
+        save_dir = './downloads/'
+
+        s3_url = "https://4urney-dev-data-model.s3.amazonaws.com/Demo/EC_EI_008_S2.xlsx"
+        bucket_name, object_name = extract_bucket_and_object(s3_url)
+        save_file_in_original_format(bucket_name, object_name, save_dir)
+
+        org_name, file_name, file_path, collection_name = get_file_details(object_name, save_dir)
+
+        connections.connect("default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
+
+        uploaded_file = UploadedFile.objects.get(file__exact=object_name)
+        uploaded_file.status = 'Processing'
+        uploaded_file.save()
+
+        file_extension = object_name.split('.')[-1]
+
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
+
+        return JsonResponse({"message": "Embedding task has been started."}, status=200)
+
+    def post(self, request, *args, **kwargs):
+        data = request.POST
+
+        s3_url = data.get('file_url', None)
+
+        if not s3_url:
+            return JsonResponse({"error": "s3_url parameter is required."}, status=400)
+
+        load_dotenv()
+
+        save_dir = './downloads/'
+
+        bucket_name, object_name = extract_bucket_and_object(s3_url)
+        save_file_in_original_format(bucket_name, object_name, save_dir)
+
+        org_name, file_name, file_path, collection_name = get_file_details(object_name, save_dir)
+
+        connections.connect("default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
+
+        uploaded_file = UploadedFile.objects.get(file__exact=object_name)
+        uploaded_file.status = 'Processing'
+        uploaded_file.save()
+
+        file_extension = object_name.split('.')[-1]
+
+        threading.Thread(target=self.process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
+
+        return JsonResponse({"message": "Embedding task has been started."}, status=200)

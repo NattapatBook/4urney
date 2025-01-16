@@ -6,6 +6,8 @@ from django.db import models
 from datetime import datetime, timedelta
 
 from django.db.models import Q
+from mpmath.calculus.calculus import defun
+
 
 class INDUSTRY(models.TextChoices):
     AGRICULTURE = 'AGRICULTURE'
@@ -234,6 +236,7 @@ class UploadedFile(models.Model):
     file = models.FileField(upload_to=file_upload_to)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     organization_member = models.ForeignKey(OrganizationMember, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=255, null=True, blank=True)
     collection_name = models.CharField(max_length=1000, null=True, blank=True)
     embedded_date = models.DateTimeField(null=True, blank=True)
 
