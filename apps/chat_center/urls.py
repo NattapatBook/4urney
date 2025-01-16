@@ -26,7 +26,7 @@ urlpatterns = [
     path('create_bot/', create_bot),
     path('list_line_integration/', list_line_integration),
     path('list_industry/', list_industry_choices),
-    path('summarize_dashboard/', summarize_dashboard),
+    path('summarize_dashboard/<user_id>', summarize_dashboard),
     path('embedded_data/', EmbeddedDataView.as_view(), name='embedded_data'),
     path('task_status/', TaskStatusView.as_view(), name='task_status'),
     path('list_upload_file/', list_upload_file),

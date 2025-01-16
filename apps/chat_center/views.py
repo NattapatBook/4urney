@@ -609,10 +609,8 @@ def list_upload_file(request):
     return JsonResponse(file_details, safe=False)
 
 
-def summarize_dashboard(request):
-    user_id = 'U32afe3db274f527b57262faf86bb1359'
-    # data = json.loads(request.body)
-    # user_id = data.get('user_id')
+def summarize_dashboard(request, user_id):
+    # user_id = 'U32afe3db274f527b57262faf86bb1359'
 
     llms = ChatOpenAI(
         temperature=0.7,  # Controls randomness of responses
