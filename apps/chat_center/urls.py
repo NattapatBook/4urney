@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 # from apps.chat_center.views import my_api, CustomerViewSet
 from apps.chat_center.views import list_user, list_message, admin_reply_post, change_message_type, list_user_test, \
     list_dashboard, get_user_detail, list_message_test, admin_reply_post_test, change_message_type_test, \
-    list_dashboard_test, FileUploadView, create_bot, list_line_integration, list_industry_choices, summarize_dashboard, EmbeddedDataView, TaskStatusView, list_upload_file
+    list_dashboard_test, FileUploadView, create_bot, list_line_integration, list_industry_choices, summarize_dashboard, EmbeddedDataView, TaskStatusView, list_upload_file, list_knowledge_base
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -30,5 +30,6 @@ urlpatterns = [
     path('embedded_data/', EmbeddedDataView.as_view(), name='embedded_data'),
     path('task_status/', TaskStatusView.as_view(), name='task_status'),
     path('list_upload_file/', list_upload_file),
+    path('list_knowledge_base/', list_knowledge_base)
     # *router.urls,
 ]

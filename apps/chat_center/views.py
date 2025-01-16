@@ -8,7 +8,6 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.views import View
-from django.db import connections
 from django.shortcuts import get_object_or_404
 import os
 import psycopg2
@@ -32,6 +31,7 @@ from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
 from INGESTION.function import *
 from utility.function import *
+from pymilvus import utility
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -836,3 +836,9 @@ class EmbeddedDataView(View):
         threading.Thread(target=self.process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
+
+def list_knowledge_base(request):
+    connections.connect("default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
+    knowledge_base = utility.list_collections()
+
+    return JsonResponse(knowledge_base, safe=False)
