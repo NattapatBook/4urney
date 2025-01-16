@@ -125,3 +125,11 @@ def process_task(focus_user_ids, grouped, llms, task_fn, table_name, column_name
                 )
             except Exception as e:
                 print(f"An error occurred for user_id {user_id}: {e}")
+                latest_msg_date = group[1]['timestamp'].max()
+                return dict(
+                    user_id=user_id,
+                    result=None,
+                    lastest_msg_date=latest_msg_date,
+                    table_name=table_name,
+                    column_name=column_name,
+                )

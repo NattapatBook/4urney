@@ -452,7 +452,6 @@ def list_dashboard(request, id):
         return JsonResponse(data, safe=False)
 
 def list_dashboard_test(request, id):
-    # Fetch the dashboard data (assuming you're querying a single record, e.g., the one with id="-1")
     try:
         dashboard = Dashboard.objects.get(platform_id=id)
     except Dashboard.DoesNotExist:
@@ -512,79 +511,12 @@ class FileUploadView(APIView):
         if serializer.is_valid():
             uploaded_file = serializer.save(organization_member=organization_member)
 
-
             print(f"Uploaded file name: {uploaded_file.file.name}")
             print(f"File stored at: {uploaded_file.file.url}")
-
-            # if uploaded_file.file.name.endswith('.csv'):
-            #     try:
-            #         with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:
-            #             csv_reader = csv.DictReader(file)
-            #             rows = list(csv_reader)
-            #
-            #             data = rows[:5]
-            #             print(data)
-            #
-            #             return JsonResponse({"message": "File uploaded and processed successfully!", "data": data},
-            #                                 status=200)
-            #     except Exception as e:
-            #         return JsonResponse({"message": "Failed to read the CSV file", "error": str(e)}, status=400)
 
             return JsonResponse({"message": "File uploaded and processed successfully!"}, status=200)
 
         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
-
-# class FileUploadView(APIView):
-#     queryset = UploadedFile.objects.all()  # Modify as needed
-#
-#     permission_classes = [AllowAny]
-#
-#     def post(self, request, *args, **kwargs):
-#         # Serialize the uploaded file
-#         serializer = FileUploadSerializer(data=request.data)
-#
-#         if serializer.is_valid():
-#             uploaded_file = serializer.save()
-#
-#             # Rename the file before saving
-#             if uploaded_file.file:
-#                 file_path = uploaded_file.file.path
-#                 base_name, extension = os.path.splitext(uploaded_file.file.name)
-#
-#                 # Define your new file name logic here
-#                 new_file_name = f"test_upload_file{extension}"
-#
-#                 # Construct the new file path
-#                 new_file_path = os.path.join(os.path.dirname(file_path), new_file_name)
-#
-#                 # Rename the file
-#                 os.rename(file_path, new_file_path)
-#
-#                 # Update the file path in the model
-#                 uploaded_file.file.name = os.path.join('uploads', new_file_name)  # Adjust as needed for your file path logic
-#                 uploaded_file.save()
-#
-#             # Read the CSV file after saving it
-#             if uploaded_file.file.name.endswith('.csv'):
-#                 try:
-#                     # Open the uploaded CSV file and read its content
-#                     with open(uploaded_file.file.path, mode='r', newline='', encoding='utf-8') as file:
-#                         csv_reader = csv.DictReader(file)  # This assumes the CSV has a header row
-#                         rows = list(csv_reader)  # Convert the CSV content to a list of dictionaries
-#
-#                         # Process the CSV content as needed
-#                         # For demonstration, let's just return the first 5 rows
-#                         data = rows[:5]
-#                         print(data)
-#
-#                         return JsonResponse({"message": "File uploaded, renamed, and processed successfully!", "data": data},
-#                                             status=200)
-#                 except Exception as e:
-#                     return JsonResponse({"message": "Failed to read the CSV file", "error": str(e)}, status=400)
-#
-#             return JsonResponse({"message": "Uploaded file is not a CSV"}, status=400)
-#
-#         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
 
 
 def embedded_data(request):
@@ -781,7 +713,7 @@ def summarize_dashboard(request):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_urgent", "urgent")
+    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent")
 
     ChatUserUrgent.objects.update_or_create(
         platform_id=user_id,
@@ -792,4 +724,4 @@ def summarize_dashboard(request):
         }
     )
 
-    return JsonResponse({"message": "Test"}, status=200)
+    return JsonResponse({"message": "Done"}, status=200)
