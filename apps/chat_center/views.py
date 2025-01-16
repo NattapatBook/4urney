@@ -548,14 +548,14 @@ def create_bot(request):
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
         if not line_integration:
-            return JsonResponse({"message": "Line integration not found!"}, status=404)
+            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
 
         LineConnection.objects.create(
             bot_id=routing_chain,
             uuid=line_integration,
         )
 
-        return JsonResponse({"message": "Create bot successfully!"}, status=200)
+        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
     else:
         bot_name = 'test'
         routing = 'test'
@@ -578,20 +578,27 @@ def create_bot(request):
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
         if not line_integration:
-            return JsonResponse({"message": "Line integration not found!"}, status=404)
+            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
 
         LineConnection.objects.create(
             bot_id=routing_chain,
             uuid=line_integration,
         )
 
-        return JsonResponse({"message": "Create bot successfully!"}, status=200)
+        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
 
 def list_line_integration(request):
     line_integrations = LineIntegration.objects.all()
-    uuids = [integration.uuid for integration in line_integrations]
-
-    return JsonResponse(uuids, safe=False)
+    # uuids = [integration.uuid for integration in line_integrations]
+    line_integration_data = [
+        {
+            'uuid': integration.uuid,
+            'user_id': integration.user_id,
+            'username': integration.username,
+        }
+        for integration in line_integrations
+    ]
+    return JsonResponse(line_integration_data, safe=False)
 
 def list_industry_choices(request):
     industry_choices = RoutingChain._meta.get_field('industry').choices
