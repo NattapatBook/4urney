@@ -16,7 +16,9 @@
         <div :style="{ marginTop: `90px`, width: `100%` }">
           <v-row class="ma-2" :style="{ paddingInline: `10px` }">
             <v-col cols="12" class="pa-1" :style="{ height: `100%` }">
+              <!--list-->
               <v-card
+                v-if="componentsMode === `list`"
                 class="rounded-xl"
                 :style="{ height: `calc(100dvh - 110px)` }"
               >
@@ -79,6 +81,7 @@
                               filter: item.disabled ? `grayscale(1)` : ``,
                               cursor: `pointer`,
                             }"
+                            @click="clickBot(item)"
                           >
                             <v-card-text
                               :style="{
@@ -90,7 +93,7 @@
                             >
                               <div>
                                 <v-avatar
-                                  :style="{ height: `200px`, width: `200px` }"
+                                  :style="{ height: `80px`, width: `80px` }"
                                 >
                                   <v-img
                                     v-if="item.img"
@@ -183,6 +186,7 @@
                       <v-row>
                         <v-col class="mb-5" cols="12">
                           <v-card
+                            @click="clickBot(null)"
                             class="rounded-lg hover-tilt-glow-wave"
                             :style="{
                               height: `100%`,
@@ -223,6 +227,12 @@
                   </div>
                 </v-card-text>
               </v-card>
+              <!--create&edit-->
+              <DigitalTwinConfig
+                v-else-if="componentsMode === `createBot`"
+                @backToMain="componentsMode = `list`"
+                :item="botItem"
+              />
             </v-col>
           </v-row>
         </div>
@@ -232,8 +242,11 @@
 </template>
 
 <script>
+import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfig.vue";
+
 export default {
   name: "configurationMenu",
+  components: { DigitalTwinConfig },
   data() {
     return {
       windowWidth: 0,
@@ -299,6 +312,10 @@ export default {
           },
         ],
       },
+      //bot
+      componentsMode: `list`,
+      botMode: `create`,
+      botItem: null,
     };
   },
   mounted() {
@@ -327,14 +344,10 @@ export default {
       let name = string.replaceAll(`_`, ` `);
       return name;
     },
-
-    //    clickChangeMenu(item) {
-    //      if (item.internal) {
-    //        this.$emit("navigate", item.src);
-    //      } else {
-    //        window.open(item.src, "_blank");
-    //      }
-    //    },
+    clickBot(item) {
+      this.componentsMode = `createBot`;
+      this.botItem = item;
+    },
   },
 };
 </script>

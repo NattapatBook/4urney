@@ -15,7 +15,17 @@
       }"
     >
       <div class="text-center pa-4">
+        <v-btn
+          v-if="
+            page !== `Explore Feature` &&
+            page !== `Dashboard` &&
+            page !== `Configuration`
+          "
+          icon="mdi-backburger"
+          @click="clickChangeMenu(`lastest`)"
+        ></v-btn>
         <v-dialog
+          v-else
           :close-on-content-click="true"
           v-model="dialog"
           :transition="
@@ -116,7 +126,7 @@
               >
                 <span class="gradient-text">{{ user.name }}</span>
               </v-list-item>
-              <v-list-item class="pt-0">
+              <!-- <v-list-item class="pt-0">
                 <div class="pt-0">
                   <v-btn
                     @click="clickLogout()"
@@ -130,7 +140,7 @@
                     <v-icon>mdi-logout</v-icon>
                   </v-btn>
                 </div>
-              </v-list-item>
+              </v-list-item> -->
 
               <v-divider></v-divider>
 
@@ -314,7 +324,6 @@
               <v-card-text>
                 <v-row>
                   <v-col
-                    class="pt-0"
                     :style="{
                       display: `flex`,
                       alignItems: `center`,
@@ -327,7 +336,7 @@
                   <v-col class="pt-0">
                     <v-card
                       elevation="0"
-                      :style="{ height: `50vh`, overflowY: `auto` }"
+                      :style="{ height: `40dvh`, overflowY: `auto` }"
                     >
                       <v-card-text
                         class="pa-1"
@@ -362,6 +371,33 @@
                   </v-col>
                 </v-row>
               </v-card-text>
+              <v-divider :style="{ color: `black` }" class="mx-10" />
+              <!--Logout-->
+              <v-card-text>
+                <v-row>
+                  <v-col
+                    cols="12"
+                    :style="{
+                      display: `flex`,
+                      justifyContent: `center`,
+                      alignItems: `center`,
+                    }"
+                  >
+                    <v-btn
+                      @click="clickLogout()"
+                      :style="{
+                        width: `30%`,
+                        color: `white`,
+                        background: `rgb(254,56,147)`,
+                        background: `linear-gradient(45deg, rgba(254,56,147,1) 0%, rgba(55,61,133,1) 59%)`,
+                      }"
+                    >
+                      <span>logout</span>&nbsp;
+                      <v-icon>mdi-logout</v-icon>
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-card-text>
             </v-card>
           </v-menu>
         </div>
@@ -377,6 +413,10 @@
 import axios from "axios";
 export default {
   props: {
+    page: {
+      type: String,
+      default: `Explore Feature`,
+    },
     user: {
       type: Object,
       default: () => {

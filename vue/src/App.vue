@@ -16,8 +16,16 @@ const currentPage = ref("landing");
 //dev test - by pass login
 //const currentPage = ref("Explore Feature");
 
+const lastestPage = ref("untitled");
+
 function navigateTo(page) {
-  currentPage.value = page;
+  if (page === `lastest`) {
+    console.log(lastestPage.value);
+    currentPage.value = lastestPage.value;
+  } else {
+    lastestPage.value = currentPage.value;
+    currentPage.value = page;
+  }
 }
 
 const userData = ref({
@@ -64,7 +72,7 @@ function checkLogin() {
       userData.value.email = res.data.email;
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;
-      currentPage.value = `Explore Feature`;
+      navigateTo(`Explore Feature`);
     })
     // .then(() => {
     //   // Open WebSocket connection
@@ -106,6 +114,7 @@ onMounted(async () => {
     <transition name="fade" mode="out-in">
       <AppLayout
         v-if="currentPage !== 'landing'"
+        :page="currentPage"
         :user="userData"
         @navigate="navigateTo"
       >
