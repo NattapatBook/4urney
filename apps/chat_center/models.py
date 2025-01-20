@@ -205,6 +205,7 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.by} at {self.timestamp}"
+    
 
 class Dashboard(models.Model):
     platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
@@ -287,3 +288,24 @@ class ChatUserUrgent(models.Model):
 
     def __str__(self):
         return f"{self.platform_id}"
+
+
+class InternalChatMessage(models.Model):
+    platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
+    message = models.TextField(null=True, blank=True)
+    by = models.CharField(max_length=255, null=True, blank=True) # user or customer
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True) # user => admin(a,b,c) , bot(a,b,c)
+    bot_id = models.ForeignKey('RoutingChain', on_delete=models.CASCADE, null=True, blank=True)
+    session_id = models.ForeignKey('InternalChatSession', on_delete=models.CASCADE, null=True, blank=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
+    organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Message from {self.by} at {self.timestamp}"
+    
+
+class InternalChatSession(models.Model):
+    by = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.sesion_id} : {self.sesion_name}"
