@@ -260,7 +260,7 @@ export default {
           id: 2,
           name: `Define Skills, Tasks`,
           icon: `🤖`,
-          disabled: false,
+          disabled: true,
         },
         {
           id: 3,

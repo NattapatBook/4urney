@@ -157,6 +157,15 @@ export default {
             description: `Organize, analyze, and manage your data effectively.`,
             disabled: true,
           },
+          {
+            icon: `mdi-book-open-variant`,
+            name: `Knowledge Base`,
+            description: `Manage your bot's data sources for user queries.`,
+            link: {
+              internal: true,
+              src: `Knowledge_Management`,
+            },
+          },
         ],
         Test: [
           {

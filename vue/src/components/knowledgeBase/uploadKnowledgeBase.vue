@@ -1,0 +1,253 @@
+<template>
+  <v-dialog v-model="internalModel" width="500">
+    <v-card class="rounded-xl">
+      <!-- Dialog Title -->
+      <v-card-text
+        class="mt-2 pb-0"
+        :style="{ fontWeight: `bold`, fontSize: `1.2rem` }"
+      >
+        Knowledge Upload
+      </v-card-text>
+
+      <v-card-text class="pb-0">
+        <div>
+          <span> Choose a file to import your knowledge base. </span>
+        </div>
+      </v-card-text>
+      <v-card-text v-if="isLoading" :style="{ height: `156px` }">
+        <Loading :message="`Uploading...`" />
+      </v-card-text>
+      <!-- Dialog Content -->
+      <v-card-text v-else :style="{ height: `156px` }">
+        <div class="file-upload">
+          <div
+            :style="{
+              display: `flex`,
+              alignItems: `center`,
+            }"
+          >
+            <v-icon
+              class="mr-2"
+              :color="selectedFile ? `primary` : ``"
+              :style="{ fontSize: `2rem` }"
+            >
+              {{ selectedFile ? `mdi-file` : `mdi-paperclip` }}
+            </v-icon>
+            <v-file-input
+              hide-details
+              rounded
+              :color="selectedFile ? `primary` : ``"
+              :base-color="selectedFile ? `primary` : ``"
+              id="file-upload"
+              v-model="selectedFile"
+              :accept="acceptedFormats"
+              :rules="[fileRequiredRule]"
+              label="Choose file"
+              clearable
+              variant="outlined"
+              prepend-icon=""
+              dense
+              chips
+            />
+          </div>
+          <p
+            v-if="selectedFile"
+            :style="{ textAlign: `end`, fontSize: `0.8rem`, color: `#1867c0` }"
+            class="pr-2"
+          >
+            File Size: {{ formatFileSize(selectedFile.size) }}
+          </p>
+          <p
+            class="pr-2"
+            v-else
+            :style="{ textAlign: `end`, fontSize: `0.8rem` }"
+          >
+            CSV, PDF, XLSX format only
+          </p>
+        </div>
+      </v-card-text>
+
+      <!-- Dialog Actions -->
+      <v-card-text
+        class="pt-0"
+        :style="{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }"
+      >
+        <v-btn :disabled="isLoading" @click="closeDialog" variant="text">
+          Cancel
+        </v-btn>
+        <v-btn
+          @click="uploadFile"
+          :disabled="!selectedFile || isLoading"
+          color="primary"
+          class="ml-2"
+          text
+        >
+          Upload File
+        </v-btn>
+      </v-card-text>
+    </v-card>
+    <!--snackbar-->
+    <v-snackbar
+      v-model="snackbarAlert"
+      timeout="5000"
+      :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
+      location="top"
+      location-strategy="connected"
+    >
+      <span>
+        <v-icon v-if="snackbarSuccess"
+          >mdi-checkbox-marked-circle-outline</v-icon
+        >
+        <v-icon v-else>mdi-alert-circle</v-icon>
+        {{ snackbarMsg }}
+      </span>
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="white" text v-bind="attrs" @click="snackbarAlert = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
+  </v-dialog>
+</template>
+
+<script>
+import axios from "axios";
+import Loading from "../tools/loading.vue";
+
+export default {
+  name: "FileUploadDialog",
+  components: { Loading },
+  props: {
+    modelValue: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      snackbarAlert: false,
+      snackbarSuccess: false,
+      snackbarMsg: `untitled`,
+      acceptedFormats: ".xlsx,.csv,.pdf",
+      selectedFile: null,
+      isLoading: false,
+    };
+  },
+  computed: {
+    internalModel: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit("update:modelValue", value);
+      },
+    },
+  },
+  methods: {
+    closeDialog() {
+      this.resetFileInput();
+      this.internalModel = false;
+    },
+    formatFileSize(sizeInBytes) {
+      if (sizeInBytes < 1024) {
+        return `${sizeInBytes} B`; // Bytes
+      } else if (sizeInBytes < 1048576) {
+        return `${(sizeInBytes / 1024).toFixed(2)} KB`; // Kilobytes
+      } else if (sizeInBytes < 1073741824) {
+        return `${(sizeInBytes / 1048576).toFixed(2)} MB`; // Megabytes
+      } else {
+        return `${(sizeInBytes / 1073741824).toFixed(2)} GB`; // Gigabytes
+      }
+    },
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Check file extension
+        const validExtensions = ["xlsx", "csv", "pdf"];
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+
+        if (validExtensions.includes(fileExtension)) {
+          this.selectedFile = file;
+        } else {
+          alert("Please select a valid file (xlsx, csv, pdf).");
+          this.resetFileInput();
+        }
+      }
+    },
+    resetFileInput() {
+      this.selectedFile = null;
+      document.getElementById("file-upload").value = "";
+    },
+    async uploadFile() {
+      this.isLoading = true;
+      if (this.selectedFile) {
+        const formData = new FormData();
+        formData.append("file", this.selectedFile);
+
+        try {
+          const response = await axios.post(
+            "api/chat_center/uploadTest/",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          if (response.status === 200) {
+            this.snackbarMsg = `Success! Your file has been uploaded.`;
+            this.snackbarSuccess = true;
+            this.snackbarAlert = true;
+            this.isLoading = false;
+            this.resetFileInput();
+            this.closeDialog();
+          } else {
+            this.snackbarMsg = `Upload failed`;
+            this.snackbarSuccess = false;
+            this.snackbarAlert = true;
+            this.isLoading = false;
+          }
+        } catch (error) {
+          this.snackbarMsg = error;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
+          this.isLoading = false;
+        }
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.file-upload {
+  margin: 20px;
+}
+
+.upload-label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+input[type="file"] {
+  margin-bottom: 10px;
+  display: block;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.v-btn {
+  font-weight: 600;
+}
+</style>

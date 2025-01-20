@@ -10,6 +10,7 @@ import ConfigurationMenu from "./pages/configurationMenu.vue";
 import InternalChatbot from "./pages/communication/internalChatbot.vue";
 import DashboardMenu from "./pages/dashboardMenu.vue";
 import DigitalTwinList from "./pages/config/digitalTwinList.vue";
+import KnowledgeManagement from "./pages/config/knowledgeManagement.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 
 const currentPage = ref("landing");
@@ -139,6 +140,9 @@ onMounted(async () => {
           <DigitalTwinList
             v-else-if="currentPage === `AI_Management`"
             @navigate="navigateTo"
+          />
+          <KnowledgeManagement
+            v-else-if="currentPage === `Knowledge_Management`"
           />
           <TestUpload v-else-if="currentPage === `Upload_Test`" />
         </transition>
