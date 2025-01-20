@@ -94,7 +94,7 @@
     <!--snackbar-->
     <v-snackbar
       v-model="snackbarAlert"
-      timeout="5000"
+      timeout="2000"
       :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
       location="top"
       location-strategy="connected"

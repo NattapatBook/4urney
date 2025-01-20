@@ -56,14 +56,20 @@
                         clearable
                         :disabled="isLoading || isError"
                       ></v-text-field>
-                      <v-btn
-                        :disabled="isLoading || isError"
-                        icon
-                        color="primary"
-                        @click="onUpload"
-                      >
-                        <v-icon>mdi-upload</v-icon>
-                      </v-btn>
+                      <v-tooltip text="Tooltip" location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            :disabled="isLoading || isError"
+                            icon
+                            color="primary"
+                            @click="onUpload"
+                          >
+                            <v-icon>mdi-upload</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Upload file</span>
+                      </v-tooltip>
                     </div>
                   </div>
                   <v-container>
