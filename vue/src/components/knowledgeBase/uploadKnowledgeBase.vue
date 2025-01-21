@@ -28,19 +28,42 @@
           >
             <v-icon
               class="mr-2"
-              :color="selectedFile ? `primary` : ``"
+              :color="
+                !fileRequiredRule(selectedFile) && selectedFile
+                  ? `red`
+                  : fileRequiredRule(selectedFile)
+                  ? `primary`
+                  : ``
+              "
               :style="{ fontSize: `2rem` }"
             >
-              {{ selectedFile ? `mdi-file` : `mdi-paperclip` }}
+              {{
+                !fileRequiredRule(selectedFile) && selectedFile
+                  ? `mdi-close`
+                  : fileRequiredRule(selectedFile)
+                  ? `mdi-file`
+                  : `mdi-paperclip`
+              }}
             </v-icon>
             <v-file-input
               hide-details
               rounded
-              :color="selectedFile ? `primary` : ``"
-              :base-color="selectedFile ? `primary` : ``"
+              :color="
+                !fileRequiredRule(selectedFile) && selectedFile
+                  ? `red`
+                  : fileRequiredRule(selectedFile)
+                  ? `primary`
+                  : ``
+              "
+              :base-color="
+                !fileRequiredRule(selectedFile) && selectedFile
+                  ? `red`
+                  : fileRequiredRule(selectedFile)
+                  ? `primary`
+                  : ``
+              "
               v-model="selectedFile"
               :accept="acceptedFormats"
-              :rules="[fileRequiredRule]"
               label="Choose file"
               clearable
               variant="outlined"
@@ -50,7 +73,7 @@
             />
           </div>
           <p
-            v-if="selectedFile"
+            v-if="fileRequiredRule(selectedFile)"
             :style="{ textAlign: `end`, fontSize: `0.8rem`, color: `#1867c0` }"
             class="pr-2"
           >
@@ -59,7 +82,12 @@
           <p
             class="pr-2"
             v-else
-            :style="{ textAlign: `end`, fontSize: `0.8rem` }"
+            :style="{
+              textAlign: `end`,
+              fontSize: `0.8rem`,
+              color:
+                !fileRequiredRule(selectedFile) && selectedFile ? `red` : ``,
+            }"
           >
             CSV, PDF, XLSX format only
           </p>
@@ -81,7 +109,7 @@
         </v-btn>
         <v-btn
           @click="uploadFile"
-          :disabled="!selectedFile || isLoading"
+          :disabled="!fileRequiredRule(selectedFile) || isLoading"
           color="primary"
           class="ml-2"
           text
@@ -152,6 +180,19 @@ export default {
     closeDialog() {
       this.resetFileInput();
       this.internalModel = false;
+    },
+    fileRequiredRule(file) {
+      if (!file) {
+        return false;
+      }
+      const allowedExtensions = ["xlsx", "csv", "pdf"];
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+
+      if (!allowedExtensions.includes(fileExtension)) {
+        return false;
+      }
+
+      return true;
     },
     formatFileSize(sizeInBytes) {
       if (sizeInBytes < 1024) {
