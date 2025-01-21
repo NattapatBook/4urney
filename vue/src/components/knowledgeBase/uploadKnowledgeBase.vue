@@ -38,7 +38,6 @@
               rounded
               :color="selectedFile ? `primary` : ``"
               :base-color="selectedFile ? `primary` : ``"
-              id="file-upload"
               v-model="selectedFile"
               :accept="acceptedFormats"
               :rules="[fileRequiredRule]"
@@ -182,7 +181,6 @@ export default {
     },
     resetFileInput() {
       this.selectedFile = null;
-      document.getElementById("file-upload").value = "";
     },
     async uploadFile() {
       this.isLoading = true;
@@ -220,14 +218,14 @@ export default {
       formData.append("file", this.selectedFile);
       try {
         const response = await axios.post(`${item.url}`, formData);
-
+        console.log(response.status, response.status === 204);
         if (response.status === 204) {
           this.snackbarMsg = `Success! Your file has been uploaded.`;
           this.snackbarSuccess = true;
           this.snackbarAlert = true;
           this.isLoading = false;
           this.resetFileInput();
-          this.closeDialog();
+          // this.closeDialog();
         } else {
           this.snackbarMsg = `Upload failed`;
           this.snackbarSuccess = false;
