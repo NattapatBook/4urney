@@ -386,7 +386,7 @@
                     <v-btn
                       @click="clickLogout()"
                       :style="{
-                        width: `30%`,
+                        width: `200px`,
                         color: `white`,
                         background: `rgb(254,56,147)`,
                         background: `linear-gradient(45deg, rgba(254,56,147,1) 0%, rgba(55,61,133,1) 59%)`,

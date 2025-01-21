@@ -190,24 +190,14 @@ export default {
         const formData = new FormData();
         formData.append("file", this.selectedFile);
 
+        // console.log(this.selectedFile.name);
         try {
-          const response = await axios.post(
-            "api/chat_center/uploadTest/",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
+          const response = await axios.post("api/chat_center/uploadTest/", {
+            file: this.selectedFile.name,
+          });
 
           if (response.status === 200) {
-            this.snackbarMsg = `Success! Your file has been uploaded.`;
-            this.snackbarSuccess = true;
-            this.snackbarAlert = true;
-            this.isLoading = false;
-            this.resetFileInput();
-            this.closeDialog();
+            this.uploadS3(response.data);
           } else {
             this.snackbarMsg = `Upload failed`;
             this.snackbarSuccess = false;
@@ -220,6 +210,35 @@ export default {
           this.snackbarAlert = true;
           this.isLoading = false;
         }
+      }
+    },
+    async uploadS3(item) {
+      const formData = new FormData();
+      for (const key in item.fields) {
+        formData.append(key, item.fields[key]);
+      }
+      formData.append("file", this.selectedFile);
+      try {
+        const response = await axios.post(`${item.url}`, formData);
+
+        if (response.status === 204) {
+          this.snackbarMsg = `Success! Your file has been uploaded.`;
+          this.snackbarSuccess = true;
+          this.snackbarAlert = true;
+          this.isLoading = false;
+          this.resetFileInput();
+          this.closeDialog();
+        } else {
+          this.snackbarMsg = `Upload failed`;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
+          this.isLoading = false;
+        }
+      } catch (error) {
+        this.snackbarMsg = error;
+        this.snackbarSuccess = false;
+        this.snackbarAlert = true;
+        this.isLoading = false;
       }
     },
   },

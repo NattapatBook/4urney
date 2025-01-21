@@ -517,8 +517,8 @@ class FileUploadView(APIView):
 
         if serializer.is_valid():
             uploaded_file = serializer.save(organization_member=organization_member)
-            print(f'file_path {uploaded_file.file.path}')
-            data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.path)
+            print(f'file_path {uploaded_file.file}')
+            data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.name)
 
             print(f"Uploaded file name: {uploaded_file.file.name}")
             print(f"File stored at: {uploaded_file.file.url}")

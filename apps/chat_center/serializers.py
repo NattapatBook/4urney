@@ -45,5 +45,6 @@ class FileUploadSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         organization_member = validated_data.pop('organization_member', None)
+        validated_data["file"] = os.path.join(f'{organization_member.organization}',os.path.basename(validated_data["file"]))
         uploaded_file = UploadedFile.objects.create(organization_member=organization_member, **validated_data)
         return uploaded_file
