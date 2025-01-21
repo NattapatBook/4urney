@@ -2,6 +2,7 @@ import csv
 import threading
 
 from asgiref.sync import async_to_sync
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
 from django.http import JsonResponse, HttpResponse
@@ -18,6 +19,7 @@ from datetime import datetime
 import pandas as pd
 from channels.layers import get_channel_layer
 import asyncio
+import boto3
 
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny
@@ -515,13 +517,21 @@ class FileUploadView(APIView):
 
         if serializer.is_valid():
             uploaded_file = serializer.save(organization_member=organization_member)
+            print(f'file_path {uploaded_file.file.path}')
+            data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.path)
 
             print(f"Uploaded file name: {uploaded_file.file.name}")
             print(f"File stored at: {uploaded_file.file.url}")
 
-            return JsonResponse({"message": "File uploaded and processed successfully!"}, status=200)
+            # return JsonResponse({"message": "File uploaded and processed successfully!"}, status=200)
+            return JsonResponse(data, status=200)
 
         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
+
+
+
+
+
 
 
 def create_bot(request):

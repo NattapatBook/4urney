@@ -1,5 +1,7 @@
 import datetime
+import os
 
+from django.core.files.utils import validate_file_name
 from rest_framework import serializers
 
 from apps.chat_center.models import Customer, UploadedFile
@@ -28,10 +30,18 @@ class CustomerSerializer(serializers.ModelSerializer):
             )
         )
 
-class FileUploadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UploadedFile
-        fields = ['file']
+class FileUploadSerializer(serializers.Serializer):
+    file = serializers.CharField()
+    # class Meta:
+    #     model = UploadedFile
+    #     fields = ['file']
+
+    def validate_file(self, value):
+        try:
+            validate_file_name(os.path.basename(value))
+            return value
+        except:
+            raise serializers.ValidationError('invalid filename')
 
     def create(self, validated_data):
         organization_member = validated_data.pop('organization_member', None)
