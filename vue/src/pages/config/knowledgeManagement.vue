@@ -247,11 +247,41 @@
                   </v-card>
                 </v-card-text>
               </v-card>
-              <UploadKnowledgeBase v-model="uploadDialog" />
+              <UploadKnowledgeBase
+                v-model="uploadDialog"
+                @snackbar="snackbarAction"
+              />
             </v-col>
           </v-row>
         </div>
       </v-col>
+      <!--snackbar-->
+      <v-snackbar
+        v-model="snackbarAlert"
+        timeout="5000"
+        :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
+        location="top"
+        location-strategy="connected"
+      >
+        <span>
+          <v-icon v-if="snackbarSuccess"
+            >mdi-checkbox-marked-circle-outline</v-icon
+          >
+          <v-icon v-else>mdi-alert-circle</v-icon>
+          {{ snackbarMsg }}
+        </span>
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="white"
+            text
+            v-bind="attrs"
+            @click="snackbarAlert = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-row>
   </div>
 </template>
@@ -276,6 +306,10 @@ export default {
       errMsg: `Untitled`,
       //dialog
       uploadDialog: false,
+      //snackbar
+      snackbarAlert: false,
+      snackbarSuccess: false,
+      snackbarMsg: `untitled`,
     };
   },
   computed: {
@@ -397,6 +431,11 @@ export default {
       this.isLoading = false;
       this.isError = false;
       // this.errMsg = `ERORORORORORORORORORORORO!`;
+    },
+    snackbarAction(item) {
+      this.snackbarMsg = item.snackbarMsg;
+      this.snackbarSuccess = item.snackbarSuccess;
+      this.snackbarAlert = item.snackbarAlert;
     },
   },
 };
