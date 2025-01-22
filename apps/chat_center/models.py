@@ -305,6 +305,7 @@ class InternalChatMessage(models.Model):
 
 class InternalChatSession(models.Model):
     session_name = models.CharField(max_length=255, null=True, blank=True)
+    bot_id = models.ForeignKey('RoutingChain', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.id} : {self.session_name}"
