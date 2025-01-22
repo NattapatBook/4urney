@@ -291,7 +291,6 @@ class ChatUserUrgent(models.Model):
 
 
 class InternalChatMessage(models.Model):
-    platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField(null=True, blank=True)
     by = models.CharField(max_length=255, null=True, blank=True) # user or customer
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True) # user => admin(a,b,c) , bot(a,b,c)
@@ -305,7 +304,9 @@ class InternalChatMessage(models.Model):
     
 
 class InternalChatSession(models.Model):
-    by = models.CharField(max_length=255, null=True, blank=True)
+    session_name = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.sesion_id} : {self.sesion_name}"
+        return f"{self.id} : {self.session_name}"
+    
+    

@@ -9,8 +9,9 @@ import json, pytz
 from channels.layers import get_channel_layer
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from langsmith import Client
 from asgiref.sync import sync_to_async
+
+from langsmith import Client
 
 from apps.bot.chatbot_utils import call_bot, set_anonymizer
 from apps.bot.connection_utils import execute_to_df
@@ -87,10 +88,10 @@ async def webhook(request: HttpRequest, uuid):
         
         latest_messages = await sync_to_async(list)(Message.objects.filter(platform_id=user_id).all().order_by('-timestamp')[:10])
         
-        # Output the messages
+        # Output the messages history
         chat_history = ""
-        for message in latest_messages:
-            chat_history += f"{message.by}: {message.message}" + '\n'
+        for history in latest_messages:
+            chat_history += f"{history.by}: {history.message}" + '\n'
             
         # get knowledge base (collection name) & routing candidates
         line_connection = await sync_to_async(lambda: list(LineConnection.objects.filter(uuid=uuid).values_list('bot_id', flat=True)))()
