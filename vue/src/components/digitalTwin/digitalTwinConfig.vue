@@ -389,7 +389,7 @@ export default {
       axios
         .get(`api/chat_center/list_industry/`)
         .then((res) => {
-          this.defineChatBotItem[3];
+          this.defineChatBotItem[3].item;
         })
         .catch((err) => {
           console.log(err);
@@ -398,7 +398,7 @@ export default {
       axios
         .get(`api/chat_center/list_knowledge_base/`)
         .then((res) => {
-          this.defineChatBotItem[5];
+          this.defineChatBotItem[5].item;
         })
         .catch((err) => {
           console.log(err);
@@ -407,7 +407,7 @@ export default {
       axios
         .get(`api/chat_center/list_line_integration/`)
         .then((res) => {
-          this.defineChatBotItem[6];
+          this.defineChatBotItem[6].item;
         })
         .catch((err) => {
           console.log(err);
