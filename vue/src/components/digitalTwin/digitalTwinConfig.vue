@@ -426,7 +426,7 @@ export default {
         .then((res) => {
           this.defineChatBotItem[6].item = res.data;
           this.defineChatBotItem[6].item.push({
-            uuid: null,
+            uuid: "No",
             user_id: "No",
             username: "No",
           });
@@ -434,7 +434,7 @@ export default {
         .catch((err) => {
           console.log(err);
           this.defineChatBotItem[6].item.push({
-            uuid: null,
+            uuid: "No",
             user_id: "No",
             username: "No",
           });
@@ -447,8 +447,12 @@ export default {
     },
     submitForm() {
       if (this.isFormValid) {
+        let body = JSON.parse(JSON.stringify(this.formData));
+        if (body.line_integration_uuid === "No") {
+          body.line_integration_uuid = null;
+        }
         axios
-          .post(`api/chat_center/create_bot/`, this.formData)
+          .post(`api/chat_center/create_bot/`, body)
           .then(() => {
             this.clearForm();
             this.$emit(`createBotSuccess`, {
