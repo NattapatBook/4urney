@@ -118,28 +118,6 @@
         </v-btn>
       </v-card-text>
     </v-card>
-    <!--snackbar-->
-    <v-snackbar
-      v-model="snackbarAlert"
-      timeout="2000"
-      :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
-      location="top"
-      location-strategy="connected"
-    >
-      <span>
-        <v-icon v-if="snackbarSuccess"
-          >mdi-checkbox-marked-circle-outline</v-icon
-        >
-        <v-icon v-else>mdi-alert-circle</v-icon>
-        {{ snackbarMsg }}
-      </span>
-
-      <template v-slot:action="{ attrs }">
-        <v-btn color="white" text v-bind="attrs" @click="snackbarAlert = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
   </v-dialog>
 </template>
 
@@ -158,9 +136,6 @@ export default {
   },
   data() {
     return {
-      snackbarAlert: false,
-      snackbarSuccess: false,
-      snackbarMsg: `untitled`,
       acceptedFormats: ".xlsx,.csv,.pdf",
       selectedFile: null,
       isLoading: false,
@@ -238,15 +213,11 @@ export default {
           if (response.status === 200) {
             this.uploadS3(response.data);
           } else {
-            this.snackbarMsg = `Upload failed`;
-            this.snackbarSuccess = false;
-            this.snackbarAlert = true;
+            this.snackbarCallback(`Upload failed`, false, true);
             this.isLoading = false;
           }
         } catch (error) {
-          this.snackbarMsg = error;
-          this.snackbarSuccess = false;
-          this.snackbarAlert = true;
+          this.snackbarCallback(error, false, true);
           this.isLoading = false;
         }
       }
@@ -261,24 +232,29 @@ export default {
         const response = await axios.post(`${item.url}`, formData);
         console.log(response.status, response.status === 204);
         if (response.status === 204) {
-          this.snackbarMsg = `Success! Your file has been uploaded.`;
-          this.snackbarSuccess = true;
-          this.snackbarAlert = true;
+          this.snackbarCallback(
+            `Success! Your file has been uploaded.`,
+            true,
+            true
+          );
           this.isLoading = false;
           this.resetFileInput();
           // this.closeDialog();
         } else {
-          this.snackbarMsg = `Upload failed`;
-          this.snackbarSuccess = false;
-          this.snackbarAlert = true;
+          this.snackbarCallback(`Upload failed`, false, true);
           this.isLoading = false;
         }
       } catch (error) {
-        this.snackbarMsg = error;
-        this.snackbarSuccess = false;
-        this.snackbarAlert = true;
+        this.snackbarCallback(error, false, true);
         this.isLoading = false;
       }
+    },
+    snackbarCallback(snackbarMsg, snackbarSuccess, snackbarAlert) {
+      this.$emit("snackbar", {
+        snackbarMsg,
+        snackbarSuccess,
+        snackbarAlert,
+      });
     },
   },
 };

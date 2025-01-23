@@ -131,7 +131,6 @@
                     </v-chip>
                   </template>
                   <div
-                    class="HEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEHHEHEHEHEHEHEHEHEHEEH"
                     :style="{
                       textAlignLast: `center`,
                       width: `100%`,

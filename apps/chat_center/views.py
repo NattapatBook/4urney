@@ -1,7 +1,7 @@
 import csv
 import threading
 
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
@@ -23,9 +23,12 @@ import boto3
 
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny
+
+from apps.bot.chatbot_utils import call_bot
 # from sympy import line_integrate
 
-from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, ChatSummarize, ChatUserSatisfaction, ChatUserUrgent
+from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
+    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage
 from apps.webhook_line.models import LineIntegration, LineConnection
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
@@ -529,11 +532,6 @@ class FileUploadView(APIView):
         return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
 
 
-
-
-
-
-
 def create_bot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -849,6 +847,333 @@ class EmbeddedDataView(View):
 
 def list_knowledge_base(request):
     connections.connect("default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
-    knowledge_base = utility.list_collections()
+    all_collection_names = utility.list_collections()
 
-    return JsonResponse(knowledge_base, safe=False)
+    username = request.user
+    user = User.objects.get(username=username)
+
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    org_name = organization_member.organization.name
+
+    focus_collection_names = [name for name in all_collection_names if name.find(org_name) > -1]
+
+    return JsonResponse(focus_collection_names, safe=False)
+
+def list_bot(request):
+    queryset = RoutingChain.objects.all().values(
+        'id',
+        'bot_name',
+        'industry',
+        'is_active'
+    )
+
+    # Map the queryset to the desired format
+    formatted_data = [
+        {
+            'id': item['id'],
+            'img': '',
+            'name': item['bot_name'],
+            'industry': item['industry'],
+            'mastery': 'Mastery1',
+            'isActive': item['is_active'],
+        }
+        for item in queryset
+    ]
+
+    return JsonResponse(formatted_data, safe=False)
+
+def create_session(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+        session_name = data.get('sessionName')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+
+        new_session = InternalChatSession(session_name=session_name, bot_id=routing_chain)
+        new_session.save()
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+    elif request.method == 'GET':
+        bot_id = 7
+        session_name = 'test_session_3'
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+
+        new_session = InternalChatSession(session_name=session_name, bot_id=routing_chain)
+        new_session.save()
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+        return JsonResponse(formatted_data, safe=False)
+
+def list_session(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+    elif request.method == 'GET':
+        bot_id = 7
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+        return JsonResponse(formatted_data, safe=False)
+
+
+def rename_session(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        bot_id = data.get('id')  # bot_id (RoutingChain ID)
+        session_id = data.get('sessionId')  # The session to rename
+        new_session_name = data.get('newSessionName')  # The new name for the session
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        session.session_name = new_session_name
+        session.save()
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+    elif request.method == 'GET':
+        bot_id = 7
+        session_id = 1
+        new_session_name = 'rename_test_session_1'
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        session.session_name = new_session_name
+        session.save()
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+
+
+def remove_session(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        bot_id = data.get('id')
+        session_id = data.get('sessionId')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        session.delete()
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+    elif request.method == 'GET':
+        bot_id = 7
+        session_id = 3
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        session.delete()
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+            'id',
+            'session_name',
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+
+def get_internal_chat(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        bot_id = data.get('id')  # bot_id (RoutingChain ID)
+        session_id = data.get('sessionId')  # The session ID
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        messages = InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain)
+
+        formatted_messages = [
+            {
+                'id': message.id,
+                'msg': message.message,
+                'by': message.by,
+                'timestamp': message.timestamp.strftime("%Y-%m-%d %H:%M:%S%z") if message.timestamp else None
+            }
+            for message in messages
+        ]
+
+        return JsonResponse(formatted_messages, safe=False)
+    elif request.method == 'GET':
+        bot_id = 7
+        session_id = 1
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        messages = InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain)
+
+        formatted_messages = [
+            {
+                'id': message.id,
+                'msg': message.message,
+                'by': message.by,
+                'timestamp': message.timestamp.strftime("%Y-%m-%d %H:%M:%S%z") if message.timestamp else None
+            }
+            for message in messages
+        ]
+
+        return JsonResponse(formatted_messages, safe=False)
+
+
+@csrf_exempt
+async def internal_chatbot(request):
+    """
+    Processes POST requests to handle chatbot interactions.
+
+    Extracts `bot_id`, `user_id`, and `message` from the request, retrieves chat history and bot configurations,
+    checks the user's status, and routes the message to generate a bot response. If the user is in "Opened Messages"
+    status, no response is generated. Utilizes asynchronous database queries and external API calls for routing
+    and knowledge base retrieval.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request object. It should contain
+                               the `bot_id`, `user_id`, and `message` in its JSON body.
+
+    Returns:
+        HttpResponse or JsonResponse:
+            - If the user's status is not "Opened Messages," it returns the bot's response.
+            - If the user's status is "Opened Messages," it logs a message and does not
+              generate a bot response.
+    """
+    EMBEDDING_MODEL_API = os.environ.get('EMBEDDING_MODEL_API')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+        session_id = data.get('sessionId')
+        message = data.get('msg')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        latest_messages = await sync_to_async(list)(InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain).all().order_by('-timestamp')[:10])
+
+        chat_history = ""
+        for history in latest_messages:
+            chat_history += f"{history.by}: {history.message}" + '\n'
+
+        routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
+        df_routing_config = pd.DataFrame(routing_configs)
+
+        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
+            df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+
+        retrieval_text = model_response.json()['retrieval_text']
+        routing = model_response.json()['routing']
+
+        responses_message = call_bot(chat_history=chat_history, routing=routing, message=message,
+                                     retrieval_text=retrieval_text, df_routing_config=df_routing_config)
+        responses_message = responses_message.content
+
+        print(responses_message)
+
+        return responses_message

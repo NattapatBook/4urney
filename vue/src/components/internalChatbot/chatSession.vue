@@ -416,7 +416,7 @@ export default {
       this.dialog = true;
     },
     applyFromDialog(item) {
-      console.log(item);
+      console.log("applyFromDialog", item);
     },
     clickSelectChatSession(item) {
       if (this.chatSelected.id === item.id) {
