@@ -343,6 +343,7 @@ export default {
       window.addEventListener("resize", this.onResize);
     });
     this.onResize();
+    this.getListUser();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
@@ -379,6 +380,7 @@ export default {
     },
     createBotAction(item) {
       if (item.case) {
+        this.componentsMode = `list`;
         this.getListUser();
         this.snackbarSuccess = true;
         this.snackbarMsg = item.msg;
