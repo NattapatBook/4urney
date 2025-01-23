@@ -167,17 +167,17 @@ export default {
             },
           },
         ],
-        Test: [
-          {
-            icon: `mdi-upload`,
-            name: `Upload_Test`,
-            description: `Only for developer`,
-            link: {
-              internal: true,
-              src: `Upload_Test`,
-            },
-          },
-        ],
+        // Test: [
+        //   {
+        //     icon: `mdi-upload`,
+        //     name: `Upload_Test`,
+        //     description: `Only for developer`,
+        //     link: {
+        //       internal: true,
+        //       src: `Upload_Test`,
+        //     },
+        //   },
+        // ],
       },
     };
   },

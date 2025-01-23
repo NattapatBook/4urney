@@ -26,7 +26,12 @@
         width: `100%`,
       }"
     >
-      <v-container :style="{ height: `100%` }" class="px-3">
+      <!-- lock only create (demo) -->
+      <v-container
+        v-if="botMode === `create`"
+        :style="{ height: `100%` }"
+        class="px-3"
+      >
         <v-row :style="{ height: `100%` }">
           <v-col
             :cols="windowWidth < 470 ? 4 : 3"
@@ -195,6 +200,26 @@
           </v-col>
         </v-row>
       </v-container>
+
+      <div
+        v-else
+        :style="{
+          height: `100%`,
+          display: `flex`,
+          justifyContent: `center`,
+        }"
+      >
+        <DataError
+          :icon="'mdi-clock-outline'"
+          :iconColor="'#ffcc00'"
+          :iconSize="'36px'"
+          :message="'Coming Soon!'"
+          :textColor="'#4a4a4a'"
+          :messageSize="'1rem'"
+          :subMessage="'Stay tuned for updates.'"
+          :subMessageSize="'0.8rem'"
+        />
+      </div>
     </v-card-text>
     <v-card-text
       :style="{
@@ -220,8 +245,12 @@
 </template>
 
 <script>
+import DataError from "../tools/dataError.vue";
+import axios from "axios";
+
 export default {
   name: "digitalTwinConfig",
+  components: { DataError },
   props: {
     item: {
       type: Object,
@@ -294,7 +323,8 @@ export default {
           key: "industry",
           description:
             "In which industry do you need me to work? (e.g., Technology, Customer Support)",
-          type: "text",
+          type: "autocomplete",
+          item: [],
         },
         {
           id: 5,
@@ -307,14 +337,14 @@ export default {
           key: "knowledge_base",
           description: "Where should I pull my information from?",
           type: "autocomplete",
-          item: ["Tech Support", "Customer Service", "IT Solutions"],
+          item: [],
         },
         {
           id: 7,
           key: "line_integration_uuid",
           description: "Do you want me connected to LINE? (Yes/No)",
           type: "autocomplete",
-          item: ["LINE Integration 1", "LINE Integration 2"],
+          item: [],
         },
       ],
       formData: {
@@ -355,13 +385,33 @@ export default {
       this.$emit(`backToMain`);
     },
     getDefineChatbotItem() {
-      this.defineChatBotItem[5].item = [`test_1`, `test_2`, `test_3`]; // knowledge_base
-      this.defineChatBotItem[6].item = [
-        `No`,
-        `Test_Line_1`,
-        `Test_Line_2`,
-        `Test_Line_3`,
-      ]; // line_integration_uuid
+      //industry
+      axios
+        .get(`api/chat_center/list_industry/`)
+        .then((res) => {
+          this.defineChatBotItem[3];
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      //knowledge base
+      axios
+        .get(`api/chat_center/list_knowledge_base/`)
+        .then((res) => {
+          this.defineChatBotItem[5];
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      //line integration
+      axios
+        .get(`api/chat_center/list_line_integration/`)
+        .then((res) => {
+          this.defineChatBotItem[6];
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     requiredRule(item) {
       return item.type !== "boolean"
@@ -376,11 +426,26 @@ export default {
         ) {
           this.formData.line_integration_uuid = null;
         }
-        console.log("Form submitted successfully:", this.formData);
-        this.clearForm();
-      } else {
-        console.error("Form is invalid. Please fill all required fields.");
+        axios
+          .post(`api/chat_center/create_bot/`, this.formData)
+          .then(() => {
+            this.clearForm();
+            this.$emit(`createBotSuccess`, {
+              case: true,
+              msg: "Bot created successfully!",
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            this.$emit(`createBotSuccess`, {
+              case: false,
+              msg: "Failed to create bot. Please try again.",
+            });
+          });
       }
+      // else {
+      //   console.error("Form is invalid. Please fill all required fields.");
+      // }
     },
     clearForm() {
       this.formData = {

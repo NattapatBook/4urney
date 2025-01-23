@@ -389,6 +389,7 @@ export default {
           msg: this.msgBox,
         })
         .then((res) => {
+          this.msgBox = ``;
           this.chatLogs = res.data;
           this.isLoading = false;
           this.isUpdate = !this.isUpdate;

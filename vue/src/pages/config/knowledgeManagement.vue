@@ -182,6 +182,21 @@
                               <v-list class="pa-0 rounded-lg">
                                 <v-list-item class="pa-0">
                                   <v-card
+                                    :disabled="true"
+                                    class="pa-4"
+                                    elevation="0"
+                                    :style="{
+                                      display: `flex`,
+                                      alignItems: `center`,
+                                    }"
+                                  >
+                                    <v-icon>mdi-play</v-icon>
+                                    <span>&nbsp;Process</span>
+                                  </v-card>
+                                </v-list-item>
+                                <v-list-item class="pa-0">
+                                  <v-card
+                                    :disabled="true"
                                     class="pa-4"
                                     elevation="0"
                                     :style="{
@@ -195,6 +210,7 @@
                                 </v-list-item>
                                 <v-list-item class="pa-0">
                                   <v-card
+                                    :disabled="true"
                                     class="pa-4"
                                     elevation="0"
                                     :style="{
@@ -209,7 +225,7 @@
                               </v-list>
                             </v-menu>
                             &nbsp;
-                            <span>{{ item.fileName }}</span>
+                            <span>{{ item.file_name }}</span>
                           </div>
                         </v-col>
                         <v-col
@@ -239,7 +255,7 @@
                           }"
                         >
                           <div :style="{ textAlign: `center` }">
-                            <span>{{ item.date }}</span>
+                            <span>{{ timeSince(item.uploaded_at) }}</span>
                           </div>
                         </v-col>
                       </v-row>
@@ -339,12 +355,13 @@ export default {
       this.windowHeight = window.innerHeight;
     },
     getStatusColor(status) {
-      switch (status) {
-        case "Pending":
+      const tmpStatus = status.toLowerCase();
+      switch (tmpStatus) {
+        case "pending":
           return "orange";
-        case "Processing":
+        case "processing":
           return "blue";
-        case "Completed":
+        case "completed":
           return "green";
         default:
           return "grey";
@@ -362,10 +379,9 @@ export default {
     getList() {
       this.isLoading = true;
       axios
-        .get(`api/chat_center/list_knowledge_base/`)
+        .get(`api/chat_center/list_upload_file/`)
         .then((res) => {
-          // this.files = res.data;
-          this.files = this.postMockData(res.data);
+          this.files = res.data;
           this.isLoading = false;
         })
         .catch((err) => {
@@ -379,22 +395,42 @@ export default {
           });
         });
     },
-    postMockData(arr) {
-      let postData = [];
-      arr.forEach((item, idx) => {
-        postData.push({
-          id: idx,
-          fileName: item,
-          status: `Pending`,
-          date: "2025-01-20",
-        });
-      });
-      return postData;
-    },
     snackbarAction(item) {
       this.snackbarMsg = item.snackbarMsg;
       this.snackbarSuccess = item.snackbarSuccess;
       this.snackbarAlert = item.snackbarAlert;
+    },
+    timeSince(dateString, short = false) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const differenceInSeconds = Math.floor(Math.abs((now - date) / 1000));
+
+      let interval = differenceInSeconds / 31536000; // seconds in a year
+      if (interval >= 1) {
+        return Math.floor(interval) + `${short ? ` yr.` : ` years ago`}`;
+      }
+
+      interval = differenceInSeconds / 2592000; // seconds in a month
+      if (interval >= 1) {
+        return Math.floor(interval) + `${short ? ` mo.` : ` months ago`}`;
+      }
+
+      interval = differenceInSeconds / 86400; // seconds in a day
+      if (interval >= 1) {
+        return Math.floor(interval) + `${short ? ` d.` : ` days ago`}`;
+      }
+
+      interval = differenceInSeconds / 3600; // seconds in an hour
+      if (interval >= 1) {
+        return Math.floor(interval) + `${short ? ` h.` : ` hours ago`}`;
+      }
+
+      interval = differenceInSeconds / 60; // seconds in a minute
+      if (interval >= 1) {
+        return Math.floor(interval) + `${short ? ` m.` : ` minute ago`}`;
+      }
+
+      return short ? `now` : "just now";
     },
   },
 };

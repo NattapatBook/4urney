@@ -173,7 +173,7 @@
                   :style="{ fontSize: `0.8rem` }"
                   >4urney</span
                 >
-                <p class="gradient-text">Version 1.0.1 Beta (Demo Edition)</p>
+                <p class="gradient-text">Version x.x.x (Demo Edition)</p>
                 <p class="gradient-text">All copyrights reserved</p>
               </v-card-text>
             </v-list-subheader>
