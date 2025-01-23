@@ -6,7 +6,7 @@ from apps.chat_center.views import list_user, list_message, admin_reply_post, ch
     list_dashboard, get_user_detail, list_message_test, admin_reply_post_test, change_message_type_test, \
     list_dashboard_test, FileUploadView, create_bot, list_line_integration, list_industry_choices, summarize_dashboard, \
     EmbeddedDataView, TaskStatusView, list_upload_file, list_knowledge_base, list_bot, create_session, list_session, \
-    rename_session, remove_session, get_internal_chat
+    rename_session, remove_session, get_internal_chat, internal_chatbot
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -39,5 +39,6 @@ urlpatterns = [
     path('rename_session/', rename_session),
     path('remove_session/', remove_session),
     path('get_internal_chat/', get_internal_chat),
+    path('send_message_internal_chat/', internal_chatbot),
     # *router.urls,
 ]

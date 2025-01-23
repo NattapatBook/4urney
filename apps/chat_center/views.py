@@ -1127,7 +1127,7 @@ def get_internal_chat(request):
 
 
 @csrf_exempt
-async def internal_chatbot(request):
+def internal_chatbot(request):
     """
     Processes POST requests to handle chatbot interactions.
 
@@ -1152,20 +1152,43 @@ async def internal_chatbot(request):
         bot_id = data.get('id')
         session_id = data.get('sessionId')
         message = data.get('msg')
+        user = request.user
+        print(user)
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
         session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
-        latest_messages = await sync_to_async(list)(InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain).all().order_by('-timestamp')[:10])
+        user = User.objects.get(username=user)
+        # latest_messages = await sync_to_async(list)(InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain).all().order_by('-timestamp')[:10])
+        latest_messages = InternalChatMessage.objects.filter(
+            session_id=session, bot_id=routing_chain, user=user,
+        ).order_by('-timestamp')[:10]
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
 
+        new_message = InternalChatMessage.objects.create(
+            message=message,
+            by='user',
+            user=user,
+            bot_id=routing_chain,
+            session_id=session,
+            timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+            organization_id=organization,
+        )
+
+        print('New Message', new_message)
         chat_history = ""
         for history in latest_messages:
             chat_history += f"{history.by}: {history.message}" + '\n'
 
-        routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
+        # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
+        routing_configs = RoutingChain.objects.filter(id=bot_id).values()
         df_routing_config = pd.DataFrame(routing_configs)
+        print(df_routing_config)
 
         model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
             df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+
+        print('Model response : ', model_response)
 
         retrieval_text = model_response.json()['retrieval_text']
         routing = model_response.json()['routing']
@@ -1174,6 +1197,111 @@ async def internal_chatbot(request):
                                      retrieval_text=retrieval_text, df_routing_config=df_routing_config)
         responses_message = responses_message.content
 
-        print(responses_message)
+        new_bot_message = InternalChatMessage.objects.create(
+            message=responses_message,
+            by='bot',
+            user=user,
+            bot_id=routing_chain,
+            session_id=session,
+            timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+            organization_id=organization,
+        )
 
-        return responses_message
+        messages = InternalChatMessage.objects.filter(
+            session_id=session, bot_id=routing_chain, user=user,
+        ).order_by('timestamp')
+        chat_logs = []
+        for message in messages:
+            if message.timestamp:
+                message_timestamp = message.timestamp.astimezone(tz)
+                timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+            else:
+                timestamp_str = ""
+            chat_log = {
+                "id": message.id,
+                "msg": message.message if message.message else "",
+                "by": message.by if message.by else "unknown",
+                "timestamp": timestamp_str
+            }
+            chat_logs.append(chat_log)
+
+        return JsonResponse(chat_logs, safe=False)
+    elif request.method == 'GET':
+        bot_id = 7
+        session_id = 1
+        message = 'testja'
+        user = request.user
+        print(user)
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
+        user = User.objects.get(username=user)
+        # latest_messages = await sync_to_async(list)(InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain).all().order_by('-timestamp')[:10])
+        latest_messages = InternalChatMessage.objects.filter(
+            session_id=session, bot_id=routing_chain, user=user,
+        ).order_by('-timestamp')[:10]
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        new_message = InternalChatMessage.objects.create(
+            message=message,
+            by='user',
+            user=user,
+            bot_id=routing_chain,
+            session_id=session,
+            timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+            organization_id=organization,
+        )
+
+        print('New Message', new_message)
+        chat_history = ""
+        for history in latest_messages:
+            chat_history += f"{history.by}: {history.message}" + '\n'
+
+        # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
+        routing_configs = RoutingChain.objects.filter(id=bot_id).values()
+        df_routing_config = pd.DataFrame(routing_configs)
+        print(df_routing_config)
+
+        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
+            df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+
+        print('Model response : ',model_response)
+
+        retrieval_text = model_response.json()['retrieval_text']
+        routing = model_response.json()['routing']
+
+        responses_message = call_bot(chat_history=chat_history, routing=routing, message=message,
+                                     retrieval_text=retrieval_text, df_routing_config=df_routing_config)
+        responses_message = responses_message.content
+
+
+        new_bot_message = InternalChatMessage.objects.create(
+            message=responses_message,
+            by='bot',
+            user=user,
+            bot_id=routing_chain,
+            session_id=session,
+            timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+            organization_id=organization,
+        )
+
+        messages = InternalChatMessage.objects.filter(
+            session_id=session, bot_id=routing_chain, user=user,
+        ).order_by('timestamp')
+        chat_logs = []
+        for message in messages:
+            if message.timestamp:
+                message_timestamp = message.timestamp.astimezone(tz)
+                timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+            else:
+                timestamp_str = ""
+            chat_log = {
+                "id": message.id,
+                "msg": message.message if message.message else "",
+                "by": message.by if message.by else "unknown",
+                "timestamp": timestamp_str
+            }
+            chat_logs.append(chat_log)
+
+        return JsonResponse(chat_logs, safe=False)
