@@ -12,6 +12,7 @@ from mpmath.calculus.calculus import defun
 class INDUSTRY(models.TextChoices):
     AGRICULTURE = 'AGRICULTURE'
     HR = 'HR'
+    RETAIL = 'RETAIL'
 
 # Create your models here.
 # class PLATFORM(models.TextChoices):
