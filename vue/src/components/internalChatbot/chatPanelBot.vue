@@ -64,8 +64,9 @@
                   class="ml-2"
                   :style="{
                     display: `flex`,
-                    flexDirection: `column`,
+                    flexDirection: `row`,
                     maxWidth: `calc(70%)`,
+                    alignItems: `center`,
                   }"
                 >
                   <span
@@ -78,6 +79,14 @@
                     }"
                     >{{ selectedUser.name }}</span
                   >
+                  <v-progress-circular
+                    v-if="isLoading"
+                    class="ml-3"
+                    :width="3"
+                    :size="20"
+                    color="rgb(254,56,147)"
+                    indeterminate
+                  ></v-progress-circular>
                 </div>
               </div>
             </v-col>
@@ -129,13 +138,14 @@
       <v-divider class="mx-3" />
       <!--chat panel-->
       <div :style="{ height: `calc(100% - 80px - 56px)` }">
-        <!-- <Chat
-          class="py-4"
-          :chat-log-prop="chatLogs"
-          :selected-user-props="selectedUser"
-          :key="`chatPanel_chat_update_${isUpdate}`"
-        /> -->
+        <div
+          v-if="isErrorListChat"
+          :style="{ display: `flex`, justifyContent: `center`, height: `100%` }"
+        >
+          <DataError :message="errMsg" />
+        </div>
         <ChatInternalChatbot
+          v-else
           class="py-4"
           :chat-log-prop="chatLogs"
           :selected-user-props="selectedUser"
@@ -163,6 +173,7 @@
         <v-text-field
           v-else
           v-model="msgBox"
+          :disabled="isErrorListChat || isLoading"
           :append-inner-icon="`mdi-send-variant`"
           :placeholder="`Write something...`"
           hint="Hmm, How did you found this!"
@@ -204,8 +215,7 @@
 <script>
 import DataError from "../tools/dataError.vue";
 import ChatInternalChatbot from "./subInternalChatbot/chatInternalChatbot.vue";
-// import Chat from "./subChatPanel/chat.vue";
-// import axios from "axios";
+import axios from "axios";
 export default {
   name: "Component_ChatPanelBot",
   components: {
@@ -232,12 +242,12 @@ export default {
       type: Boolean,
       default: false,
     },
-    userItems: {
-      type: Object,
-      default: () => {
-        return [];
-      },
-    },
+    // userItems: {
+    //   type: Object,
+    //   default: () => {
+    //     return [];
+    //   },
+    // },
   },
   watch: {
     // isChange(newValue, oldValue) {
@@ -298,6 +308,9 @@ export default {
       snackbarSuccess: false,
       snackbarMsg: "untitled",
       isUpdate: false,
+      isLoading: false,
+      isErrorListChat: false,
+      errMsg: `untitled`,
     };
   },
   mounted() {
@@ -368,41 +381,50 @@ export default {
       }
     },
     clickSendMsg() {
-      console.log("clickSendMsg");
-      this.isUpdate = !this.isUpdate;
+      this.isLoading = true;
+      axios
+        .post(`api/chat_center/send_msg_internal_chat`, {
+          id: this.selectedUser.id,
+          sessionId: this.selectedChat.id,
+          msg: this.msgBox,
+        })
+        .then((res) => {
+          this.chatLogs = res.data;
+          this.isLoading = false;
+          this.isUpdate = !this.isUpdate;
+        })
+        .catch((err) => {
+          this.isLoading = false;
+          this.errMsg = err;
+          this.snackbarCallback(err, false, true);
+          this.isUpdate = !this.isUpdate;
+        });
     },
     clickFullScreen() {
       this.$emit(`fullscreen`);
     },
     getListMessage(userId, sessionId) {
-      console.log(`getListMsg`, userId, sessionId);
-      this.chatLogs = [
-        {
-          id: "U196745ea49b659a713e72a09e540c2b0",
-          msg: "aaaa",
-          by: "user",
-          timestamp: "2024-12-12 14:17:35+0700",
-        },
-        {
-          id: "U196745ea49b659a713e72a09e540c2b0",
-          msg: "botja",
-          by: "bot",
-          timestamp: "2024-12-12 14:17:35+0700",
-        },
-        {
-          id: "U196745ea49b659a713e72a09e540c2b0",
-          msg: "aaa",
-          by: "user",
-          timestamp: "2024-12-12 14:17:59+0700",
-        },
-        {
-          id: "U196745ea49b659a713e72a09e540c2b0",
-          msg: "botja",
-          by: "bot",
-          timestamp: "2024-12-12 14:17:59+0700",
-        },
-      ];
-      this.isUpdate = !this.isUpdate;
+      axios
+        .post(`api/chat_center/get_internal_chat/`, {
+          id: userId,
+          sessionId: sessionId,
+        })
+        .then((res) => {
+          this.chatLogs = res.data;
+          this.isUpdate = !this.isUpdate;
+        })
+        .catch((err) => {
+          // this.isErrorListChat = true;
+          this.errMsg = err;
+          this.snackbarCallback(err, false, true);
+        });
+    },
+    snackbarCallback(snackbarMsg, snackbarSuccess, snackbarAlert) {
+      this.$emit("snackbar", {
+        snackbarMsg,
+        snackbarSuccess,
+        snackbarAlert,
+      });
     },
   },
 };

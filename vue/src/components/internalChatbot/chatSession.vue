@@ -81,6 +81,18 @@
         </v-card-text>
         <v-divider class="mx-3" />
         <v-card-text
+          v-if="chatSessionItem.length < 1"
+          class="px-2 py-0"
+          :style="{
+            height: `calc(100% - 80px)`,
+            display: `flex`,
+            justifyContent: `center`,
+          }"
+        >
+          <DataError :message="`No Data`" />
+        </v-card-text>
+        <v-card-text
+          v-else
           class="px-2 py-0"
           :style="{
             overflowY: `auto`,
@@ -90,7 +102,7 @@
           <v-container class="px-0">
             <div
               v-for="(chats, key) in groupedChats"
-              :key="`session_chat_${key}`"
+              :key="`session_chat_${key}_${isUpdate}`"
             >
               <div v-if="chats.length">
                 <!-- Section Header -->
@@ -185,6 +197,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import DataError from "../tools/dataError.vue";
 import ChatSessionDialog from "./chatSessionDialog.vue";
 export default {
@@ -204,6 +217,9 @@ export default {
     isChange(newValue, oldValue) {
       if (newValue !== oldValue) {
         this.selectedUser = JSON.parse(JSON.stringify(this.selectedUserProp));
+        if (this.selectedUser && this.selectedUser.id !== `-1`) {
+          this.getSession(this.selectedUser.id);
+        }
       }
     },
   },
@@ -218,11 +234,6 @@ export default {
         industry: `untitled`,
         mastery: `untitled`,
         isActive: true,
-        // tag: `untitled`,
-        // priority: `untitled`,
-        // lastestMsg: `untitled`,
-        // isUrgent: false,
-        // provider: `untitled`,
       },
       chatSelected: {
         id: `-1`,
@@ -231,39 +242,9 @@ export default {
       },
       chatSessionItem: [
         {
-          id: 1,
-          name: `test_1`,
-          lastConversationTime: new Date("2025-01-07T10:30:00"), // Jan/7/2025 10:30 AM
-        },
-        {
-          id: 2,
-          name: `test_2`,
-          lastConversationTime: new Date("2025-01-07T15:45:00"), // Jan/7/2025 3:45 PM
-        },
-        {
-          id: 3,
-          name: `test_3`,
-          lastConversationTime: new Date("2025-01-06T20:15:00"), // Jan/6/2025 8:15 PM
-        },
-        {
-          id: 4,
-          name: `test_4`,
-          lastConversationTime: new Date("2025-01-01T14:00:00"), // Jan/1/2025 2:00 PM
-        },
-        {
-          id: 5,
-          name: `test_5`,
-          lastConversationTime: new Date("2025-01-02T09:30:00"), // Jan/2/2025 9:30 AM
-        },
-        {
-          id: 6,
-          name: `test_6`,
-          lastConversationTime: new Date("2024-10-05T09:30:00"), // Oct/5/2024 9:30 AM
-        },
-        {
-          id: 7,
-          name: `test_7`,
-          lastConversationTime: new Date("2024-10-05T09:30:00"), // Oct/5/2024 9:30 AM
+          id: `999`,
+          name: `test_999`,
+          lastConversationTime: new Date(),
         },
       ],
       groupedChats: {
@@ -279,6 +260,7 @@ export default {
         name: `untitled`,
         lastConversationTime: new Date(),
       },
+      isUpdate: false,
     };
   },
 
@@ -288,8 +270,6 @@ export default {
       window.addEventListener("resize", this.onResize);
     });
     this.onResize();
-
-    this.groupChats();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
@@ -299,6 +279,21 @@ export default {
     onResize() {
       this.windowWidth = window.innerWidth;
       this.windowHeight = window.innerHeight;
+    },
+    getSession(id) {
+      axios
+        .post(`api/chat_center/list_session`, { id })
+        .then((res) => {
+          this.chatSessionItem = res.data;
+          return this.$nextTick();
+        })
+        .then(() => {
+          this.groupChats();
+        })
+        .catch((err) => {
+          console.error(err);
+          this.groupChats();
+        });
     },
     //tools
     timeSince(dateString, short = false) {
@@ -394,6 +389,7 @@ export default {
       this.groupedChats.older = this.chatSessionItem.filter(
         (chat) => chat.lastConversationTime < startOf7DaysAgo
       );
+      this.isUpdate = !this.isUpdate;
     },
     formatDate(date) {
       return new Intl.DateTimeFormat("en-US", {
@@ -417,6 +413,48 @@ export default {
     },
     applyFromDialog(item) {
       console.log("applyFromDialog", item);
+      const api =
+        item.mode === `newChat`
+          ? `create_session`
+          : item.mode === `rename`
+          ? `rename_session`
+          : item.mode === `delete`
+          ? `remove_session`
+          : ``;
+      const body =
+        item.mode === `newChat`
+          ? { id: this.selectedUser.id, sessionName: item.name }
+          : item.mode === `rename`
+          ? {
+              id: this.selectedUser.id,
+              sessionId: item.item.id,
+              newSessionName: item.name,
+            }
+          : item.mode === `delete`
+          ? {
+              id: this.selectedUser.id,
+              sessionId: item.item.id,
+            }
+          : {};
+      axios
+        .post(`api/chat_center/${api}`, body)
+        .then(() => {
+          this.getSession(this.selectedUser.id);
+          this.snackbarCallback(
+            item.mode === `newChat`
+              ? `New session created successfully!`
+              : item.mode === `rename`
+              ? `Session renamed successfully!`
+              : item.mode === `delete`
+              ? `Session removed successfully!`
+              : ``,
+            true,
+            true
+          );
+        })
+        .catch((err) => {
+          this.snackbarCallback(err, false, true);
+        });
     },
     clickSelectChatSession(item) {
       if (this.chatSelected.id === item.id) {
@@ -436,6 +474,13 @@ export default {
         name: `untitled`,
         lastConversationTime: new Date(),
       };
+    },
+    snackbarCallback(snackbarMsg, snackbarSuccess, snackbarAlert) {
+      this.$emit("snackbar", {
+        snackbarMsg,
+        snackbarSuccess,
+        snackbarAlert,
+      });
     },
   },
 };

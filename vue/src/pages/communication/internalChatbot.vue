@@ -98,6 +98,7 @@
                   :is-change="isSelectedDataChange"
                   :dashboard-data-prop="dashboardData"
                   @changeChatSession="changeChatSession"
+                  @snackbar="snackbarAction"
                 />
               </v-card>
             </v-col>
@@ -138,23 +139,50 @@
                   :is-change="isSelectedDataChange"
                   :fullscreen="fullscreen"
                   @fullscreen="fullscreen = !fullscreen"
+                  @snackbar="snackbarAction"
                 />
               </v-card>
             </v-col>
           </v-row>
         </div>
       </v-col>
+      <!--snackbar-->
+      <v-snackbar
+        v-model="snackbarAlert"
+        timeout="5000"
+        :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
+        location="top"
+        location-strategy="connected"
+      >
+        <span>
+          <v-icon v-if="snackbarSuccess"
+            >mdi-checkbox-marked-circle-outline</v-icon
+          >
+          <v-icon v-else>mdi-alert-circle</v-icon>
+          {{ snackbarMsg }}
+        </span>
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="white"
+            text
+            v-bind="attrs"
+            @click="snackbarAlert = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-row>
   </div>
 </template>
 
 <script>
-// import axios from "axios";
+import axios from "axios";
 import ChatSession from "@/components/internalChatbot/chatSession.vue";
 import ListChatbot from "@/components/internalChatbot/listChatbot.vue";
 import ListChatbotCompact from "@/components/internalChatbot/listChatbotCompact.vue";
 import ChatPanelBot from "@/components/internalChatbot/chatPanelBot.vue";
-// import chatPanelChatBot from "@/components/listen/chatPanelChatBot.vue";
 
 export default {
   name: "listen",
@@ -163,7 +191,6 @@ export default {
     ListChatbotCompact,
     ChatSession,
     ChatPanelBot,
-    // chatPanelChatBot,
   },
   data() {
     return {
@@ -179,11 +206,6 @@ export default {
         industry: `untitled`,
         mastery: `untitled`,
         isActive: true,
-        // tag: `untitled`,
-        // priority: `untitled`,
-        // lastestMsg: `untitled`,
-        // isUrgent: false,
-        // provider: `untitled`,
       },
       isSelectedDataChange: false,
       fullscreen: false,
@@ -211,7 +233,10 @@ export default {
         name: `untitled`,
         lastConversationTime: new Date(),
       },
-      socket: null,
+      //snackbar
+      snackbarAlert: false,
+      snackbarSuccess: false,
+      snackbarMsg: `untitled`,
     };
   },
   mounted() {
@@ -257,57 +282,26 @@ export default {
       }
     },
     //getData
-    getListUser() {
-      this.userItems = [
-        {
-          id: `999`,
-          img: ``,
-          name: `Test Bot_1`,
-          industry: `Industry1`,
-          mastery: `Mastery1`,
-          isActive: true,
-          // priority: `untitled`,
-          // lastestMsg: `untitled`,
-          // isUrgent: false,
-          // provider: `untitled`,
-        },
-        {
-          id: `888`,
-          img: ``,
-          name: `Test Bot`,
-          industry: `Industry`,
-          mastery: `Mastery`,
-          isActive: false,
-          // priority: `untitled`,
-          // lastestMsg: `untitled`,
-          // isUrgent: false,
-          // provider: `untitled`,
-        },
-        {
-          id: `777`,
-          img: ``,
-          name: `Bamm Bot`,
-          industry: `Developer`,
-          mastery: `Frontend Master`,
-          isActive: true,
-          // priority: `untitled`,
-          // lastestMsg: `untitled`,
-          // isUrgent: false,
-          // provider: `untitled`,
-        },
-        {
-          id: `666`,
-          img: ``,
-          name: `LONG NAMEEEEEEEEEEEEEEEEEEEEeeLONG NAMEEEEEEEEEEEEEEEEEEEEeeLONG NAMEEEEEEEEEEEEEEEEEEEEee`,
-          industry: `LONG NAMEEEEEEEEEEEEEEEEEEEEee`,
-          mastery: `LONG NAMEEEEEEEEEEEEEEEEEEEEee`,
-          isActive: false,
-          // priority: `untitled`,
-          // lastestMsg: `untitled`,
-          // isUrgent: false,
-          // provider: `untitled`,
-        },
-      ];
+    async getListUser() {
+      axios
+        .get(`api/chat_center/list_bot`)
+        .then((res) => {
+          // this.userItems = res.data;
+          this.userItems = [
+            {
+              id: `999`,
+              img: ``,
+              name: `test_01`,
+              industry: `untitled`,
+              mastery: `untitled`,
+              isActive: true,
+            },
+          ];
+        })
+
+        .catch((err) => {
+          console.error(err);
+        });
     },
     findById(id) {
       return this.userItems.find((item) => item.id === id);
@@ -334,6 +328,11 @@ export default {
         lastConversationTime: new Date(),
       };
       this.$refs.chat_session_ref.removeChatSessionItem();
+    },
+    snackbarAction(item) {
+      this.snackbarMsg = item.snackbarMsg;
+      this.snackbarSuccess = item.snackbarSuccess;
+      this.snackbarAlert = item.snackbarAlert;
     },
   },
 };
