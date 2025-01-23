@@ -383,7 +383,7 @@ export default {
     clickSendMsg() {
       this.isLoading = true;
       axios
-        .post(`api/chat_center/send_msg_internal_chat`, {
+        .post(`api/chat_center/send_message_internal_chat`, {
           id: this.selectedUser.id,
           sessionId: this.selectedChat.id,
           msg: this.msgBox,
