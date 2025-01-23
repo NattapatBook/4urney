@@ -286,17 +286,7 @@ export default {
       axios
         .get(`api/chat_center/list_bot`)
         .then((res) => {
-          // this.userItems = res.data;
-          this.userItems = [
-            {
-              id: `999`,
-              img: ``,
-              name: `test_01`,
-              industry: `untitled`,
-              mastery: `untitled`,
-              isActive: true,
-            },
-          ];
+          this.userItems = res.data;
         })
 
         .catch((err) => {

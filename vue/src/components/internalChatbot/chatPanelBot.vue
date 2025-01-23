@@ -414,7 +414,7 @@ export default {
           this.isUpdate = !this.isUpdate;
         })
         .catch((err) => {
-          // this.isErrorListChat = true;
+          this.isErrorListChat = true;
           this.errMsg = err;
           this.snackbarCallback(err, false, true);
         });

@@ -241,11 +241,11 @@ export default {
         lastConversationTime: new Date(),
       },
       chatSessionItem: [
-        {
-          id: `999`,
-          name: `test_999`,
-          lastConversationTime: new Date(),
-        },
+        // {
+        //   id: `-1`,
+        //   name: `test_999`,
+        //   lastConversationTime: new Date(),
+        // },
       ],
       groupedChats: {
         today: [],
