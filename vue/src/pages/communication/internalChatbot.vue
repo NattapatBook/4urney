@@ -31,6 +31,7 @@
               >
                 <ListChatbot
                   class="shake"
+                  @addChatbot="addChatbotCallback"
                   @selectUser="selectUser"
                   @minimize="hideListuserPanel = !hideListuserPanel"
                   :selected-user-prop="selectedUser"
@@ -284,7 +285,7 @@ export default {
     //getData
     async getListUser() {
       axios
-        .get(`api/chat_center/list_bot`)
+        .get(`api/chat_center/list_bot/`)
         .then((res) => {
           this.userItems = res.data;
         })
@@ -323,6 +324,9 @@ export default {
       this.snackbarMsg = item.snackbarMsg;
       this.snackbarSuccess = item.snackbarSuccess;
       this.snackbarAlert = item.snackbarAlert;
+    },
+    addChatbotCallback() {
+      this.$emit("addChatbot");
     },
   },
 };

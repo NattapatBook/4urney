@@ -290,6 +290,7 @@
 import UploadKnowledgeBase from "@/components/knowledgeBase/uploadKnowledgeBase.vue";
 import DataError from "@/components/tools/dataError.vue";
 import Loading from "@/components/tools/loading.vue";
+import axios from "axios";
 
 export default {
   name: "knowledgeManagement",
@@ -359,78 +360,36 @@ export default {
       this.uploadDialog = true;
     },
     getList() {
-      this.files = [
-        {
-          id: 1,
-          fileName:
-            "example1.pdf_asdkjashdkjashkdjahsldkjashldakjsdhlaskjdhalskjdhalskjdahlks",
-          status: "Pending",
+      this.isLoading = true;
+      axios
+        .get(`api/chat_center/list_knowledge_base/`)
+        .then((res) => {
+          // this.files = res.data;
+          this.files = this.postMockData(res.data);
+          this.isLoading = false;
+        })
+        .catch((err) => {
+          this.errMsg = err;
+          this.isError = true;
+          this.isLoading = false;
+          this.snackbarAction({
+            snackbarMsg: err,
+            snackbarSuccess: false,
+            snackbarAlert: true,
+          });
+        });
+    },
+    postMockData(arr) {
+      let postData = [];
+      arr.forEach((item, idx) => {
+        postData.push({
+          id: idx,
+          fileName: item,
+          status: `Pending`,
           date: "2025-01-20",
-        },
-        {
-          id: 2,
-          fileName: "example2.csv",
-          status: "Processing",
-          date: "2025-01-18",
-        },
-        {
-          id: 3,
-          fileName: "example3.docx",
-          status: "Completed",
-          date: "2025-01-15",
-        },
-        {
-          id: 4,
-          fileName: "example4.pdf",
-          status: "Pending",
-          date: "2025-01-21",
-        },
-        {
-          id: 5,
-          fileName: "example5.csv",
-          status: "Processing",
-          date: "2025-01-19",
-        },
-        {
-          id: 6,
-          fileName: "example6.docx",
-          status: "Completed",
-          date: "2025-01-14",
-        },
-        {
-          id: 7,
-          fileName: "example7.pdf",
-          status: "Pending",
-          date: "2025-01-22",
-        },
-        {
-          id: 8,
-          fileName: "example8.csv",
-          status: "Processing",
-          date: "2025-01-17",
-        },
-        {
-          id: 9,
-          fileName: "example9.docx",
-          status: "Completed",
-          date: "2025-01-13",
-        },
-        {
-          id: 10,
-          fileName: "example10.pdf",
-          status: "Pending",
-          date: "2025-01-23",
-        },
-        {
-          id: 11,
-          fileName: "example11.pdf",
-          status: "Pending",
-          date: "2025-01-23",
-        },
-      ];
-      this.isLoading = false;
-      this.isError = false;
-      // this.errMsg = `ERORORORORORORORORORORORO!`;
+        });
+      });
+      return postData;
     },
     snackbarAction(item) {
       this.snackbarMsg = item.snackbarMsg;

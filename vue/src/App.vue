@@ -19,6 +19,11 @@ const currentPage = ref("landing");
 
 const lastestPage = ref("untitled");
 
+function addChatbotCallback() {
+  lastestPage.value = `Configuration`;
+  currentPage.value = `AI_Management`;
+}
+
 function navigateTo(page) {
   if (page === `lastest`) {
     console.log(lastestPage.value);
@@ -68,7 +73,6 @@ function checkLogin() {
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
-      console.log(res.data);
       // Update user data on successful login
       userData.value.email = res.data.email;
       userData.value.name = res.data.email;
@@ -126,7 +130,10 @@ onMounted(async () => {
             @navigate="navigateTo"
           />
           <Listen v-else-if="currentPage === 'listen'" @navigate="navigateTo" />
-          <InternalChatbot v-else-if="currentPage === `internalChatbot`" />
+          <InternalChatbot
+            v-else-if="currentPage === `internalChatbot`"
+            @addChatbot="addChatbotCallback"
+          />
           <!--Dashboard Menu-->
           <DashboardMenu
             v-else-if="currentPage === `Dashboard`"

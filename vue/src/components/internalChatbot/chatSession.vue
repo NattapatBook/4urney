@@ -282,7 +282,7 @@ export default {
     },
     getSession(id) {
       axios
-        .post(`api/chat_center/list_session`, { id })
+        .post(`api/chat_center/list_session/`, { id })
         .then((res) => {
           this.chatSessionItem = res.data;
           return this.$nextTick();
@@ -437,7 +437,7 @@ export default {
             }
           : {};
       axios
-        .post(`api/chat_center/${api}`, body)
+        .post(`api/chat_center/${api}/`, body)
         .then(() => {
           this.getSession(this.selectedUser.id);
           this.snackbarCallback(

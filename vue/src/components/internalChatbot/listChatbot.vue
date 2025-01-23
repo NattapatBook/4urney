@@ -27,6 +27,7 @@
         }"
       >
         <v-btn
+          @click="clickAddChatbot()"
           :size="
             windowWidth > 960 && windowWidth < 1400 ? `x-small` : `default`
           "
@@ -238,11 +239,6 @@ export default {
         industry: `untitled`,
         mastery: `untitled`,
         isActive: true,
-        // tag: `untitled`,
-        // priority: `untitled`,
-        // lastestMsg: `untitled`,
-        // isUrgent: false,
-        // provider: `untitled`,
       },
       isSelectedDataChange: false,
     };
@@ -306,16 +302,14 @@ export default {
             industry: `untitled`,
             mastery: `untitled`,
             isActive: true,
-            // tag: `untitled`,
-            // priority: `untitled`,
-            // lastestMsg: `untitled`,
-            // isUrgent: false,
-            // provider: `untitled`,
           })
         );
         this.isSelectedDataChange = !this.isSelectedDataChange;
       }
       this.$emit("selectUser", this.selectedUser, this.isSelectedDataChange);
+    },
+    clickAddChatbot() {
+      this.$emit("addChatbot");
     },
   },
 };
