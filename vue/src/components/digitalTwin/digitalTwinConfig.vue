@@ -132,6 +132,7 @@
                     <!-- Autocomplete field -->
                     <div v-if="item.type === 'autocomplete'">
                       <div
+                        v-if="item.key === `line_integration_uuid`"
                         :style="{
                           display: `flex`,
                           justifyContent: `center`,
@@ -141,8 +142,25 @@
                           v-model="formData[item.key]"
                           :items="item.item"
                           :label="menuNamed(item.key)"
-                          item-value="name"
-                          item-text="name"
+                          :item-value="`uuid`"
+                          :item-title="`user_id`"
+                          variant="outlined"
+                          density="compact"
+                          :style="{ borderRadius: '8px', maxWidth: `500px` }"
+                          :rules="[requiredRule(item)]"
+                        />
+                      </div>
+                      <div
+                        v-else
+                        :style="{
+                          display: `flex`,
+                          justifyContent: `center`,
+                        }"
+                      >
+                        <v-autocomplete
+                          v-model="formData[item.key]"
+                          :items="item.item"
+                          :label="menuNamed(item.key)"
                           variant="outlined"
                           density="compact"
                           :style="{ borderRadius: '8px', maxWidth: `500px` }"
@@ -150,7 +168,6 @@
                         />
                       </div>
                     </div>
-
                     <!-- Boolean (Checkbox) field -->
                     <div v-if="item.type === 'boolean'">
                       <div
@@ -389,7 +406,7 @@ export default {
       axios
         .get(`api/chat_center/list_industry/`)
         .then((res) => {
-          this.defineChatBotItem[3].item;
+          this.defineChatBotItem[3].item = res.data;
         })
         .catch((err) => {
           console.log(err);
@@ -398,7 +415,7 @@ export default {
       axios
         .get(`api/chat_center/list_knowledge_base/`)
         .then((res) => {
-          this.defineChatBotItem[5].item;
+          this.defineChatBotItem[5].item = res.data;
         })
         .catch((err) => {
           console.log(err);
@@ -407,10 +424,20 @@ export default {
       axios
         .get(`api/chat_center/list_line_integration/`)
         .then((res) => {
-          this.defineChatBotItem[6].item;
+          this.defineChatBotItem[6].item = res.data;
+          this.defineChatBotItem[6].item.push({
+            uuid: null,
+            user_id: "No",
+            username: "No",
+          });
         })
         .catch((err) => {
           console.log(err);
+          this.defineChatBotItem[6].item.push({
+            uuid: null,
+            user_id: "No",
+            username: "No",
+          });
         });
     },
     requiredRule(item) {
@@ -420,12 +447,6 @@ export default {
     },
     submitForm() {
       if (this.isFormValid) {
-        if (
-          !this.formData.line_integration_uuid ||
-          this.formData.line_integration_uuid === `No`
-        ) {
-          this.formData.line_integration_uuid = null;
-        }
         axios
           .post(`api/chat_center/create_bot/`, this.formData)
           .then(() => {

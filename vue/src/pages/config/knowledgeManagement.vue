@@ -355,8 +355,11 @@ export default {
       this.windowHeight = window.innerHeight;
     },
     getStatusColor(status) {
-      const tmpStatus = status.toLowerCase();
-      switch (tmpStatus) {
+      if (typeof status !== "string") {
+        return "grey";
+      }
+
+      switch (status.toLowerCase()) {
         case "pending":
           return "orange";
         case "processing":
