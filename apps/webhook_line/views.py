@@ -84,7 +84,24 @@ async def webhook(request: HttpRequest, uuid):
         user_id = event['source']['userId']
         message_type = event['message']['type']
         reply_token = event['replyToken']
+        message = event['message']["text"]
+        message_dt = event['timestamp']
         username = get_username(user_id, LINE_CHATBOT_API_KEY)
+        
+        # Add user before send message
+        new_customer = await sync_to_async(Customer.objects.update_or_create)(
+        platform_id=user_id, 
+        defaults = {
+            'name':username,
+            'lastest_msg':message,
+            'timestamp':datetime.now(pytz.timezone('Asia/Bangkok')),
+            'provider':'line', 
+            'agent':'Me', 
+            'message_type':'Closed Messages', 
+            'reply_token':reply_token,
+            'organization_id':organization
+        }
+    )
         
         latest_messages = await sync_to_async(list)(Message.objects.filter(platform_id=user_id).all().order_by('-timestamp')[:10])
         
@@ -112,8 +129,6 @@ async def webhook(request: HttpRequest, uuid):
                 """
                 If user response as text
                 """
-                message = event['message']["text"]
-                message_dt = event['timestamp']
                 
                 model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": list(df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
 
@@ -149,19 +164,6 @@ async def webhook(request: HttpRequest, uuid):
         else: 
             print("Admin is already Open Messaged with the customer.")
  
-    new_customer = await sync_to_async(Customer.objects.update_or_create)(
-        platform_id=user_id, 
-        defaults = {
-            'name':username,
-            'lastest_msg':message,
-            'timestamp':datetime.now(pytz.timezone('Asia/Bangkok')),
-            'provider':'line', 
-            'agent':'Me', 
-            'message_type':'Closed Messages', 
-            'reply_token':reply_token,
-            'organization_id':organization
-        }
-    )
     
     customer = await sync_to_async(Customer.objects.filter(platform_id=user_id).first)()
     if not customer:
