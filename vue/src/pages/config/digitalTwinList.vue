@@ -284,7 +284,7 @@
 
 <script>
 import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfig.vue";
-
+import axios from "axios";
 export default {
   name: "configurationMenu",
   components: { DigitalTwinConfig },
@@ -293,39 +293,7 @@ export default {
       windowWidth: 0,
       windowHeight: 0,
       menu: {
-        DigitalTwin: [
-          // {
-          //   id: "111",
-          //   name: "Agriculture Expert",
-          //   industry: `test`,
-          //   mastery: `mastery`,
-          //   // description:
-          //   //   "Focused on optimizing agriculture with expertise in fertilizers, drone technology, and crop disease management.",
-          //   // tag: ["Fertilizer", "DroneCrop", "Disease"],
-          //   img: "https://jakkanoom.github.io/4urneyRoadmap/assets/twilight-C5vCOEMj.png",
-          //   isActive: true,
-          // },
-          // {
-          //   id: "222",
-          //   name: "Data Analyst",
-          //   industry: `test`,
-          //   mastery: `mastery`,
-          //   // description:
-          //   //   "Specializes in data visualization and summarization for actionable insights.",
-          //   // tag: ["VisualizationData", "Summarization"],
-          //   img: "https://jakkanoom.github.io/4urneyRoadmap/assets/starlight-B5KTr0eO.png",
-          //   isActive: false,
-          // },
-          // {
-          //   id: "333",
-          //   name: "Sales Person",
-          //   description:
-          //     "A knowledgeable resource for products, sales strategies, and expertise.",
-          //   // tag: ["Product", "KnowledgeSales", "Expertise"],
-          //   img: "https://jakkanoom.github.io/4urneyRoadmap/assets/pinky-DRiVgFHX.png",
-          //   disabled: false,
-          // },
-        ],
+        DigitalTwin: [],
       },
       //bot
       componentsMode: `list`,
