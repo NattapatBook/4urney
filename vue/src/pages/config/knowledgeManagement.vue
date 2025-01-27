@@ -129,7 +129,7 @@
                         }
                   "
                 >
-                  <div class="hereeerere" v-if="isLoading">
+                  <div v-if="isLoading">
                     <Loading
                       :message="`Loading Knowledge Base, please wait...`"
                     />
@@ -333,7 +333,7 @@ export default {
     filteredFiles() {
       if (!this.filter) return this.files;
       return this.files.filter((file) =>
-        file.fileName.toLowerCase().includes(this.filter.toLowerCase())
+        file.file_name.toLowerCase().includes(this.filter.toLowerCase())
       );
     },
   },

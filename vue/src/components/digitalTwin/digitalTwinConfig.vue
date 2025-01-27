@@ -416,9 +416,19 @@ export default {
         .get(`api/chat_center/list_knowledge_base/`)
         .then((res) => {
           this.defineChatBotItem[5].item = res.data;
+          this.defineChatBotItem[5].item.push({
+            uuid: "No",
+            user_id: "No",
+            username: "No",
+          });
         })
         .catch((err) => {
           console.log(err);
+          this.defineChatBotItem[5].item.push({
+            uuid: "No",
+            user_id: "No",
+            username: "No",
+          });
         });
       //line integration
       axios

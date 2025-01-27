@@ -93,6 +93,7 @@
                   :is-change="isSelectedDataChange"
                   :fullscreen="fullscreen"
                   @fullscreen="fullscreen = !fullscreen"
+                  @changeMessageType="getListUser"
                 />
               </v-card>
             </v-col>

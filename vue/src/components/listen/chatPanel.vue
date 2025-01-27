@@ -116,6 +116,7 @@
                     </v-list-item>
                     <v-list-item class="pa-0">
                       <v-card
+                        disabled
                         class="pa-4"
                         elevation="0"
                         :style="{
@@ -405,11 +406,11 @@ export default {
           messageType: this.messageType,
         })
         .then((res) => {
-          // console.log(res.data);
           this.messageType = res.data.messageType;
           this.snackbarMsg = `${this.selectedUser.name}'s chat session has been successfully ${res.data.messageType}`;
           this.snackbarSuccess = true;
           this.snackbarAlert = true;
+          this.$emit(`changeMessageType`);
         })
         .catch((err) => {
           console.error(err);
@@ -418,7 +419,7 @@ export default {
           this.snackbarAlert = true;
         });
     },
-    updateLastestChat(item) {
+    updateLastestChat() {
       this.getListMessage(this.selectedUser.id);
     },
   },
