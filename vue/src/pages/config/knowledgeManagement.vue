@@ -266,6 +266,7 @@
               <UploadKnowledgeBase
                 v-model="uploadDialog"
                 @snackbar="snackbarAction"
+                @successUpload="getList"
               />
             </v-col>
           </v-row>

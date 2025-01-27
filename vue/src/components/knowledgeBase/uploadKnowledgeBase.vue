@@ -238,8 +238,8 @@ export default {
             true
           );
           this.isLoading = false;
-          this.resetFileInput();
-          // this.closeDialog();
+          this.$emit(`successUpload`);
+          this.closeDialog();
         } else {
           this.snackbarCallback(`Upload failed`, false, true);
           this.isLoading = false;

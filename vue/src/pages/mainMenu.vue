@@ -140,7 +140,7 @@ export default {
             disabled: false,
           },
           {
-            icon: `mdi-chat-outline`,
+            icon: `mdi-chat`,
             name: `Internal Chatbot`,
             description: `Chat with your own Gen-AI Chatbot.`,
             link: {
@@ -168,6 +168,16 @@ export default {
             link: {
               internal: false,
               src: `http://fourplus.asuscomm.com:8502/`,
+            },
+            disabled: false,
+          },
+          {
+            icon: `mdi-rocket-launch`,
+            name: `Campaign Ideation`,
+            description: `Get creative ideas tailored to your product goals.`,
+            link: {
+              internal: false,
+              src: `http://fourplus.asuscomm.com:8503/`,
             },
             disabled: false,
           },
