@@ -241,6 +241,7 @@ class UploadedFile(models.Model):
     status = models.CharField(max_length=255, default='Pending', null=True, blank=True)
     collection_name = models.CharField(max_length=1000, null=True, blank=True)
     embedded_date = models.DateTimeField(null=True, blank=True)
+    user = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):
         return self.file.name
@@ -294,7 +295,7 @@ class ChatUserUrgent(models.Model):
 class InternalChatMessage(models.Model):
     message = models.TextField(null=True, blank=True)
     by = models.CharField(max_length=255, null=True, blank=True) # user or customer
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True) # user => admin(a,b,c) , bot(a,b,c)
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True)
     bot_id = models.ForeignKey('RoutingChain', on_delete=models.CASCADE, null=True, blank=True)
     session_id = models.ForeignKey('InternalChatSession', on_delete=models.CASCADE, null=True, blank=True)
     timestamp = models.DateTimeField(null=True, blank=True)
@@ -307,8 +308,9 @@ class InternalChatMessage(models.Model):
 class InternalChatSession(models.Model):
     session_name = models.CharField(max_length=255, null=True, blank=True)
     bot_id = models.ForeignKey('RoutingChain', on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.id} : {self.session_name}"
-    
     

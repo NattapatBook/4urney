@@ -20,6 +20,7 @@ import pandas as pd
 from channels.layers import get_channel_layer
 import asyncio
 import boto3
+from marshmallow.utils import timestamp
 
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny
@@ -508,7 +509,7 @@ def get_user_detail(request):
 
 
 class FileUploadView(APIView):
-    queryset = UploadedFile.objects.all()  # Modify as needed
+    queryset = UploadedFile.objects.all()
 
     permission_classes = [AllowAny]
 
@@ -516,10 +517,12 @@ class FileUploadView(APIView):
         print(request.user)
         organization_member = OrganizationMember.objects.filter(user=request.user).first()
         organization_name = organization_member.organization.name
+        user = User.objects.get(username=request.user)
+        email = user.email
         serializer = FileUploadSerializer(data=request.data)
 
         if serializer.is_valid():
-            uploaded_file = serializer.save(organization_member=organization_member)
+            uploaded_file = serializer.save(organization_member=organization_member, user=email)
             print(f'file_path {uploaded_file.file}')
             data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.name)
 
@@ -550,37 +553,7 @@ def create_bot(request):
             industry=industry,
             retrieve_image=retrieve_image,
             knowledge_base=knowledge_base,
-            is_active=False,
-            created_at=datetime.now(),
-        )
-
-        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
-        if not line_integration:
-            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
-
-        LineConnection.objects.create(
-            bot_id=routing_chain,
-            uuid=line_integration,
-        )
-
-        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
-    else:
-        bot_name = 'test'
-        routing = 'test'
-        prompt = 'test'
-        industry = 'AGRICULTURE'
-        retrieve_image = False
-        knowledge_base = 'test'
-        line_integration_uuid = '16fd2706-8baf-433b-82eb-8c7fada847da'
-
-        routing_chain = RoutingChain.objects.create(
-            bot_name=bot_name,
-            routing=routing,
-            prompt=prompt,
-            industry=industry,
-            retrieve_image=retrieve_image,
-            knowledge_base=knowledge_base,
-            is_active=False,
+            is_active=True,
             created_at=datetime.now(),
         )
 
@@ -616,12 +589,29 @@ def list_industry_choices(request):
 
 
 def list_upload_file(request):
-    file_details = list(UploadedFile.objects.values('file', 'uploaded_at', 'collection_name', 'embedded_date', 'status'))
+    file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user'))
     for file in file_details:
         file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
         file['file_name'] = file['file'].split('/')[-1]
 
     return JsonResponse(file_details, safe=False)
+
+def remove_upload_file(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = data.get('id')
+
+        session = UploadedFile.objects.get(id=id)
+        session.delete()
+
+        file_details = list(
+            UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status',
+                                        'user'))
+        for file in file_details:
+            file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
+            file['file_name'] = file['file'].split('/')[-1]
+
+        return JsonResponse(file_details, safe=False)
 
 
 def summarize_dashboard(request, user_id):
@@ -864,6 +854,7 @@ def list_bot(request):
         'id',
         'bot_name',
         'industry',
+        'routing',
         'is_active'
     )
 
@@ -874,7 +865,7 @@ def list_bot(request):
             'img': '',
             'name': item['bot_name'],
             'industry': item['industry'],
-            'mastery': 'Mastery1',
+            'mastery': item['routing'],
             'isActive': item['is_active'],
         }
         for item in queryset
@@ -889,47 +880,27 @@ def create_session(request):
         session_name = data.get('sessionName')
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
+        user = request.user
+        user = User.objects.get(username=user)
 
-        new_session = InternalChatSession(session_name=session_name, bot_id=routing_chain)
+        new_session = InternalChatSession(session_name=session_name, bot_id=routing_chain, user=user, timestamp=datetime.now())
         new_session.save()
 
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
             'id',
             'session_name',
+            'timestamp',
         )
 
         formatted_data = [
             {
                 'id': item['id'],
                 'name': item['session_name'],
-                'lastConversationTime': None,
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
             }
             for item in queryset
         ]
 
-        return JsonResponse(formatted_data, safe=False)
-    elif request.method == 'GET':
-        bot_id = 7
-        session_name = 'test_session_3'
-
-        routing_chain = RoutingChain.objects.get(id=bot_id)
-
-        new_session = InternalChatSession(session_name=session_name, bot_id=routing_chain)
-        new_session.save()
-
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
-            'id',
-            'session_name',
-        )
-
-        formatted_data = [
-            {
-                'id': item['id'],
-                'name': item['session_name'],
-                'lastConversationTime': None,
-            }
-            for item in queryset
-        ]
         return JsonResponse(formatted_data, safe=False)
 
 def list_session(request):
@@ -938,43 +909,25 @@ def list_session(request):
         bot_id = data.get('id')
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
+        user = request.user
+        user = User.objects.get(username=user)
 
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
             'id',
             'session_name',
+            'timestamp'
         )
 
         formatted_data = [
             {
                 'id': item['id'],
                 'name': item['session_name'],
-                'lastConversationTime': None,
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
             }
             for item in queryset
         ]
 
         return JsonResponse(formatted_data, safe=False)
-    elif request.method == 'GET':
-        bot_id = 7
-
-        routing_chain = RoutingChain.objects.get(id=bot_id)
-
-
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
-            'id',
-            'session_name',
-        )
-
-        formatted_data = [
-            {
-                'id': item['id'],
-                'name': item['session_name'],
-                'lastConversationTime': None,
-            }
-            for item in queryset
-        ]
-        return JsonResponse(formatted_data, safe=False)
-
 
 def rename_session(request):
     if request.method == 'POST':
@@ -985,47 +938,24 @@ def rename_session(request):
         new_session_name = data.get('newSessionName')  # The new name for the session
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
+        user = request.user
+        user = User.objects.get(username=user)
 
         session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
         session.session_name = new_session_name
         session.save()
 
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
             'id',
             'session_name',
+            'timestamp',
         )
 
         formatted_data = [
             {
                 'id': item['id'],
                 'name': item['session_name'],
-                'lastConversationTime': None,
-            }
-            for item in queryset
-        ]
-
-        return JsonResponse(formatted_data, safe=False)
-    elif request.method == 'GET':
-        bot_id = 7
-        session_id = 1
-        new_session_name = 'rename_test_session_1'
-
-        routing_chain = RoutingChain.objects.get(id=bot_id)
-
-        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
-        session.session_name = new_session_name
-        session.save()
-
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
-            'id',
-            'session_name',
-        )
-
-        formatted_data = [
-            {
-                'id': item['id'],
-                'name': item['session_name'],
-                'lastConversationTime': None,
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
             }
             for item in queryset
         ]
@@ -1041,47 +971,28 @@ def remove_session(request):
         session_id = data.get('sessionId')
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
+        user = request.user
+        user = User.objects.get(username=user)
         session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
         session.delete()
 
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
             'id',
             'session_name',
+            'timestamp',
         )
 
         formatted_data = [
             {
                 'id': item['id'],
                 'name': item['session_name'],
-                'lastConversationTime': None,
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
             }
             for item in queryset
         ]
 
         return JsonResponse(formatted_data, safe=False)
-    elif request.method == 'GET':
-        bot_id = 7
-        session_id = 3
 
-        routing_chain = RoutingChain.objects.get(id=bot_id)
-        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
-        session.delete()
-
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain).values(
-            'id',
-            'session_name',
-        )
-
-        formatted_data = [
-            {
-                'id': item['id'],
-                'name': item['session_name'],
-                'lastConversationTime': None,
-            }
-            for item in queryset
-        ]
-
-        return JsonResponse(formatted_data, safe=False)
 
 def get_internal_chat(request):
     if request.method == 'POST':
@@ -1089,29 +1000,12 @@ def get_internal_chat(request):
 
         bot_id = data.get('id')  # bot_id (RoutingChain ID)
         session_id = data.get('sessionId')  # The session ID
-
+        user = request.user
+        user = User.objects.get(username=user)
         routing_chain = RoutingChain.objects.get(id=bot_id)
         session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
-        messages = InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain)
 
-        formatted_messages = [
-            {
-                'id': message.id,
-                'msg': message.message,
-                'by': message.by,
-                'timestamp': message.timestamp.strftime("%Y-%m-%d %H:%M:%S%z") if message.timestamp else None
-            }
-            for message in messages
-        ]
-
-        return JsonResponse(formatted_messages, safe=False)
-    elif request.method == 'GET':
-        bot_id = 7
-        session_id = 1
-
-        routing_chain = RoutingChain.objects.get(id=bot_id)
-        session = InternalChatSession.objects.get(id=session_id, bot_id=routing_chain)
-        messages = InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain)
+        messages = InternalChatMessage.objects.filter(session_id=session, bot_id=routing_chain, user=user)
 
         formatted_messages = [
             {
