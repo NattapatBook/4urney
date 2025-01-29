@@ -289,7 +289,6 @@ export default {
         .then((res) => {
           this.userItems = res.data;
         })
-
         .catch((err) => {
           console.error(err);
         });

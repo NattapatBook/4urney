@@ -363,39 +363,52 @@ export default {
     },
     groupChats() {
       const today = new Date();
+
+      // Normalize to UTC (start of today at 00:00:00 UTC)
       const startOfToday = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
+        Date.UTC(
+          today.getUTCFullYear(),
+          today.getUTCMonth(),
+          today.getUTCDate()
+        )
       );
       const startOfYesterday = new Date(startOfToday);
-      startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+      startOfYesterday.setUTCDate(startOfYesterday.getUTCDate() - 1);
       const startOf7DaysAgo = new Date(startOfToday);
-      startOf7DaysAgo.setDate(startOf7DaysAgo.getDate() - 7);
+      startOf7DaysAgo.setUTCDate(startOf7DaysAgo.getUTCDate() - 7);
 
-      this.groupedChats.today = this.chatSessionItem.filter(
-        (chat) => chat.lastConversationTime >= startOfToday
-      );
-      this.groupedChats.yesterday = this.chatSessionItem.filter(
-        (chat) =>
-          chat.lastConversationTime >= startOfYesterday &&
-          chat.lastConversationTime < startOfToday
-      );
-      this.groupedChats.previous7Days = this.chatSessionItem.filter(
-        (chat) =>
-          chat.lastConversationTime >= startOf7DaysAgo &&
-          chat.lastConversationTime < startOfYesterday
-      );
-      this.groupedChats.older = this.chatSessionItem.filter(
-        (chat) => chat.lastConversationTime < startOf7DaysAgo
-      );
+      this.groupedChats.today = this.chatSessionItem.filter((chat) => {
+        const chatTime = new Date(chat.lastConversationTime);
+        return chatTime >= startOfToday;
+      });
+
+      this.groupedChats.yesterday = this.chatSessionItem.filter((chat) => {
+        const chatTime = new Date(chat.lastConversationTime);
+        return chatTime >= startOfYesterday && chatTime < startOfToday;
+      });
+
+      this.groupedChats.previous7Days = this.chatSessionItem.filter((chat) => {
+        const chatTime = new Date(chat.lastConversationTime);
+        return chatTime >= startOf7DaysAgo && chatTime < startOfYesterday;
+      });
+
+      this.groupedChats.older = this.chatSessionItem.filter((chat) => {
+        const chatTime = new Date(chat.lastConversationTime);
+        return chatTime < startOf7DaysAgo;
+      });
+
       this.isUpdate = !this.isUpdate;
     },
     formatDate(date) {
+      if (!date || isNaN(new Date(date).getTime())) {
+        console.warn("formatDate received an invalid date:", date);
+        return "Invalid Date"; // Return fallback text instead of crashing
+      }
+
       return new Intl.DateTimeFormat("en-US", {
         dateStyle: "medium",
         timeStyle: "short",
-      }).format(date);
+      }).format(new Date(date));
     },
     clickRename(item) {
       this.dialogMode = `rename`;
