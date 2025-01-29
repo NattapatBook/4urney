@@ -239,6 +239,7 @@
       </div>
     </v-card-text>
     <v-card-text
+      v-if="botMode === `create`"
       :style="{
         display: `flex`,
         alignItems: `center`,
@@ -256,6 +257,21 @@
         :style="{ width: `120px`, color: `white`, backgroundColor: `#5EB491` }"
         @click="submitForm()"
         :text="`Apply`"
+      />
+    </v-card-text>
+    <v-card-text
+      v-else
+      :style="{
+        display: `flex`,
+        alignItems: `center`,
+        justifyContent: `flex-end`,
+      }"
+    >
+      <v-btn
+        :style="{ width: `120px` }"
+        class="mr-2"
+        @click="clickBackToMain()"
+        :text="`back`"
       />
     </v-card-text>
   </v-card>
@@ -278,10 +294,10 @@ export default {
     "item.id": {
       handler(newVal) {
         if (newVal) {
-          console.log(newVal, "Load this on API");
+          // console.log(newVal, "Load this on API");
           this.botMode = `edit`;
         } else {
-          console.log("Setup Components for create");
+          // console.log("Setup Components for create");
           this.botMode = `create`;
         }
       },
@@ -416,19 +432,11 @@ export default {
         .get(`api/chat_center/list_knowledge_base/`)
         .then((res) => {
           this.defineChatBotItem[5].item = res.data;
-          this.defineChatBotItem[5].item.push({
-            uuid: "No",
-            user_id: "No",
-            username: "No",
-          });
+          this.defineChatBotItem[5].item.push("No");
         })
         .catch((err) => {
           console.log(err);
-          this.defineChatBotItem[5].item.push({
-            uuid: "No",
-            user_id: "No",
-            username: "No",
-          });
+          this.defineChatBotItem[5].item.push("No");
         });
       //line integration
       axios
@@ -460,6 +468,9 @@ export default {
         let body = JSON.parse(JSON.stringify(this.formData));
         if (body.line_integration_uuid === "No") {
           body.line_integration_uuid = null;
+        }
+        if (body.knowledge_base === "No") {
+          body.knowledge_base = null;
         }
         axios
           .post(`api/chat_center/create_bot/`, body)
