@@ -128,6 +128,24 @@
                         />
                       </div>
                     </div>
+                    <!-- Textarea input field -->
+                    <div v-if="item.type === 'textarea'">
+                      <div
+                        :style="{
+                          display: `flex`,
+                          justifyContent: `center`,
+                        }"
+                      >
+                        <v-textarea
+                          :label="menuNamed(item.key)"
+                          density="compact"
+                          variant="outlined"
+                          :style="{ borderRadius: '8px', maxWidth: `500px` }"
+                          v-model="formData[item.key]"
+                          :rules="[requiredRule(item)]"
+                        />
+                      </div>
+                    </div>
 
                     <!-- Autocomplete field -->
                     <div v-if="item.type === 'autocomplete'">
@@ -340,15 +358,15 @@ export default {
         },
         {
           id: 2,
-          key: "routing",
-          description:
-            "How would you like me to respond? (e.g., mastery, friendly, formal)",
-          type: "text",
+          key: "prompt",
+          description: "What do you want me to say to the user?",
+          type: "textarea",
         },
         {
           id: 3,
-          key: "prompt",
-          description: "What do you want me to say to the user?",
+          key: "routing",
+          description:
+            "How would you like me to respond? (e.g., mastery, friendly, formal)",
           type: "text",
         },
         {

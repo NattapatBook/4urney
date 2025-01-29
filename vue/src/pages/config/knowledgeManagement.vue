@@ -77,7 +77,7 @@
                       <v-col
                         class="px-0"
                         :style="{
-                          width: windowWidth > 660 ? `33.33%` : `50%`,
+                          width: windowWidth > 660 ? `25%` : `50%`,
                           alignContent: `center`,
                         }"
                       >
@@ -88,7 +88,7 @@
                       <v-col
                         class="px-0"
                         :style="{
-                          width: windowWidth > 660 ? `33.33%` : `50%`,
+                          width: windowWidth > 660 ? `25%` : `50%`,
                           alignContent: `center`,
                         }"
                       >
@@ -100,12 +100,24 @@
                         class="px-0"
                         v-if="windowWidth > 660"
                         :style="{
-                          width: windowWidth > 660 ? `33.33%` : `50%`,
+                          width: windowWidth > 660 ? `25%` : `50%`,
                           alignContent: `center`,
                         }"
                       >
                         <div :style="{ textAlign: `center` }">
                           <span>Date</span>
+                        </div>
+                      </v-col>
+                      <v-col
+                        class="px-0"
+                        v-if="windowWidth > 660"
+                        :style="{
+                          width: windowWidth > 660 ? `25%` : `50%`,
+                          alignContent: `center`,
+                        }"
+                      >
+                        <div :style="{ textAlign: `center` }">
+                          <span>By</span>
                         </div>
                       </v-col>
                     </v-row>
@@ -152,7 +164,7 @@
                         <v-col
                           class="px-0"
                           :style="{
-                            width: windowWidth > 660 ? `33.33%` : `50%`,
+                            width: windowWidth > 660 ? `25%` : `50%`,
                             alignContent: `center`,
                           }"
                         >
@@ -231,7 +243,7 @@
                         <v-col
                           class="px-0"
                           :style="{
-                            width: windowWidth > 660 ? `33.33%` : `50%`,
+                            width: windowWidth > 660 ? `25%` : `50%`,
                             alignContent: `center`,
                           }"
                         >
@@ -250,12 +262,31 @@
                           class="px-0"
                           v-if="windowWidth > 660"
                           :style="{
-                            width: windowWidth > 660 ? `33.33%` : `50%`,
+                            width: windowWidth > 660 ? `25%` : `50%`,
                             alignContent: `center`,
                           }"
                         >
                           <div :style="{ textAlign: `center` }">
                             <span>{{ timeSince(item.uploaded_at) }}</span>
+                          </div>
+                        </v-col>
+                        <v-col
+                          v-if="windowWidth > 660"
+                          class="px-0"
+                          :style="{
+                            width: windowWidth > 660 ? `25%` : `50%`,
+                            alignContent: `center`,
+                          }"
+                        >
+                          <div
+                            :style="{
+                              textAlign: `start`,
+                              whiteSpace: `nowrap`,
+                              overflow: `hidden`,
+                              textOverflow: `ellipsis`,
+                            }"
+                          >
+                            <span>{{ item.user }}</span>
                           </div>
                         </v-col>
                       </v-row>
