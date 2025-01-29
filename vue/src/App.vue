@@ -26,7 +26,7 @@ function addChatbotCallback() {
 
 function navigateTo(page) {
   if (page === `lastest`) {
-    console.log(lastestPage.value);
+    // console.log(lastestPage.value);
     currentPage.value = lastestPage.value;
   } else {
     lastestPage.value = currentPage.value;
