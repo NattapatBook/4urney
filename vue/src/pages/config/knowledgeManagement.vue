@@ -159,7 +159,7 @@
                     v-for="item in filteredFiles"
                     :key="`knowledgeManagement_files_list_${item.id}`"
                   >
-                    <v-container class="py-0">
+                    <v-container class="py-0 px-3">
                       <v-row>
                         <v-col
                           class="px-0"
@@ -192,9 +192,14 @@
                                 ></v-btn>
                               </template>
                               <v-list class="pa-0 rounded-lg">
-                                <v-list-item class="pa-0">
+                                <v-list-item
+                                  class="pa-0"
+                                  v-if="item.status === `Pending`"
+                                >
                                   <v-card
-                                    :disabled="true"
+                                    @click="
+                                      knowledgeActionDialog(item, `process`)
+                                    "
                                     class="pa-4"
                                     elevation="0"
                                     :style="{
@@ -208,7 +213,7 @@
                                 </v-list-item>
                                 <v-list-item class="pa-0">
                                   <v-card
-                                    :disabled="true"
+                                    @click="knowledgeActionDialog(item, `edit`)"
                                     class="pa-4"
                                     elevation="0"
                                     :style="{
@@ -217,12 +222,14 @@
                                     }"
                                   >
                                     <v-icon>mdi-pencil</v-icon>
-                                    <span>&nbsp;Rename</span>
+                                    <span>&nbsp;Edit Descriptions</span>
                                   </v-card>
                                 </v-list-item>
                                 <v-list-item class="pa-0">
                                   <v-card
-                                    :disabled="true"
+                                    @click="
+                                      knowledgeActionDialog(item, `remove`)
+                                    "
                                     class="pa-4"
                                     elevation="0"
                                     :style="{
@@ -237,7 +244,16 @@
                               </v-list>
                             </v-menu>
                             &nbsp;
-                            <span>{{ item.file_name }}</span>
+                            <v-tooltip text="Tooltip" location="bottom">
+                              <template v-slot:activator="{ props }">
+                                <span
+                                  :style="{ cursor: `pointer` }"
+                                  v-bind="props"
+                                  >{{ item.file_name }}</span
+                                >
+                              </template>
+                              <span>Description: {{ item.description }}</span>
+                            </v-tooltip>
                           </div>
                         </v-col>
                         <v-col
@@ -294,10 +310,17 @@
                   </v-card>
                 </v-card-text>
               </v-card>
+              <!--dialog-->
               <UploadKnowledgeBase
                 v-model="uploadDialog"
                 @snackbar="snackbarAction"
                 @successUpload="getList"
+              />
+              <KnowledgeBaseActionDialog
+                v-model="actionDialog"
+                :mode="actionMode"
+                :item="actionItem"
+                @callbackAction="callbackAction"
               />
             </v-col>
           </v-row>
@@ -336,13 +359,19 @@
 
 <script>
 import UploadKnowledgeBase from "@/components/knowledgeBase/uploadKnowledgeBase.vue";
+import KnowledgeBaseActionDialog from "@/components/knowledgeBase/knowledgeBaseActionDialog.vue";
 import DataError from "@/components/tools/dataError.vue";
 import Loading from "@/components/tools/loading.vue";
 import axios from "axios";
 
 export default {
   name: "knowledgeManagement",
-  components: { DataError, Loading, UploadKnowledgeBase },
+  components: {
+    DataError,
+    Loading,
+    UploadKnowledgeBase,
+    KnowledgeBaseActionDialog,
+  },
   data() {
     return {
       windowWidth: 0,
@@ -353,8 +382,23 @@ export default {
       isLoading: true,
       isError: false,
       errMsg: `Untitled`,
-      //dialog
+      //upload dialog
       uploadDialog: false,
+      //action dialog
+      actionDialog: false,
+      actionMode: `untitled`,
+      actionItem: {
+        id: -1,
+        file: "untitled",
+        uploaded_at: null,
+        collection_name: null,
+        embedded_date: null,
+        status: null,
+        user: "untitled",
+        file_url: "untitled",
+        file_name: "untitled",
+        description: "untitled",
+      },
       //snackbar
       snackbarAlert: false,
       snackbarSuccess: false,
@@ -417,6 +461,10 @@ export default {
         .get(`api/chat_center/list_upload_file/`)
         .then((res) => {
           this.files = res.data;
+          this.checkAndAddDescription();
+          return this.$nextTick();
+        })
+        .then(() => {
           this.isLoading = false;
         })
         .catch((err) => {
@@ -429,6 +477,12 @@ export default {
             snackbarAlert: true,
           });
         });
+    },
+    checkAndAddDescription() {
+      this.files = this.files.map((file) => ({
+        ...file,
+        description: file.description ?? "No Description",
+      }));
     },
     snackbarAction(item) {
       this.snackbarMsg = item.snackbarMsg;
@@ -466,6 +520,53 @@ export default {
       }
 
       return short ? `now` : "just now";
+    },
+    knowledgeActionDialog(item, mode) {
+      this.actionItem = item;
+      this.actionMode = mode;
+      this.actionDialog = true;
+    },
+    callbackAction(item) {
+      const path =
+        item.mode === `process`
+          ? `/api/chat_center/embedded_data/`
+          : item.mode === `remove`
+          ? `/api/chat_center/remove_upload_file/`
+          : item.mode === `edit`
+          ? `/api/chat_center/edit_upload_file/`
+          : ``;
+      const body =
+        item.mode === `process`
+          ? {
+              file_url: item.item.file_url,
+            }
+          : item.mode === `remove`
+          ? { id: item.item.id }
+          : item.mode === `edit`
+          ? { id: item.item.id, description: item.description }
+          : {};
+
+      this.isLoading = true;
+      axios
+        .post(path, body)
+        .then((res) => {
+          this.files = res.data;
+          this.checkAndAddDescription();
+          return this.$nextTick();
+        })
+        .then(() => {
+          this.isLoading = false;
+        })
+        .catch((err) => {
+          this.errMsg = err;
+          this.isError = true;
+          this.isLoading = false;
+          this.snackbarAction({
+            snackbarMsg: err,
+            snackbarSuccess: false,
+            snackbarAlert: true,
+          });
+        });
     },
   },
 };
