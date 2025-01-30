@@ -559,7 +559,7 @@ export default {
         })
         .catch((err) => {
           this.errMsg = err;
-          this.isError = true;
+          // this.isError = true;
           this.isLoading = false;
           this.snackbarAction({
             snackbarMsg: err,
