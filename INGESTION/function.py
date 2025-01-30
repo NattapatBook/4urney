@@ -20,11 +20,10 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
-from apps.webhook_line.views import OPENAI_API_KEY
 
 load_dotenv()
-print("OPENAI API KEY from function:", OPENAI_API_KEY)
-client = OpenAI(api_key=OPENAI_API_KEY)
+
+client = OpenAI()
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
     """Create field schemas for the collection."""
