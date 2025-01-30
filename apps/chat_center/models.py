@@ -6,7 +6,7 @@ from django.db import models
 from datetime import datetime, timedelta
 
 from django.db.models import Q
-from mpmath.calculus.calculus import defun
+# from mpmath.calculus.calculus import defun
 
 
 class INDUSTRY(models.TextChoices):
