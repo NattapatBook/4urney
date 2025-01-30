@@ -21,7 +21,7 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
 
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY_2')
+OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 
 load_dotenv()
 client = OpenAI(api_key=OPENAI_API_KEY)
