@@ -20,11 +20,9 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
+from apps.webhook_line.views import OPENAI_API_KEY
 
-# load_dotenv()
-
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY_2')
-print("OpenAI API KEY", OPENAI_API_KEY)
+load_dotenv()
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
