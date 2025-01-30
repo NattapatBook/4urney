@@ -21,9 +21,10 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
 
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
+# load_dotenv()
 
-load_dotenv()
+OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY_2')
+
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
