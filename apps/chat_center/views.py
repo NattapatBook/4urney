@@ -589,7 +589,7 @@ def list_industry_choices(request):
 
 
 def list_upload_file(request):
-    file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user'))
+    file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
     for file in file_details:
         file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
         file['file_name'] = file['file'].split('/')[-1]
@@ -601,12 +601,27 @@ def remove_upload_file(request):
         data = json.loads(request.body)
         id = data.get('id')
 
-        session = UploadedFile.objects.get(id=id)
-        session.delete()
+        data = UploadedFile.objects.get(id=id)
+        data.delete()
 
-        file_details = list(
-            UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status',
-                                        'user'))
+        file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
+        for file in file_details:
+            file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
+            file['file_name'] = file['file'].split('/')[-1]
+
+        return JsonResponse(file_details, safe=False)
+
+def edit_upload_file(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = data.get('id')
+        description = data.get('description')
+
+        data = UploadedFile.objects.get(id=id)
+        data.description = description
+        data.save()
+
+        file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
         for file in file_details:
             file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
             file['file_name'] = file['file'].split('/')[-1]

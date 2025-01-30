@@ -6,7 +6,7 @@ from apps.chat_center.views import list_user, list_message, admin_reply_post, ch
     list_dashboard, get_user_detail, list_message_test, admin_reply_post_test, change_message_type_test, \
     list_dashboard_test, FileUploadView, create_bot, list_line_integration, list_industry_choices, summarize_dashboard, \
     EmbeddedDataView, TaskStatusView, list_upload_file, list_knowledge_base, list_bot, create_session, list_session, \
-    rename_session, remove_session, get_internal_chat, internal_chatbot, remove_upload_file
+    rename_session, remove_session, get_internal_chat, internal_chatbot, remove_upload_file, edit_upload_file
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -32,6 +32,7 @@ urlpatterns = [
     path('summarize_dashboard/<user_id>', summarize_dashboard),
     path('list_upload_file/', list_upload_file),
     path('remove_upload_file/', remove_upload_file),
+    path('edit_upload_file/', edit_upload_file),
     path('embedded_data/', EmbeddedDataView.as_view(), name='embedded_data'),
     path('task_status/', TaskStatusView.as_view(), name='task_status'),
     path('list_bot/', list_bot),
