@@ -15,13 +15,14 @@ from langchain.schema import Document as LangChainDocument
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index.core import SimpleDirectoryReader
 from llama_parse import LlamaParse
+from openai import OpenAI
 from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
 
 load_dotenv()
-
+client = OpenAI()
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
     """Create field schemas for the collection."""
@@ -278,7 +279,10 @@ def read_push_document(model_embedder, docs, collection_name):
     
     docs_texts = [doc.page_content for doc in docs]
     if model_embedder is not None:
-        embeddings = model_embedder.encode(docs_texts)
+        embeddings = []
+        for docs in docs_texts:
+            embedding = model_embedder.encode(docs)
+            embeddings.append(embedding)
     else:
         embeddings = get_embeddings(docs_texts)
         
@@ -383,7 +387,7 @@ def get_file_details(object_name, save_dir):
     org_name = object_name.split('/')[0]
     file_name = object_name.split('/')[-1]
     file_path = os.path.join(save_dir, file_name)
-    collection_name = f'org{org_name}__{file_name}'.replace('.', '_')
+    collection_name = f'org{org_name}__{file_name}'.replace('.', '_').replace(' ', '_')
     return org_name, file_name, file_path, collection_name
 
 
@@ -401,7 +405,7 @@ def process_excel(file_path):
     whole_df = pd.concat([
         prepare_ingest_df(
             pd.read_excel(file_path, sheet_name),
-            model_embedder=None,
+            model_embedder=ModelEmbedder(),
             focus_columns=True
         )
         for sheet_name in excel_file.sheet_names
@@ -418,8 +422,8 @@ def process_csv(file_path):
     Returns:
         DataFrame: Processed data.
     """
-    df = pd.read_csv(file_path, index_col=0)
-    ready_data = prepare_ingest_df(df, model_embedder=None, focus_columns=False)
+    df = pd.read_csv(file_path)
+    ready_data = prepare_ingest_df(df, model_embedder=ModelEmbedder(), focus_columns=True)
     return ready_data
 
 def process_pdf(file_path):
@@ -434,3 +438,14 @@ def process_pdf(file_path):
     """
     docs = read_pdf(file_path, chunk_size=512, chunk_overlap=64, native_langchain=False)
     return docs
+
+class ModelEmbedder:
+    def get_embedding(self, text, model="text-embedding-3-small"):
+        text = text.replace("\n", " ")
+        return np.array(client.embeddings.create(input = [text], model=model).data[0].embedding)
+    
+    def get_sentence_embedding_dimension(self):
+        return 1536
+
+    def encode(self, text):
+        return self.get_embedding(text)
