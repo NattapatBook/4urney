@@ -18,11 +18,13 @@ from llama_parse import LlamaParse
 from openai import OpenAI
 from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
-from sentence_transformers import SentenceTransformer, models
+# from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
 
+OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY_2')
+
 load_dotenv()
-client = OpenAI()
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
     """Create field schemas for the collection."""
@@ -88,12 +90,12 @@ def initialize_db_client(MILVUS_COLLECTION_NAME, MILVUS_HOST='localhost', MILVUS
         return connections.connect(Collection=MILVUS_COLLECTION_NAME, host='host.docker.internal', port=MILVUS_PORT)
     
 
-def get_model(model_name='airesearch/wangchanberta-base-att-spm-uncased', max_seq_length=768, condition=True):
-    if condition:
-        word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
-        pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),pooling_mode='cls') # We use a [CLS] token as representation
-        model = SentenceTransformer(modules=[word_embedding_model, pooling_model],cache_folder='./tmp')
-    return model
+# def get_model(model_name='airesearch/wangchanberta-base-att-spm-uncased', max_seq_length=768, condition=True):
+#     if condition:
+#         word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
+#         pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),pooling_mode='cls') # We use a [CLS] token as representation
+#         model = SentenceTransformer(modules=[word_embedding_model, pooling_model],cache_folder='./tmp')
+#     return model
 
 def get_retrival(model_embedder, question, collection, output_fields=['text_to_encode'], limit=3, ):
     if model_embedder is not None:     
