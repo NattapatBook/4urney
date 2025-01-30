@@ -1,6 +1,5 @@
 from channels.db import database_sync_to_async
 import os
-
 import pandas as pd
 from datetime import datetime
 import requests
