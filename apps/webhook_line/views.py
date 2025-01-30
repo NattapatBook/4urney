@@ -29,6 +29,8 @@ LANGCHAIN_ENDPOINT=os.environ.get('LANGCHAIN_ENDPOINT')
 LANGCHAIN_API_KEY=os.environ.get('LANGCHAIN_API_KEY')
 LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
 
+print("OPENAI API KEY from webook_line:", OPENAI_API_KEY)
+
 client = Client(anonymizer=set_anonymizer())
 
 tz = pytz.timezone('Asia/Bangkok')
