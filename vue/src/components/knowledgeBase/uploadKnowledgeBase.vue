@@ -18,7 +18,10 @@
         <Loading :message="`Uploading...`" />
       </v-card-text>
       <!-- Dialog Content -->
-      <v-card-text v-else :style="{ height: `156px` }">
+      <v-card-text
+        v-else
+        :class="fileRequiredRule(selectedFile) && selectedFile ? `pb-0` : ``"
+      >
         <div class="file-upload">
           <div
             :style="{
@@ -93,6 +96,32 @@
           </p>
         </div>
       </v-card-text>
+      <v-card-text
+        :style="{
+          display: `flex`,
+          justifyContent: `center`,
+        }"
+        class="pt-0"
+        v-if="fileRequiredRule(selectedFile) || isLoading"
+      >
+        <div
+          :style="{
+            width: `405px`,
+          }"
+        >
+          <v-textarea
+            v-model="description"
+            rounded
+            :label="`File Description (Optional)`"
+            :placeholder="`Enter a description for this file...`"
+            no-resize
+            hide-details
+            density="compact"
+            variant="outlined"
+            :style="{ borderRadius: '8px', maxWidth: `500px` }"
+          />
+        </div>
+      </v-card-text>
 
       <!-- Dialog Actions -->
       <v-card-text
@@ -137,6 +166,7 @@ export default {
   data() {
     return {
       acceptedFormats: ".xlsx,.csv,.pdf",
+      description: ``,
       selectedFile: null,
       isLoading: false,
     };
@@ -208,6 +238,7 @@ export default {
         try {
           const response = await axios.post("api/chat_center/uploadTest/", {
             file: this.selectedFile.name,
+            description: this.description,
           });
 
           if (response.status === 200) {

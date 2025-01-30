@@ -4,11 +4,12 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   server: {
     host: "0.0.0.0",
+    allowedHosts: ["frontend"],
     proxy: {
-      '/api': 'http://localhost:8000',
-      '/admin': 'http://localhost:8000',
-      '/ws': {
-        target: 'http://localhost:8000',
+      "/api": "http://localhost:8000",
+      "/admin": "http://localhost:8000",
+      "/ws": {
+        target: "http://localhost:8000",
         ws: true,
       },
     },
