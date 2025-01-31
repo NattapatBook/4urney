@@ -550,12 +550,31 @@ export default {
       axios
         .post(path, body)
         .then((res) => {
-          this.files = res.data;
-          this.checkAndAddDescription();
+          if (item.mode === `remove` || item.mode === `edit`) {
+            this.files = res.data;
+            this.checkAndAddDescription();
+          }
           return this.$nextTick();
         })
         .then(() => {
-          this.isLoading = false;
+          if (item.mode === `remove` || item.mode === `edit`) {
+            this.snackbarAction({
+              snackbarMsg:
+                item.mode === "remove"
+                  ? "File removed successfully!"
+                  : "Description updated successfully!",
+              snackbarSuccess: true,
+              snackbarAlert: true,
+            });
+            this.isLoading = false;
+          } else if (item.mode === `process`) {
+            this.snackbarAction({
+              snackbarMsg: `Embedding task has been started.`,
+              snackbarSuccess: true,
+              snackbarAlert: true,
+            });
+            this.getList();
+          }
         })
         .catch((err) => {
           this.errMsg = err;
