@@ -22,11 +22,8 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
 from tqdm.auto import tqdm
 
 # load_dotenv()
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 
-print("OPENAI_API_KEY from function.py:", OPENAI_API_KEY)
-
-client = OpenAI(api_key=OPENAI_API_KEY)
+# client = OpenAI()
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
     """Create field schemas for the collection."""
@@ -395,7 +392,7 @@ def get_file_details(object_name, save_dir):
     return org_name, file_name, file_path, collection_name
 
 
-def process_excel(file_path):
+def process_excel(file_path, client):
     """
     Processes an Excel file by reading all sheets and preparing data.
 
@@ -409,14 +406,14 @@ def process_excel(file_path):
     whole_df = pd.concat([
         prepare_ingest_df(
             pd.read_excel(file_path, sheet_name),
-            model_embedder=ModelEmbedder(),
+            model_embedder=ModelEmbedder(client),
             focus_columns=True
         )
         for sheet_name in excel_file.sheet_names
     ], axis=0)
     return whole_df
 
-def process_csv(file_path):
+def process_csv(file_path, client):
     """
     Processes a CSV file and prepares data for ingestion.
 
@@ -427,7 +424,7 @@ def process_csv(file_path):
         DataFrame: Processed data.
     """
     df = pd.read_csv(file_path)
-    ready_data = prepare_ingest_df(df, model_embedder=ModelEmbedder(), focus_columns=True)
+    ready_data = prepare_ingest_df(df, model_embedder=ModelEmbedder(client), focus_columns=True)
     return ready_data
 
 def process_pdf(file_path):
@@ -444,9 +441,13 @@ def process_pdf(file_path):
     return docs
 
 class ModelEmbedder:
+
+    def __init__(self, client):
+        self.client = client
+        
     def get_embedding(self, text, model="text-embedding-3-small"):
         text = text.replace("\n", " ")
-        return np.array(client.embeddings.create(input = [text], model=model).data[0].embedding)
+        return np.array(self.client.embeddings.create(input = [text], model=model).data[0].embedding)
     
     def get_sentence_embedding_dimension(self):
         return 1536

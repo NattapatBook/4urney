@@ -36,6 +36,7 @@ from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
+from openai import OpenAI
 from apps.bot.function import *
 from utility.function import *
 from pymilvus import utility
@@ -773,11 +774,11 @@ def summarize_dashboard(request, user_id):
 async def process_file_async(file_path, file_extension, collection_name, uploaded_file):
     if file_extension == 'xlsx':
         print('Processing Excel file...')
-        whole_df = await asyncio.to_thread(process_excel, file_path)
+        whole_df = await asyncio.to_thread(process_excel, file_path=file_path, client=client)
         await asyncio.to_thread(data_ingestion_df, data=whole_df, collection_name=collection_name)
     elif file_extension == 'csv':
         print('Processing CSV file...')
-        ready_data = await asyncio.to_thread(process_csv, file_path)
+        ready_data = await asyncio.to_thread(process_csv, file_path=file_path, client=client)
         await asyncio.to_thread(data_ingestion_df, data=ready_data, collection_name=collection_name)
     elif file_extension == 'pdf':
         print('Processing PDF file...')
@@ -834,16 +835,16 @@ class TaskStatusView(View):
         else:
             return JsonResponse({"status": "Pending"})
 
-def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id):
+def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client):
     uploaded_file = UploadedFile.objects.get(id=uploaded_file_id)
 
     if file_extension == 'xlsx':
         print('Processing Excel file...')
-        whole_df = process_excel(file_path)
+        whole_df = process_excel(file_path, client)
         data_ingestion_df(data=whole_df, collection_name=collection_name)
     elif file_extension == 'csv':
         print('Processing CSV file...')
-        ready_data = process_csv(file_path)
+        ready_data = process_csv(file_path, client)
         data_ingestion_df(data=ready_data, collection_name=collection_name)
     elif file_extension == 'pdf':
         print('Processing PDF file...')
@@ -863,6 +864,8 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
 class EmbeddedDataView(View):
     def get(self, request, *args, **kwargs):
         load_dotenv()
+        
+        client = OpenAI()
 
         save_dir = './downloads/'
 
@@ -880,7 +883,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
@@ -894,6 +897,8 @@ class EmbeddedDataView(View):
             return JsonResponse({"error": "s3_url parameter is required."}, status=400)
 
         load_dotenv()
+        
+        client = OpenAI()
 
         save_dir = f'./downloads/{short_uuid4()}'
 
@@ -910,7 +915,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
