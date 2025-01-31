@@ -227,6 +227,7 @@ export default {
     },
     resetFileInput() {
       this.selectedFile = null;
+      this.description = ``;
     },
     async uploadFile() {
       this.isLoading = true;
@@ -242,7 +243,6 @@ export default {
           });
 
           if (response.status === 200) {
-            this.description = ``;
             this.uploadS3(response.data);
           } else {
             this.snackbarCallback(`Upload failed`, false, true);
