@@ -905,7 +905,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=self.process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
