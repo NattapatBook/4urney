@@ -24,6 +24,9 @@ from apps.bot.model_utils import get_native_openai_model
 
 # load_dotenv()
 
+for key, value in os.environ.items():
+    print(f'{key}: {value}')
+
 # client = OpenAI()
 client = get_native_openai_model()
 
