@@ -35,7 +35,7 @@ from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
-from apps.INGESTION.function import *
+from apps.bot.function import *
 from utility.function import *
 from pymilvus import utility
 
