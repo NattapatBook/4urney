@@ -188,6 +188,7 @@ export default {
         item: this.item,
         description: this.description,
       });
+      this.closeDialog();
     },
   },
 };
