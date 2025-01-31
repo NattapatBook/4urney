@@ -466,7 +466,23 @@ def list_dashboard_test(request, id):
     try:
         dashboard = Dashboard.objects.get(platform_id=id)
     except Dashboard.DoesNotExist:
-        return JsonResponse({"error": "Dashboard not found"}, status=400)
+        customer = Customer.objects.get(platform_id=id)
+        dashboard = Dashboard.objects.create(
+            platform_id=customer,
+            name="untitled",
+            gender="untitled",
+            phonenumber="untitled",
+            citizenid="untitled",
+            birthday="untitled",
+            email="untitled",
+            satisfaction=None,
+            dissatisfaction=None,
+            totalsession=None,
+            totalmessage=None,
+            urgent=None,
+            priority=None,
+            intentsummary=None,
+        )
 
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
@@ -488,6 +504,48 @@ def list_dashboard_test(request, id):
     }
 
     return JsonResponse(response_data)
+
+def edit_customer_profile(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = data.get('id')
+        name = data.get('name')
+        email = data.get('email')
+        gender = data.get('gender')
+        birthday = data.get('birthday')
+        phonenumber = data.get('phoneNumber')
+        citizenid = data.get('citizenId')
+
+        dashboard = Dashboard.objects.get(id=id)
+        dashboard.name = name
+        dashboard.email = email
+        dashboard.gender = gender
+        dashboard.birthday = birthday
+        dashboard.phonenumber = phonenumber
+        dashboard.citizenid = citizenid
+        dashboard.save()
+
+        response_data = {
+            "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
+            "intentSummary": eval(dashboard.intentsummary) if dashboard.intentsummary else [],
+            "priority": dashboard.priority if dashboard.priority else None,
+            "satisfaction": dashboard.satisfaction if dashboard.satisfaction is not None else 0,
+            "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
+            "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
+            "urgent": dashboard.urgent if dashboard.urgent is not None else 0,
+            "id": dashboard.id,
+            "userInformation": {
+                "birthday": dashboard.birthday if dashboard.birthday else "untitled",
+                "citizenId": dashboard.citizenid if dashboard.citizenid else "untitled",
+                "email": dashboard.email if dashboard.email else "untitled",
+                "gender": dashboard.gender if dashboard.gender else "untitled",
+                "name": dashboard.name if dashboard.name else "untitled",
+                "phoneNumber": dashboard.phonenumber if dashboard.phonenumber else "untitled"
+            }
+        }
+
+        return JsonResponse(response_data)
+
 
 def get_user_detail(request):
     if request.user.is_authenticated:
@@ -822,9 +880,10 @@ class EmbeddedDataView(View):
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
     def post(self, request, *args, **kwargs):
-        data = request.POST
-
+        data = json.loads(request.body)
         s3_url = data.get('file_url', None)
+
+        print(s3_url)
 
         if not s3_url:
             return JsonResponse({"error": "s3_url parameter is required."}, status=400)
