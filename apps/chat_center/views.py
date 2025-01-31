@@ -75,7 +75,11 @@ def list_user(request):
 
 @login_required
 def list_user_test(request):
-    customers = Customer.objects.all()
+    user = User.objects.get(username=request.user)
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    organization = organization_member.organization
+    customers = Customer.objects.filter(organization_id=organization)
+    # customers = Customer.objects.all()
     customer_list = []
     for customer in customers:
         customer_data = {
