@@ -20,10 +20,12 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
+from apps.bot.model_utils import get_native_openai_model
 
-load_dotenv()
+# load_dotenv()
 
-client = OpenAI()
+# client = OpenAI()
+client = get_native_openai_model()
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
     """Create field schemas for the collection."""
