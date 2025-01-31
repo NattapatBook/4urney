@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.views import View
 from django.shortcuts import get_object_or_404
+from utils.function import short_uuid4
 import os
 import psycopg2
 import json
@@ -890,7 +891,7 @@ class EmbeddedDataView(View):
 
         load_dotenv()
 
-        save_dir = './downloads/'
+        save_dir = f'./downloads/{short_uuid4()}'
 
         bucket_name, object_name = extract_bucket_and_object(s3_url)
         save_file_in_original_format(bucket_name, object_name, save_dir)
