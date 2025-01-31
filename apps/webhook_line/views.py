@@ -29,10 +29,11 @@ LANGCHAIN_ENDPOINT=os.environ.get('LANGCHAIN_ENDPOINT')
 LANGCHAIN_API_KEY=os.environ.get('LANGCHAIN_API_KEY')
 LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
 
-print("OPENAI API KEY from webook_line:", OPENAI_API_KEY)
-print("EMBEDDING MODEL API from webook_line:", EMBEDDING_MODEL_API)
-print("LANGCHAIN API KEY from webook_line:", LANGCHAIN_API_KEY)
-print("LANGCHAIN PROJECT from webook_line:", LANGCHAIN_PROJECT)
+print("COGNITO_DOMAIN from webook_line:", os.environ.get('COGNITO_DOMAIN'))
+print("AWS_S3_REGION_NAME from webook_line:", os.environ.get('AWS_S3_REGION_NAME'))
+print("DB_HOST from webook_line:", os.environ.get('DB_HOST'))
+print("MILVUS_URI from webook_line:", MILVUS_URI)
+print("MILVUS_PORT from webook_line:", os.environ.get('MILVUS_PORT'))
 
 client = Client(anonymizer=set_anonymizer())
 
@@ -66,6 +67,17 @@ def get_customers():
 # Create your views here.
 @csrf_exempt
 async def webhook(request: HttpRequest, uuid):
+    print("OPENAI API KEY from webook_line:", OPENAI_API_KEY)
+    print("EMBEDDING MODEL API from webook_line:", EMBEDDING_MODEL_API)
+    print("LANGCHAIN API KEY from webook_line:", LANGCHAIN_API_KEY)
+    print("LANGCHAIN PROJECT from webook_line:", LANGCHAIN_PROJECT)
+    
+    print("COGNITO_DOMAIN from webook_line:", os.environ.get('COGNITO_DOMAIN'))
+    print("AWS_S3_REGION_NAME from webook_line:", os.environ.get('AWS_S3_REGION_NAME'))
+    print("DB_HOST from webook_line:", os.environ.get('DB_HOST'))
+    print("MILVUS_URI from webook_line:", MILVUS_URI)
+    print("MILVUS_PORT from webook_line:", os.environ.get('MILVUS_PORT'))
+    
     line_integration = await sync_to_async(LineIntegration.objects.get)(uuid=uuid)
     LINE_CHATBOT_API_KEY = line_integration.line_chatbot_api_key
     LINE_CHANNEL_SECRET = line_integration.line_channel_secret
