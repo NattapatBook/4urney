@@ -20,15 +20,10 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
-from apps.bot.model_utils import get_native_openai_model
 
 # load_dotenv()
 
-for key, value in os.environ.items():
-    print(f'{key}: {value}')
-
 # client = OpenAI()
-client = get_native_openai_model()
 
 def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
     """Create field schemas for the collection."""
@@ -448,7 +443,8 @@ def process_pdf(file_path):
 class ModelEmbedder:
     def get_embedding(self, text, model="text-embedding-3-small"):
         text = text.replace("\n", " ")
-        return np.array(client.embeddings.create(input = [text], model=model).data[0].embedding)
+        # return np.array(client.embeddings.create(input = [text], model=model).data[0].embedding)
+        return text
     
     def get_sentence_embedding_dimension(self):
         return 1536

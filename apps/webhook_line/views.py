@@ -30,6 +30,9 @@ LANGCHAIN_API_KEY=os.environ.get('LANGCHAIN_API_KEY')
 LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
 
 print("OPENAI API KEY from webook_line:", OPENAI_API_KEY)
+print("EMBEDDING MODEL API from webook_line:", EMBEDDING_MODEL_API)
+print("LANGCHAIN API KEY from webook_line:", LANGCHAIN_API_KEY)
+print("LANGCHAIN PROJECT from webook_line:", LANGCHAIN_PROJECT)
 
 client = Client(anonymizer=set_anonymizer())
 
