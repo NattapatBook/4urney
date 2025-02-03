@@ -113,10 +113,45 @@
                   height: windowWidth > 1024 ? `calc(100dvh - 110px)` : `100%`,
                   marginBottom: windowWidth > 1024 ? `0px` : `15px`,
                   borderRadius: `8px`,
-                  overflowY: `auto`,
+                  overflowX: 'hidden',
+                  overflowY:
+                    isLoadingDashboard || isErrorDashboard ? `hidden` : `auto`,
                 }"
               >
+                <div
+                  v-if="isLoadingDashboard"
+                  :style="{
+                    height: 'calc(-110px + 100dvh)',
+                    marginBottom: '0px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflowY: 'hidden',
+                    overflowX: 'hidden',
+                  }"
+                >
+                  <Loading
+                    :style="{ fontSize: `1.2rem` }"
+                    :message="`Dashboard is Loading...`"
+                  />
+                </div>
+
+                <div v-else-if="!isLoadingDashboard && isErrorDashboard">
+                  <DataError
+                    :style="{
+                      height: 'calc(-110px + 100dvh)',
+                      marginBottom: '0px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      overflowY: 'hidden',
+                      overflowX: 'hidden',
+                    }"
+                    :message="errDashboardMsg"
+                  />
+                </div>
                 <ChatDashboard
+                  v-else-if="!isLoadingDashboard && !isErrorDashboard"
                   :selected-user-prop="selectedUser"
                   :is-change="isSelectedDataChange"
                   :dashboard-data-prop="dashboardData"
@@ -174,6 +209,8 @@ import ListUserCompact from "@/components/listen/listUserCompact.vue";
 import axios from "axios";
 import { createPersistentWebSocket } from "@/utils/websocket";
 import EditCustomerProfileDialog from "@/components/listen/subChatDashboard/editCustomerProfileDialog.vue";
+import Loading from "@/components/tools/loading.vue";
+import DataError from "@/components/tools/dataError.vue";
 
 export default {
   name: "listen",
@@ -183,6 +220,8 @@ export default {
     ChatPanel,
     ChatDashboard,
     EditCustomerProfileDialog,
+    Loading,
+    DataError,
   },
   data() {
     return {
@@ -224,6 +263,9 @@ export default {
           phoneNumber: "untitled",
         },
       },
+      isLoadingDashboard: true,
+      isErrorDashboard: false,
+      errDashboardMsg: `untitled`,
       //dialog
       editCustomerDialog: false,
       //snackbar
@@ -275,14 +317,29 @@ export default {
         .get(`api/chat_center/list_user_test/`)
         .then((res) => {
           // console.log(res.data);
-          this.userItems = res.data;
-          this.saveToLocalStorage(this.userItems);
+          this.userItems = [
+            {
+              id: `99`,
+              img: ``,
+              name: `test_dev`,
+              tag: `untitled`,
+              priority: `untitled`,
+              lastestMsg: `untitled`,
+              timestamp: new Date(),
+              isUrgent: false,
+              provider: `untitled`,
+            },
+          ];
+          // this.userItems = res.data;
+          // this.saveToLocalStorage(this.userItems);
         })
         .catch((err) => {
           console.error(err);
         });
     },
     getListDashboard(id) {
+      this.isLoadingDashboard = true;
+      this.isErrorDashboard = false;
       //id === user.id
       axios
         .get(`api/chat_center/summarize_dashboard/${id}`)
@@ -290,20 +347,32 @@ export default {
           this.getListDashboardSumarized(id);
         })
         .catch((err) => {
+          this.errDashboardMsg = err;
+          this.isLoadingDashboard = false;
+          this.isErrorDashboard = true;
+          // console.error(err);
           this.snackbarMsg = err;
           this.snackbarSuccess = false;
           this.snackbarAlert = true;
         });
     },
-    getListDashboardSumarized() {
+    getListDashboardSumarized(id) {
+      this.isLoadingDashboard = true;
+      this.isErrorDashboard = false;
       axios
         .get(`api/chat_center/list_dashboard_test/${id}`)
         .then((res) => {
           // console.log(res.data);
           this.dashboardData = res.data;
+          this.isLoadingDashboard = false;
+          this.isErrorDashboard = false;
         })
         .catch((err) => {
-          console.error(err);
+          this.errDashboardMsg = err;
+          this.isLoadingDashboard = false;
+          this.isErrorDashboard = true;
+          // console.error(err);
+          this.errDashboardMsg = err;
           this.snackbarMsg = err;
           this.snackbarSuccess = false;
           this.snackbarAlert = true;
