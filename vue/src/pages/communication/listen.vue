@@ -317,21 +317,8 @@ export default {
         .get(`api/chat_center/list_user_test/`)
         .then((res) => {
           // console.log(res.data);
-          this.userItems = [
-            {
-              id: `99`,
-              img: ``,
-              name: `test_dev`,
-              tag: `untitled`,
-              priority: `untitled`,
-              lastestMsg: `untitled`,
-              timestamp: new Date(),
-              isUrgent: false,
-              provider: `untitled`,
-            },
-          ];
-          // this.userItems = res.data;
-          // this.saveToLocalStorage(this.userItems);
+          this.userItems = res.data;
+          this.saveToLocalStorage(this.userItems);
         })
         .catch((err) => {
           console.error(err);
