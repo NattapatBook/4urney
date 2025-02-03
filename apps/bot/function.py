@@ -1,7 +1,7 @@
 import mimetypes
 import os
 import shutil
-from io import BytesIO
+# from io import BytesIO
 from urllib.parse import urlparse
 
 import boto3
@@ -9,10 +9,10 @@ import nest_asyncio
 import numpy as np
 import pandas as pd
 import requests
-from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader
 from langchain.schema import Document as LangChainDocument
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFLoader
 from llama_index.core import SimpleDirectoryReader
 from llama_parse import LlamaParse
 # from openai import OpenAI
@@ -45,32 +45,32 @@ def create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH):
         final_schema.append(curr_schema)
     return final_schema
 
-def create_collection_schema(fields, description="Fut Fit For Fun"):
-    """Create a collection schema with the provided fields."""
-    return CollectionSchema(fields=fields, description=description, enable_dynamic_field=True)
+# def create_collection_schema(fields, description="Fut Fit For Fun"):
+#     """Create a collection schema with the provided fields."""
+#     return CollectionSchema(fields=fields, description=description, enable_dynamic_field=True)
 
 def initialize_collection(collection_name, schema, using='default'):
     """Initialize a collection with the given name and schema."""
     return Collection(name=collection_name, schema=schema, using=using)
 
-def manage_collection(collection_name, schema, ID_MAX_LENGTH=50000, EMBEDDINGS_DIMENSION=1024, TEXT_MAX_LENGTH=50000):
-    """Manage the creation or replacement of a collection."""
-    print("Existing collections:", utility.list_collections())
-    if collection_name in utility.list_collections():
-        utility.drop_collection(collection_name)
-        print("Dropped old collection")
+# def manage_collection(collection_name, schema, ID_MAX_LENGTH=50000, EMBEDDINGS_DIMENSION=1024, TEXT_MAX_LENGTH=50000):
+#     """Manage the creation or replacement of a collection."""
+#     print("Existing collections:", utility.list_collections())
+#     if collection_name in utility.list_collections():
+#         utility.drop_collection(collection_name)
+#         print("Dropped old collection")
 
-    # Ensure collection is dropped
-    existing_collections = utility.list_collections()
-    print(f"Existing collections after drop operation: {existing_collections}")
+#     # Ensure collection is dropped
+#     existing_collections = utility.list_collections()
+#     print(f"Existing collections after drop operation: {existing_collections}")
 
-    fields = create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH)
-    print("Fields for new collection:", fields)
+#     fields = create_field_schema(schema, EMBEDDINGS_DIMENSION, TEXT_MAX_LENGTH)
+#     print("Fields for new collection:", fields)
 
-    schema = create_collection_schema(fields)
-    collection = initialize_collection(collection_name, schema)
-    print(f"Initialized new collection: {collection_name}")
-    return collection
+#     schema = create_collection_schema(fields)
+#     collection = initialize_collection(collection_name, schema)
+#     print(f"Initialized new collection: {collection_name}")
+#     return collection
 
 def initialize_db_client(MILVUS_COLLECTION_NAME, MILVUS_HOST='localhost', MILVUS_PORT=8000):
     """
