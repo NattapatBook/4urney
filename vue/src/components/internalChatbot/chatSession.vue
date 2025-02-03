@@ -425,7 +425,7 @@ export default {
       this.dialog = true;
     },
     applyFromDialog(item) {
-      console.log("applyFromDialog", item);
+      // console.log("applyFromDialog", item);
       const api =
         item.mode === `newChat`
           ? `create_session`

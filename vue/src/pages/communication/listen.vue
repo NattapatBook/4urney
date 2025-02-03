@@ -120,10 +120,46 @@
                   :selected-user-prop="selectedUser"
                   :is-change="isSelectedDataChange"
                   :dashboard-data-prop="dashboardData"
+                  @callbackEditCustomerProfile="editCustomerProfile"
                 />
               </v-card>
             </v-col>
           </v-row>
+          <!--Dialog-->
+          <EditCustomerProfileDialog
+            v-model="editCustomerDialog"
+            :dashboard-data-prop="dashboardData"
+            @callbackConfirmEditCustomerProfileDialog="
+              confirmEditCustomerProfileDialog
+            "
+          />
+          <!--snackbar-->
+          <v-snackbar
+            v-model="snackbarAlert"
+            timeout="5000"
+            :color="snackbarSuccess ? '#5EB491' : '#D6584D'"
+            location="top"
+            location-strategy="connected"
+          >
+            <span>
+              <v-icon v-if="snackbarSuccess"
+                >mdi-checkbox-marked-circle-outline</v-icon
+              >
+              <v-icon v-else>mdi-alert-circle</v-icon>
+              {{ snackbarMsg }}
+            </span>
+
+            <template v-slot:action="{ attrs }">
+              <v-btn
+                color="white"
+                text
+                v-bind="attrs"
+                @click="snackbarAlert = false"
+              >
+                Close
+              </v-btn>
+            </template>
+          </v-snackbar>
         </div>
       </v-col>
     </v-row>
@@ -137,6 +173,7 @@ import ListUser from "@/components/listen/listUser.vue";
 import ListUserCompact from "@/components/listen/listUserCompact.vue";
 import axios from "axios";
 import { createPersistentWebSocket } from "@/utils/websocket";
+import EditCustomerProfileDialog from "@/components/listen/subChatDashboard/editCustomerProfileDialog.vue";
 
 export default {
   name: "listen",
@@ -145,6 +182,7 @@ export default {
     ListUserCompact,
     ChatPanel,
     ChatDashboard,
+    EditCustomerProfileDialog,
   },
   data() {
     return {
@@ -186,6 +224,12 @@ export default {
           phoneNumber: "untitled",
         },
       },
+      //dialog
+      editCustomerDialog: false,
+      //snackbar
+      snackbarAlert: false,
+      snackbarSuccess: false,
+      snackbarMsg: "untitled",
       socket: null,
     };
   },
@@ -239,6 +283,19 @@ export default {
         });
     },
     getListDashboard(id) {
+      //id === user.id
+      axios
+        .get(`api/chat_center/summarize_dashboard/${id}`)
+        .then(() => {
+          this.getListDashboardSumarized(id);
+        })
+        .catch((err) => {
+          this.snackbarMsg = err;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
+        });
+    },
+    getListDashboardSumarized() {
       axios
         .get(`api/chat_center/list_dashboard_test/${id}`)
         .then((res) => {
@@ -247,6 +304,9 @@ export default {
         })
         .catch((err) => {
           console.error(err);
+          this.snackbarMsg = err;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
           this.dashboardData = {
             dissatisfaction: 0,
             intentSummary: [],
@@ -311,6 +371,31 @@ export default {
         localStorage.setItem("chatData", JSON.stringify(storedData));
       } else {
         console.warn(`id not found!`);
+      }
+    },
+    editCustomerProfile() {
+      this.editCustomerDialog = true;
+    },
+    confirmEditCustomerProfileDialog(item) {
+      if (item.id && item.id !== `-1`) {
+        axios
+          .post(`api/chat_center/edit_customer_profile/`, item)
+          .then((res) => {
+            // console.log(res.data);
+            this.dashboardData = res.data;
+            this.snackbarMsg = `Your customer profile has been successfully edited.`;
+            this.snackbarSuccess = false;
+            this.snackbarAlert = true;
+          })
+          .catch((err) => {
+            this.snackbarMsg = err;
+            this.snackbarSuccess = false;
+            this.snackbarAlert = true;
+          });
+      } else {
+        this.snackbarMsg = `Oops, something went wrong. Please try again.`;
+        this.snackbarSuccess = false;
+        this.snackbarAlert = true;
       }
     },
   },

@@ -1400,6 +1400,23 @@
               class="mb-3"
               rounded="xl"
               variant="outlined"
+              label="Phone"
+              :rules="[
+                (v) => !!v || 'Phone number is required',
+                (v) =>
+                  /^[0-9]{9,15}$/.test(v) ||
+                  'Phone number must be 9 to 15 digits',
+              ]"
+              v-model="form.phone"
+              required
+              type="tel"
+            ></v-text-field>
+            <v-text-field
+              hint="*Required"
+              persistent-hint
+              class="mb-3"
+              rounded="xl"
+              variant="outlined"
               label="Company Name"
               :rules="[(v) => !!v || 'Company Name is required']"
               v-model="form.company"
@@ -1622,6 +1639,7 @@ export default {
       form: {
         name: "",
         email: "",
+        phone: "",
         company: "",
         message: "",
       },
@@ -1943,6 +1961,7 @@ export default {
       this.form.name = ``;
       this.form.company = ``;
       this.form.email = ``;
+      this.form.phone = ``;
       this.form.message = ``;
 
       this.trialDialog = false;

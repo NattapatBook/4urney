@@ -446,12 +446,12 @@ export default {
           return "grey";
       }
     },
-    renameFile(item) {
-      console.log("Rename file:", item.fileName);
-    },
-    removeFile(item) {
-      console.log("Remove file:", item.fileName);
-    },
+    // renameFile(item) {
+    //   console.log("Rename file:", item.fileName);
+    // },
+    // removeFile(item) {
+    //   console.log("Remove file:", item.fileName);
+    // },
     onUpload() {
       this.uploadDialog = true;
     },

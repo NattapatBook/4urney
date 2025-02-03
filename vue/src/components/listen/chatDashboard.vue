@@ -60,6 +60,7 @@
                   <v-tooltip text="Tooltip" location="bottom">
                     <template v-slot:activator="{ props }">
                       <v-btn
+                        @click="clickEditCustomerProfile()"
                         v-bind="props"
                         text
                         :icon="`mdi-file-edit-outline`"
@@ -582,6 +583,9 @@ export default {
       return input
         .replace(/([a-z])([A-Z])/g, "$1 $2") // Add a space between lowercase and uppercase letters
         .replace(/^./, (char) => char.toUpperCase()); // Capitalize the first letter
+    },
+    clickEditCustomerProfile() {
+      this.$emit(`callbackEditCustomerProfile`);
     },
   },
 };
