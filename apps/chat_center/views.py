@@ -585,8 +585,10 @@ class FileUploadView(APIView):
         email = user.email
         serializer = FileUploadSerializer(data=request.data)
 
+        print(request.data['description'])
+
         if serializer.is_valid():
-            uploaded_file = serializer.save(organization_member=organization_member, user=email)
+            uploaded_file = serializer.save(organization_member=organization_member, user=email, description=request.data['description'])
             print(f'file_path {uploaded_file.file}')
             data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.name)
 
@@ -1289,3 +1291,73 @@ def internal_chatbot(request):
             chat_logs.append(chat_log)
 
         return JsonResponse(chat_logs, safe=False)
+
+
+def get_chatbot_data(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+
+        item = RoutingChain.objects.filter(id=bot_id).values(
+            'id',
+            'bot_name',
+            'routing',
+            'prompt',
+            'industry',
+            'retrieve_image',
+            'routing',
+            'knowledge_base',
+            'is_active',
+        ).first()
+
+        line_connection = LineConnection.objects.filter(bot_id=bot_id).values(
+            'uuid',
+        ).first()
+
+        formatted_data = {
+            'id': item['id'],
+            'img': '',
+            'bot_name': item['bot_name'],
+            'routing': item['routing'],
+            'prompt': item['prompt'],
+            'industry': item['industry'],
+            'retrieve_image': item['retrieve_image'],
+            'knowledge_base': item['knowledge_base'],
+            'isActive': item['is_active'],
+            'line_integration_uuid': line_connection['uuid'],
+        }
+
+        return JsonResponse(formatted_data, status=200)
+
+
+def edit_bot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+        bot_name = data.get('bot_name')
+        routing = data.get('routing')
+        prompt = data.get('prompt')
+        industry = data.get('industry')
+        retrieve_image = data.get('retrieve_image')
+        knowledge_base = data.get('knowledge_base')
+        is_active = data.get('isActive')
+        line_integration_uuid = data.get('line_integration')
+
+        routing_chain = RoutingChain.objects.filter(id=bot_id).first()
+
+        routing_chain.bot_name = bot_name
+        routing_chain.routing = routing
+        routing_chain.prompt = prompt
+        routing_chain.industry = industry
+        routing_chain.retrieve_image = retrieve_image
+        routing_chain.knowledge_base = knowledge_base
+        routing_chain.is_active = is_active
+        routing_chain.save()
+
+        line_connection = LineConnection.objects.filter(bot_id=bot_id).first()
+        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+
+        line_connection.uuid = line_integration
+        line_connection.save()
+
+        return JsonResponse({"message": "Done"}, status=200)
