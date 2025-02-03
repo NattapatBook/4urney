@@ -15,7 +15,7 @@ from langchain.schema import Document as LangChainDocument
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index.core import SimpleDirectoryReader
 from llama_parse import LlamaParse
-from openai import OpenAI
+# from openai import OpenAI
 from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models

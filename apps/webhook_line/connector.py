@@ -37,3 +37,22 @@ def get_username(user_id, line_access_token):
     # Access the desired key
     username = x_content_dict['displayName']
     return username
+
+def connect_line_webhook(line_access_token, webhook_url): 
+    LINE_API = 'https://api.line.me/v2/bot/channel/webhook/endpoint'
+
+    Authorization = f'Bearer {line_access_token}'
+
+    headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': Authorization
+    }
+    data = {
+        "endpoint": webhook_url
+    }
+    
+    data = json.dumps(data)
+    
+    response = requests.put(url=LINE_API, data=data, headers=headers)
+
+    return response.status_code
