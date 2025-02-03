@@ -934,7 +934,13 @@ def list_knowledge_base(request):
     return JsonResponse(focus_collection_names, safe=False)
 
 def list_bot(request):
-    queryset = RoutingChain.objects.all().values(
+    username = request.user
+    user = User.objects.get(username=username)
+
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    organization = organization_member.organization
+
+    queryset = RoutingChain.objects.filter(organization_id=organization).values(
         'id',
         'bot_name',
         'industry',
