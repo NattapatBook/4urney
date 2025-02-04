@@ -440,7 +440,7 @@ export default {
             // console.log(res.data);
             this.dashboardData = res.data;
             this.snackbarMsg = `Your customer profile has been successfully edited.`;
-            this.snackbarSuccess = false;
+            this.snackbarSuccess = true;
             this.snackbarAlert = true;
           })
           .catch((err) => {

@@ -64,7 +64,7 @@
                           :style="{
                             //height: `15rem`,
                             //width: `15rem`,
-                            filter: !item.isActive ? `grayscale(1)` : ``,
+                            //filter: !item.isActive ? `grayscale(1)` : ``,
                           }"
                           :cols="
                             windowWidth > 1500 ? 4 : windowWidth > 960 ? 6 : 12
@@ -73,17 +73,15 @@
                         >
                           <v-card
                             :elevation="!item.isActive ? `0` : `3`"
-                            :disabled="!item.isActive"
-                            class="rounded-lg hover-tilt-glow-wave"
+                            class="rounded-lg"
                             :style="{
                               height: `100%`,
                               backgroundColor: !item.isActive
                                 ? `lightgrey`
                                 : ``,
-                              filter: !item.isActive ? `grayscale(1)` : ``,
-                              cursor: `pointer`,
+                              //filter: !item.isActive ? `grayscale(1)` : ``,
+                              //cursor: `pointer`,
                             }"
-                            @click="clickBot(item)"
                           >
                             <v-card-text
                               :style="{
@@ -93,6 +91,31 @@
                                 height: `100%`,
                               }"
                             >
+                              <div>
+                                <div
+                                  :style="{
+                                    display: `flex`,
+                                    justifyContent: `space-between`,
+                                    alignItems: `center`,
+                                  }"
+                                >
+                                  <v-chip
+                                    :color="
+                                      item.isActive ? '#5EB491' : '#D6584D'
+                                    "
+                                  >
+                                    <span>
+                                      {{
+                                        item.isActive ? `Active` : `Inactive`
+                                      }}
+                                    </span>
+                                  </v-chip>
+                                  <v-btn
+                                    @click="clickBot(item)"
+                                    :icon="`mdi-cog`"
+                                  />
+                                </div>
+                              </div>
                               <div>
                                 <v-avatar
                                   :style="{ height: `80px`, width: `80px` }"
@@ -128,7 +151,7 @@
                                 <span
                                   >Industry :
                                   {{ truncateText(item.industry, 30) }}</span
-                                >&nbsp;
+                                ><br />
                                 <span
                                   >Mastery :
                                   {{ truncateText(item.mastery, 30) }}</span
@@ -186,6 +209,13 @@
                                     >+{{ item.tag.length - 2 }}</span
                                   >
                                 </div>
+                              </div>
+                              <div>
+                                <div
+                                  :style="{
+                                    height: `48px`,
+                                  }"
+                                ></div>
                               </div>
                             </v-card-text>
                           </v-card>

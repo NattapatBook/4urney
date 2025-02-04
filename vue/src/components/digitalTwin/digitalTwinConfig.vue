@@ -28,7 +28,7 @@
     >
       <!-- lock only create (demo) -->
       <v-container
-        v-if="botMode === `create`"
+        v-if="botMode === `create` || botMode === `edit`"
         :style="{ height: `100%` }"
         class="px-3"
       >
@@ -198,7 +198,7 @@
                           v-model="formData[item.key]"
                           :label="formData[item.key] ? `Yes` : `No`"
                           inset
-                          :color="`#5EB491`"
+                          :color="`#15d766`"
                         />
                       </div>
                     </div>
@@ -257,7 +257,6 @@
       </div>
     </v-card-text>
     <v-card-text
-      v-if="botMode === `create`"
       :style="{
         display: `flex`,
         alignItems: `center`,
@@ -275,21 +274,6 @@
         :style="{ width: `120px`, color: `white`, backgroundColor: `#5EB491` }"
         @click="submitForm()"
         :text="`Apply`"
-      />
-    </v-card-text>
-    <v-card-text
-      v-else
-      :style="{
-        display: `flex`,
-        alignItems: `center`,
-        justifyContent: `flex-end`,
-      }"
-    >
-      <v-btn
-        :style="{ width: `120px` }"
-        class="mr-2"
-        @click="clickBackToMain()"
-        :text="`back`"
       />
     </v-card-text>
   </v-card>
@@ -314,6 +298,7 @@ export default {
         if (newVal) {
           // console.log(newVal, "Load this on API");
           this.botMode = `edit`;
+          this.preprocessEditForm();
         } else {
           // console.log("Setup Components for create");
           this.botMode = `create`;
@@ -397,8 +382,16 @@ export default {
           type: "autocomplete",
           item: [],
         },
+        {
+          id: 8,
+          key: "isActive",
+          description:
+            "Should I be active and available for responses? (Yes/No)",
+          type: "boolean",
+        },
       ],
       formData: {
+        isActive: true,
         bot_name: "",
         routing: "",
         prompt: "",
@@ -435,8 +428,19 @@ export default {
     clickBackToMain() {
       this.$emit(`backToMain`);
     },
+    preprocessEditForm() {
+      // console.log(`preprocess`, this.item);
+      axios
+        .post(`api/chat_center/get_chatbot_data/`, { id: this.item.id })
+        .then((res) => {
+          this.formData = res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
     getDefineChatbotItem() {
-      //industry
+      // industry
       axios
         .get(`api/chat_center/list_industry/`)
         .then((res) => {
@@ -445,7 +449,7 @@ export default {
         .catch((err) => {
           console.log(err);
         });
-      //knowledge base
+      // knowledge base
       axios
         .get(`api/chat_center/list_knowledge_base/`)
         .then((res) => {
@@ -456,7 +460,7 @@ export default {
           console.log(err);
           this.defineChatBotItem[5].item.push("No");
         });
-      //line integration
+      // line integration
       axios
         .get(`api/chat_center/list_line_integration/`)
         .then((res) => {
@@ -490,20 +494,41 @@ export default {
         if (body.knowledge_base === "No") {
           body.knowledge_base = null;
         }
+        if (this.botMode === `edit`) {
+          body.id = this.item.id;
+        }
+
+        const api =
+          this.botMode === `create`
+            ? `api/chat_center/create_bot/`
+            : this.botMode === `edit`
+            ? `api/chat_center/edit_bot/`
+            : ``;
+
         axios
-          .post(`api/chat_center/create_bot/`, body)
+          .post(api, body)
           .then(() => {
             this.clearForm();
             this.$emit(`createBotSuccess`, {
               case: true,
-              msg: "Bot created successfully!",
+              msg:
+                this.botMode === `create`
+                  ? `Bot created successfully!`
+                  : this.botMode === `edit`
+                  ? `Bot updated successfully!`
+                  : ``,
             });
           })
           .catch((err) => {
             console.log(err);
             this.$emit(`createBotSuccess`, {
               case: false,
-              msg: "Failed to create bot. Please try again.",
+              msg:
+                this.botMode === `create`
+                  ? `Failed to create bot. Please try again.`
+                  : this.botMode === `edit`
+                  ? `Failed to update bot. Please try again.`
+                  : ``,
             });
           });
       }
@@ -513,6 +538,7 @@ export default {
     },
     clearForm() {
       this.formData = {
+        isActive: false,
         bot_name: "",
         routing: "",
         prompt: "",
