@@ -32,6 +32,7 @@ from apps.bot.chatbot_utils import call_bot
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
     ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage
 from apps.webhook_line.models import LineIntegration, LineConnection
+from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
 from dotenv import load_dotenv
@@ -1361,3 +1362,31 @@ def edit_bot(request):
         line_connection.save()
 
         return JsonResponse({"message": "Done"}, status=200)
+    
+    
+def add_line_chatbot(request): 
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        username = data.get('username')
+        channel_id = data.get('channel_id') 
+        secret_id = data.get('secret_id')
+        organization = data.get('organization')
+        
+        line_chatbot_api_key = generate_access_key(channel_id, secret_id)
+            
+        # Add user before send message
+        new_line_user = LineIntegration.objects.create(
+            user_id=channel_id, 
+            username=username, 
+            line_chatbot_api_key=line_chatbot_api_key, 
+            line_channel_secret=secret_id, 
+            organization=organization
+        )
+        
+        # Add webhook with respect to line user
+        line_integration = LineIntegration.objects.get(user_id=channel_id)
+        uuid = line_integration.uuid
+        response = connect_line_webhook(line_chatbot_api_key, uuid)
+        
+        return JsonResponse(response, status=200)

@@ -38,7 +38,30 @@ def get_username(user_id, line_access_token):
     username = x_content_dict['displayName']
     return username
 
-def connect_line_webhook(line_access_token, webhook_url): 
+def generate_access_key(channel_id, channel_secret): 
+    LINE_API = 'https://api.line.me/v2/oauth/accessToken'
+
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    
+    data_access_token = {
+        "grant_type": "client_credentials",
+        "client_id": channel_id,
+        "client_secret": channel_secret
+    }
+    
+    
+    response_access_token = requests.post(url=LINE_API, data=data_access_token, headers=headers)
+    x = response_access_token.json()
+    access_token = x['access_token']
+    
+    return access_token
+
+def connect_line_webhook(line_access_token, uuid): 
+    
+    webhook_url = 'https://dev.4urney.com/api/webhook_line/webhook/' + uuid + '/'
+    
     LINE_API = 'https://api.line.me/v2/bot/channel/webhook/endpoint'
 
     Authorization = f'Bearer {line_access_token}'
