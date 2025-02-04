@@ -1389,4 +1389,4 @@ def add_line_chatbot(request):
         uuid = line_integration.uuid
         response = connect_line_webhook(line_chatbot_api_key, uuid)
         
-        return JsonResponse(response, status=200)
+        return JsonResponse({"message": "Done"}, status=200)
