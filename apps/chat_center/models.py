@@ -317,3 +317,41 @@ class InternalChatSession(models.Model):
     def __str__(self):
         return f"{self.id} : {self.session_name}"
     
+    
+class RoutingSkill(models.Model): 
+    skill_name = models.CharField(max_length=1000, null=True, blank=True)
+    skill_description = models.TextField(max_length=1000, null=True, blank=True)
+    skill_type = models.CharField(max_length=1000, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.id} : {self.skill_name}"
+    
+
+class FieldConnection(models.Model): 
+    field_name = models.CharField(max_length=1000, null=True, blank=True)
+    field_description = models.TextField(max_length=1000, null=True, blank=True)
+    field_type = models.CharField(max_length=1000, null=True, blank=True)
+    skill_id = models.ForeignKey('RoutingSkill', on_delete=models.CASCADE, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.id} : {self.field_name}"
+    
+    
+class InformationExtractionSkill(models.Model): 
+    field_id = models.ForeignKey('FieldConnection', on_delete=models.CASCADE, null=True, blank=True)
+    field_name = models.CharField(max_length=1000, null=True, blank=True)
+    result = models.CharField(max_length=1000, null=True, blank=True)
+    skill_id = models.ForeignKey('RoutingSkill', on_delete=models.CASCADE, null=True, blank=True)
+    user_id = models.ForeignKey('Customer', on_delete=models.CASCADE, null=True, blank=True)
+    message_id = models.ForeignKey('Message', on_delete=models.CASCADE, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.id} : {self.field_name} -> {self.result}"
+    
+    
+class SkillConnection(models.Model): 
+    skill_id = models.ForeignKey('RoutingSkill', on_delete=models.CASCADE, null=True, blank=True)
+    bot_id = models.ForeignKey('RoutingChain', on_delete=models.CASCADE, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.skill_id} : {self.bot_id}"
