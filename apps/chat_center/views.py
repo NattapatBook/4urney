@@ -1375,17 +1375,20 @@ def add_line_chatbot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
 
-        username = data.get('username')
+        user = request.user
+        line_username = data.get('line_username')
         channel_id = data.get('channel_id') 
         secret_id = data.get('secret_id')
-        organization = data.get('organization')
+        
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
         
         line_chatbot_api_key = generate_access_key(channel_id, secret_id)
             
         # Add user before send message
         new_line_user = LineIntegration.objects.create(
             user_id=channel_id, 
-            username=username, 
+            username=line_username, 
             line_chatbot_api_key=line_chatbot_api_key, 
             line_channel_secret=secret_id, 
             organization=organization
