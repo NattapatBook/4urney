@@ -1401,3 +1401,30 @@ def add_line_chatbot(request):
         response = connect_line_webhook(line_chatbot_api_key, uuid)
         
         return JsonResponse({"message": "Done"}, status=200)
+    elif request.method == 'GET':
+        user = request.user
+        line_username = 'test_user'
+        channel_id = '2006620546'
+        secret_id = "f6723362faba094ffe0a81c34e3af23c"
+
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        line_chatbot_api_key = generate_access_key(channel_id, secret_id)
+
+        # Add user before send message
+        new_line_user = LineIntegration.objects.create(
+            user_id=channel_id,
+            username=line_username,
+            line_chatbot_api_key=line_chatbot_api_key,
+            line_channel_secret=secret_id,
+            organization=organization
+        )
+
+        # Add webhook with respect to line user
+        line_integration = LineIntegration.objects.get(user_id=channel_id)
+        uuid = line_integration.uuid
+        uuid = str(uuid)
+        response = connect_line_webhook(line_chatbot_api_key, uuid)
+
+        return JsonResponse({"message": "Done"}, status=200)
