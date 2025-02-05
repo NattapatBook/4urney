@@ -1375,7 +1375,8 @@ def add_line_chatbot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
 
-        user = request.user
+        username = request.user
+        user = User.objects.get(username=username)
         line_username = data.get('line_username')
         channel_id = data.get('channel_id') 
         secret_id = data.get('secret_id')
