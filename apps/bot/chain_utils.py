@@ -1,5 +1,4 @@
 from langchain.prompts.prompt import PromptTemplate
-from langchain.chains import ConversationChain
 
 def get_multi_routing_chain(chat_history, routing, retrieval_text, df, model):
     """
