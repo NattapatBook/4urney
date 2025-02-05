@@ -1364,6 +1364,7 @@ def edit_bot(request):
         return JsonResponse({"message": "Done"}, status=200)
     
     
+@csrf_exempt
 def add_line_chatbot(request): 
     if request.method == 'POST':
         data = json.loads(request.body)
