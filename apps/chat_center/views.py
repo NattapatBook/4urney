@@ -582,14 +582,14 @@ class FileUploadView(APIView):
         print(request.user)
         organization_member = OrganizationMember.objects.filter(user=request.user).first()
         organization_name = organization_member.organization.name
+        organization = organization_member.organization
         user = User.objects.get(username=request.user)
         email = user.email
         serializer = FileUploadSerializer(data=request.data)
 
-        print(request.data['description'])
 
         if serializer.is_valid():
-            uploaded_file = serializer.save(organization_member=organization_member, user=email, description=request.data['description'])
+            uploaded_file = serializer.save(organization_member=organization_member, user=email, description=request.data['description'], organization_id=organization)
             print(f'file_path {uploaded_file.file}')
             data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.name)
 
@@ -611,7 +611,12 @@ def create_bot(request):
         industry = data.get('industry')
         retrieve_image = data.get('retrieve_image')
         knowledge_base = data.get('knowledge_base')
+        is_active = data.get('isActive')
         line_integration_uuid = data.get('line_integration')
+
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
 
         routing_chain = RoutingChain.objects.create(
             bot_name=bot_name,
@@ -620,8 +625,9 @@ def create_bot(request):
             industry=industry,
             retrieve_image=retrieve_image,
             knowledge_base=knowledge_base,
-            is_active=True,
+            is_active=is_active,
             created_at=datetime.now(),
+            organization_id=organization,
         )
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
