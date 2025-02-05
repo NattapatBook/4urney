@@ -1364,6 +1364,7 @@ def edit_bot(request):
         return JsonResponse({"message": "Done"}, status=200)
     
     
+@csrf_exempt
 def add_line_chatbot(request): 
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -1387,6 +1388,7 @@ def add_line_chatbot(request):
         # Add webhook with respect to line user
         line_integration = LineIntegration.objects.get(user_id=channel_id)
         uuid = line_integration.uuid
+        uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
         
         return JsonResponse({"message": "Done"}, status=200)
