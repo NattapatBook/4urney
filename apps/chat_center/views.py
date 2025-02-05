@@ -708,7 +708,7 @@ def summarize_dashboard(request, user_id):
     llms = ChatOpenAI(
         temperature=0.7,  # Controls randomness of responses
         max_tokens=1024,  # Maximum token count in responses
-        model="gpt-4"  # Model version
+        model="gpt-4o"  # Model version
     )
     customer = Customer.objects.get(platform_id=user_id)
     # Task 1: Summarize conversations
