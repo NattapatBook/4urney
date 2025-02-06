@@ -1334,9 +1334,106 @@ def get_chatbot_data(request):
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
-        line_connection = LineConnection.objects.filter(bot_id=routing_chain.id).values(
-            'uuid',
+        try:
+            line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+            print(line_connection)
+
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base'],
+                'isActive': item['is_active'],
+                'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+            }
+        except:
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base'],
+                'isActive': item['is_active'],
+                'line_integration_uuid': None,
+            }
+
+        return JsonResponse(formatted_data, status=200)
+
+def get_chatbot_data_new(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = int(data.get('id'))
+
+        item = RoutingChain.objects.filter(id=bot_id).values(
+            'id',
+            'bot_name',
+            'routing',
+            'prompt',
+            'industry',
+            'retrieve_image',
+            'routing',
+            'knowledge_base',
+            'is_active',
         ).first()
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        try:
+            line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+            print(line_connection)
+
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base'],
+                'isActive': item['is_active'],
+                'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+            }
+        except:
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base'],
+                'isActive': item['is_active'],
+                'line_integration_uuid': None,
+            }
+
+        return JsonResponse(formatted_data, status=200)
+    elif request.method == 'GET':
+        data = json.loads(request.body)
+        bot_id = int(data.get('id'))
+
+        item = RoutingChain.objects.filter(id=bot_id).values(
+            'id',
+            'bot_name',
+            'routing',
+            'prompt',
+            'industry',
+            'retrieve_image',
+            'routing',
+            'knowledge_base',
+            'is_active',
+        ).first()
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+        print(line_connection)
 
         formatted_data = {
             'id': item['id'],
@@ -1350,7 +1447,6 @@ def get_chatbot_data(request):
             'isActive': item['is_active'],
             'line_integration_uuid': line_connection['uuid'] if line_connection else None,
         }
-
         return JsonResponse(formatted_data, status=200)
 
 
