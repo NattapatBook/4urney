@@ -491,14 +491,18 @@ def list_dashboard_test(request, id):
             intentsummary=None,
         )
 
+    satisfaction = ChatUserSatisfaction.objects.filter(platform_id=id).first()
+    urgent = ChatUserUrgent.objects.filter(platform_id=id).first()
+    summarize = ChatSummarize.objects.filter(platform_id=id).first()
+
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
-        "intentSummary": eval(dashboard.intentsummary) if dashboard.intentsummary else [],
+        "intentSummary": summarize.summarize.split('\n') if summarize.summarize else [],
         "priority": dashboard.priority if dashboard.priority else None,
-        "satisfaction": dashboard.satisfaction if dashboard.satisfaction is not None else 0,
+        "satisfaction": satisfaction.satisfaction if satisfaction.satisfaction is not None else 0,
         "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
         "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
-        "urgent": dashboard.urgent if dashboard.urgent is not None else 0,
+        "urgent": urgent.urgent if urgent.urgent is not None else 0,
         "id": dashboard.id,
         "userInformation": {
             "birthday": dashboard.birthday if dashboard.birthday else "untitled",
