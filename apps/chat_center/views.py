@@ -1416,7 +1416,6 @@ def get_chatbot_data_new(request):
 
         return JsonResponse(formatted_data, status=200)
     elif request.method == 'GET':
-        data = json.loads(request.body)
         bot_id = int(data.get('id'))
 
         item = RoutingChain.objects.filter(id=bot_id).values(
