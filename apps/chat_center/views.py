@@ -33,7 +33,7 @@ from apps.bot.chatbot_utils import call_bot
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
     ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage
-from apps.webhook_line.models import LineIntegration, LineConnection
+from apps.webhook_line.models import LineIntegration, LineConnection, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
@@ -1432,7 +1432,7 @@ def get_chatbot_data_new(request):
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
         print(routing_chain)
-        line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+        line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
         print(line_connection)
 
         formatted_data = {
