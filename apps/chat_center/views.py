@@ -33,7 +33,7 @@ from apps.bot.chatbot_utils import call_bot
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
     ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage
-from apps.webhook_line.models import LineIntegration, LineConnection, LineConnectionNew
+from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
@@ -1477,15 +1477,17 @@ def edit_bot(request):
         routing_chain = RoutingChain.objects.get(id=bot_id)
         line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).first()
         if line_connection is None:
-            LineConnectionNew.objects.create(
+            print('Line connection is None')
+            line_connection = LineConnectionNew.objects.create(
                 bot_id=routing_chain,
                 uuid=None,
             )
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
 
-        line_connection.uuid = line_integration
-        line_connection.save()
+        if line_connection:
+            line_connection.uuid = line_integration
+            line_connection.save()
 
         return JsonResponse({"message": "Done"}, status=200)
     

@@ -12,14 +12,6 @@ class LineIntegration(models.Model):
 
     def __str__(self):
         return f"{self.uuid}"
-    
-
-class LineConnection(models.Model):
-    bot_id = models.ForeignKey('chat_center.RoutingChain', on_delete=models.CASCADE,null=True, blank=True)
-    uuid = models.ForeignKey(LineIntegration, on_delete=models.CASCADE,null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.bot_id} - {self.uuid}"
 
 class LineConnectionNew(models.Model):
     bot_id = models.ForeignKey('chat_center.RoutingChain', on_delete=models.CASCADE,null=True, blank=True)
