@@ -101,7 +101,8 @@ def score_urgency(all_msgs, llms):
     ---
 
     Urgency Score:
-""")
+    """)
+    return int(response.content)
 
 
 def upsert_data(user_id, result, latest_msg_date, connection, table_name, column_name):
