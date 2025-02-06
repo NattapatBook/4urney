@@ -1321,7 +1321,7 @@ def get_chatbot_data(request):
             'is_active',
         ).first()
 
-        line_connection = LineConnection.objects.filter(bot_id__id=bot_id).values(
+        line_connection = LineConnection.objects.filter(bot_id=str(bot_id)).values(
             'uuid',
         ).first()
 
@@ -1365,7 +1365,7 @@ def edit_bot(request):
         routing_chain.is_active = is_active
         routing_chain.save()
 
-        line_connection = LineConnection.objects.filter(bot_id__id=bot_id).first()
+        line_connection = LineConnection.objects.filter(bot_id=str(bot_id)).first()
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
 
         line_connection.uuid = line_integration
