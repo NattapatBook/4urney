@@ -15,8 +15,8 @@ class LineIntegration(models.Model):
     
 
 class LineConnection(models.Model):
-    bot_id = models.ForeignKey('chat_center.RoutingChain', to_field="id", on_delete=models.CASCADE,null=True, blank=True)
-    uuid = models.ForeignKey(LineIntegration, to_field="uuid", on_delete=models.CASCADE,null=True, blank=True)
+    bot_id = models.ForeignKey('chat_center.RoutingChain', on_delete=models.CASCADE,null=True, blank=True)
+    uuid = models.ForeignKey(LineIntegration, on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
         return f"{self.bot_id} - {self.uuid}"
