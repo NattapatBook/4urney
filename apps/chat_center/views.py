@@ -1319,7 +1319,7 @@ def internal_chatbot(request):
 def get_chatbot_data(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        bot_id = data.get('id')
+        bot_id = int(data.get('id'))
 
         item = RoutingChain.objects.filter(id=bot_id).values(
             'id',
@@ -1334,7 +1334,7 @@ def get_chatbot_data(request):
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
-        line_connection = LineConnection.objects.filter(bot_id=routing_chain).values(
+        line_connection = LineConnection.objects.filter(bot_id=routing_chain.id).values(
             'uuid',
         ).first()
 
