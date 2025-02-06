@@ -278,7 +278,7 @@ def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True
     
     return docs
 
-def read_push_document(docs, collection_name, client=client):
+def read_push_document(docs, collection_name, client):
     
     docs_texts = [doc.page_content for doc in docs]
     model_embedder = ModelEmbedder(client)
