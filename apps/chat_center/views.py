@@ -1431,6 +1431,7 @@ def get_chatbot_data_new(request):
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
+        print(routing_chain)
         line_connection = LineConnection.objects.filter(bot_id__id=str(bot_id)).values('uuid').first()
         print(line_connection)
 
