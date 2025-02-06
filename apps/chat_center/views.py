@@ -539,12 +539,10 @@ def edit_customer_profile(request):
         dashboard.save()
 
         dashboard_data = Dashboard.objects.filter(id=id).first()
-        print(dashboard_data.platform_id.platform_id)
 
         satisfaction = ChatUserSatisfaction.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
         urgent = ChatUserUrgent.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
         summarize = ChatSummarize.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
-        print(summarize)
 
         response_data = {
             "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
@@ -626,7 +624,7 @@ def create_bot(request):
         retrieve_image = data.get('retrieve_image')
         knowledge_base = data.get('knowledge_base')
         is_active = data.get('isActive')
-        line_integration_uuid = data.get('line_integration')
+        line_integration_uuid = data.get('line_integration_uuid')
 
         user = request.user
         organization_member = OrganizationMember.objects.filter(user=user).first()
@@ -646,6 +644,10 @@ def create_bot(request):
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
         if not line_integration:
+            LineConnection.objects.create(
+                bot_id=routing_chain,
+                uuid=None,
+            )
             return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
 
         LineConnection.objects.create(
@@ -1331,7 +1333,8 @@ def get_chatbot_data(request):
             'is_active',
         ).first()
 
-        line_connection = LineConnection.objects.filter(bot_id=str(bot_id)).values(
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        line_connection = LineConnection.objects.filter(bot_id=routing_chain).values(
             'uuid',
         ).first()
 
@@ -1345,7 +1348,7 @@ def get_chatbot_data(request):
             'retrieve_image': item['retrieve_image'],
             'knowledge_base': item['knowledge_base'],
             'isActive': item['is_active'],
-            'line_integration_uuid': line_connection['uuid'],
+            'line_integration_uuid': line_connection['uuid'] if line_connection else None,
         }
 
         return JsonResponse(formatted_data, status=200)
@@ -1362,7 +1365,7 @@ def edit_bot(request):
         retrieve_image = data.get('retrieve_image')
         knowledge_base = data.get('knowledge_base')
         is_active = data.get('isActive')
-        line_integration_uuid = data.get('line_integration')
+        line_integration_uuid = data.get('line_integration_uuid')
 
         routing_chain = RoutingChain.objects.filter(id=bot_id).first()
 
@@ -1375,7 +1378,14 @@ def edit_bot(request):
         routing_chain.is_active = is_active
         routing_chain.save()
 
-        line_connection = LineConnection.objects.filter(bot_id=str(bot_id)).first()
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        line_connection = LineConnection.objects.filter(bot_id=routing_chain).first()
+        if line_connection is None:
+            LineConnection.objects.create(
+                bot_id=routing_chain,
+                uuid=None,
+            )
+
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
 
         line_connection.uuid = line_integration
