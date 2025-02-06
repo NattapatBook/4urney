@@ -5,6 +5,7 @@ import shutil
 from urllib.parse import urlparse
 
 import boto3
+import asyncio
 import nest_asyncio
 import numpy as np
 import pandas as pd
@@ -260,6 +261,7 @@ def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True
         documents = loader.load()
     
     else:
+        asyncio.set_event_loop(asyncio.new_event_loop())
         nest_asyncio.apply()
         # set up parser
         parser = LlamaParse(
@@ -276,16 +278,14 @@ def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True
     
     return docs
 
-def read_push_document(model_embedder, docs, collection_name):
+def read_push_document(docs, collection_name, client):
     
     docs_texts = [doc.page_content for doc in docs]
-    if model_embedder is not None:
-        embeddings = []
-        for docs in docs_texts:
-            embedding = model_embedder.encode(docs)
-            embeddings.append(embedding)
-    else:
-        embeddings = get_embeddings(docs_texts)
+    model_embedder = ModelEmbedder(client)
+    embeddings = []
+    for docs in docs_texts:
+        embedding = model_embedder.encode(docs)
+        embeddings.append(embedding)
         
     embeddings = np.array(embeddings).astype("float32")
     doc_ids = np.array(range(len(docs_texts))).astype("int64")

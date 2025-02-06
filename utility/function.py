@@ -42,44 +42,67 @@ def preprocess_data(df_msgs, df_sums, summary_col='lastest_msg_date'):
 
 def summarize_conversation(all_msgs, llms):
     """สรุปบทสนทนาให้ในภาษาไทย"""
+    
     response = llms.invoke(f"""
-        กรุณาสรุปความต้องการหลักของลูกค้าจากบทสนทนา โดยเน้นเฉพาะประเด็นสำคัญและเข้าใจง่ายที่สุด สรุปในรูปแบบข้อความ (bullet points) จะดีที่สุด
-        บทสนทนา: {all_msgs}
-        สรุป:
+    วิเคราะห์บทสนทนาระหว่างลูกค้าและบอท แล้วสรุป **เฉพาะความต้องการหลักของลูกค้า**  
+    ให้คำตอบในรูปแบบ **Bullet Points** เพื่อให้อ่านง่ายและกระชับ  
+
+    ---
+    บทสนทนา:  
+    {chr(10).join(all_msgs)}
+    ---
+
+    **สรุปความต้องการของลูกค้า:**  
+    - 
     """)
+
     return response.content
 
 def score_satisfaction(all_msgs, llms):
     """Evaluate customer satisfaction based on the conversation."""
     response = llms.invoke(f"""
-        You are tasked with analyzing a conversation between a customer and a bot to determine the satisfaction level of the customer. Provide a satisfaction score between 0 and 100 based on the conversation:
-        ---
-        Conversation: {all_msgs}
-        ---
-        Suggested Satisfaction Score:
+    Analyze the following conversation between a customer and a bot to determine the customer's satisfaction level.  
+    Provide a satisfaction score between 0 and 100, where:
+    - 0 indicates extreme dissatisfaction
+    - 100 indicates complete satisfaction  
+      
+    Respond **only** with a number, without any additional text.  
+
+    ---
+    Conversation:  
+    {chr(10).join(all_msgs)}
+    ---
+
+    Satisfaction Score:
     """)
+
     return int(response.content)
 
 def score_urgency(all_msgs, llms):
     """Evaluate customer urgency based on the conversation."""
     response = llms.invoke(f"""
-        You are tasked with analyzing a conversation between a customer and a bot to determine the urgency level of the customer. 
-        Please follow these steps:
-        
-        1. Review the entire conversation for satisfaction indicators such as tone, requests, and frustrations.
-        2. Assess how well the bot resolved the customer's issue, considering politeness, clarity, and helpfulness.
-        3. Identify dissatisfaction signals such as frustration or confusion.
+    Analyze the following conversation between a customer and a bot to determine the urgency level of the customer's request.  
 
-        Provide an urgency score between 0 and 100, where:
-        - 0 indicates completely non-urgent.
-        - 100 indicates extremely urgent.
+    Provide an urgency score between 0 and 100, where:
+    - 0 indicates completely non-urgent.
+    - 100 indicates extremely urgent.  
 
-        ---
-        Conversation: {all_msgs}
-        ---
-        Suggested Urgency Score:
+    **Guidelines for evaluation:**  
+    - Consider the customer's tone, language, and word choice to assess urgency.  
+    - Identify explicit urgency signals (e.g., words like "urgent," "ASAP," "immediately").  
+    - Evaluate the nature of the request—critical issues should have higher urgency scores.  
+    - Ignore bot responses when scoring, unless they affect the customer's perceived urgency.  
+
+    Respond **only** with a number, without any additional text.  
+
+    ---
+    Conversation:  
+    {chr(10).join(all_msgs)}
+    ---
+
+    Urgency Score:
     """)
-    return int(response.content.strip())
+    return int(response.content)
 
 
 def upsert_data(user_id, result, latest_msg_date, connection, table_name, column_name):
