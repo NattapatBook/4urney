@@ -644,13 +644,13 @@ def create_bot(request):
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
         if not line_integration:
-            LineConnection.objects.create(
+            LineConnectionNew.objects.create(
                 bot_id=routing_chain,
                 uuid=None,
             )
             return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
 
-        LineConnection.objects.create(
+        LineConnectionNew.objects.create(
             bot_id=routing_chain,
             uuid=line_integration,
         )
@@ -1335,7 +1335,7 @@ def get_chatbot_data(request):
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
         try:
-            line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+            line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
             print(line_connection)
 
             formatted_data = {
@@ -1385,7 +1385,7 @@ def get_chatbot_data_new(request):
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
         try:
-            line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+            line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
             print(line_connection)
 
             formatted_data = {
@@ -1475,9 +1475,9 @@ def edit_bot(request):
         routing_chain.save()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
-        line_connection = LineConnection.objects.filter(bot_id=routing_chain).first()
+        line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).first()
         if line_connection is None:
-            LineConnection.objects.create(
+            LineConnectionNew.objects.create(
                 bot_id=routing_chain,
                 uuid=None,
             )
