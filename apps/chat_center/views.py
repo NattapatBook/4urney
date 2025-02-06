@@ -32,7 +32,7 @@ from apps.bot.chatbot_utils import call_bot
 # from sympy import line_integrate
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
-    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage
+    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
@@ -1548,5 +1548,18 @@ def add_line_chatbot(request):
         uuid = line_integration.uuid
         uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
+
+        return JsonResponse({"message": "Done"}, status=200)
+
+def request_demo(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        name = data.get('name')
+        company = data.get('company')
+        email = data.get('email')
+        phone = data.get('phone')
+        message = data.get('message')
+
+        new_request_demo = RequestDemo.objects.create(name=name, company=company, email=email, phone=phone, message=message)
 
         return JsonResponse({"message": "Done"}, status=200)
