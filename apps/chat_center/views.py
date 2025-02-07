@@ -43,6 +43,7 @@ from openai import OpenAI
 from apps.bot.function import *
 from utility.function import *
 from pymilvus import utility
+from langchain.callbacks.tracers import LangChainTracer
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -720,6 +721,8 @@ def edit_upload_file(request):
 
 def summarize_dashboard(request, user_id):
     # user_id = 'U32afe3db274f527b57262faf86bb1359'
+    
+    tracer = LangChainTracer(project_name="Dashboard Chat Insight")
 
     llms = ChatOpenAI(
         temperature=0.7,  # Controls randomness of responses
@@ -740,7 +743,7 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize")
+    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize", tracer)
     ChatSummarize.objects.update_or_create(
         platform_id=user_id,
         defaults={
@@ -761,7 +764,7 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction")
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction", tracer)
 
     ChatUserSatisfaction.objects.update_or_create(
         platform_id=user_id,
@@ -783,7 +786,7 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent")
+    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent", tracer)
 
     ChatUserUrgent.objects.update_or_create(
         platform_id=user_id,
