@@ -32,6 +32,15 @@
               }"
             >
               <v-text-field
+                v-if="key !== `birthday`"
+                :label="formatLabel(key)"
+                density="compact"
+                variant="outlined"
+                :style="{ borderRadius: '8px', maxWidth: `500px` }"
+                v-model="userInformationForm[key]"
+              />
+              <v-date-input
+                v-else-if="key === `birthday`"
                 :label="formatLabel(key)"
                 density="compact"
                 variant="outlined"

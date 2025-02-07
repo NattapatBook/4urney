@@ -1631,6 +1631,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
@@ -1957,18 +1958,30 @@ export default {
       this.interestingDialog = false;
       this.trialDialog = true;
     },
-    clickSubmitRequestTrial() {
+    clearDialog() {
       this.form.name = ``;
       this.form.company = ``;
       this.form.email = ``;
       this.form.phone = ``;
       this.form.message = ``;
-
-      this.trialDialog = false;
-      this.alreadyGetTrial = true;
-      this.snackbarMsg = `Success! We'll contact you as soon as possible.`;
-      this.snackbarSuccess = true;
-      this.snackbarAlert = true;
+    },
+    clickSubmitRequestTrial() {
+      axios
+        .post(`api/chat_center/request_demo`, this.form)
+        .then(() => {
+          this.trialDialog = false;
+          this.alreadyGetTrial = true;
+          this.snackbarMsg = `Success! We'll contact you as soon as possible.`;
+          this.snackbarSuccess = true;
+          this.snackbarAlert = true;
+        })
+        .catch((err) => {
+          console.error(err);
+          this.alreadyGetTrial = false;
+          this.snackbarMsg = `Oops, something went wrong. Please try again.`;
+          this.snackbarSuccess = false;
+          this.snackbarAlert = true;
+        });
     },
     clickLogin() {
       window.open(`/api/control/login/`, `_self`);
