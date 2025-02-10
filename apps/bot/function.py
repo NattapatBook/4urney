@@ -25,6 +25,7 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
+import re
 
 # load_dotenv()
 
@@ -256,6 +257,9 @@ def get_embeddings(docs_texts):
 
     return np.array(resp).squeeze(axis=1)
 
+def sanitize_collection_name(name):
+    return re.sub(r'[^a-zA-Z0-9_]', '_', name)
+
 
 def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True):
     if native_langchain:
@@ -393,6 +397,7 @@ def get_file_details(object_name, save_dir):
     file_name = object_name.split('/')[-1]
     file_path = os.path.join(save_dir, file_name)
     collection_name = f'org{org_name}__{file_name}'.replace('.', '_').replace(' ', '_')
+    collection_name = sanitize_collection_name(collection_name)
     return org_name, file_name, file_path, collection_name
 
 
