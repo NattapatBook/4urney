@@ -107,7 +107,7 @@ async def webhook(request: HttpRequest, uuid):
         
         # Output the messages history
         chat_history = ""
-        for history in latest_messages:
+        for history in latest_messages[::-1]:
             chat_history += f"{history.by}: {history.message}" + '\n'
             
         # get knowledge base (collection name) & routing candidates

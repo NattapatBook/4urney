@@ -1189,7 +1189,7 @@ def internal_chatbot(request):
 
         print('New Message', new_message)
         chat_history = ""
-        for history in latest_messages:
+        for history in latest_messages[::-1]:
             chat_history += f"{history.by}: {history.message}" + '\n'
 
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
