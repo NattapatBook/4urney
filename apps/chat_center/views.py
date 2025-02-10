@@ -877,7 +877,7 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
     elif file_extension == 'pdf':
         print('Processing PDF file...')
         docs = process_pdf(file_path)
-        read_push_document(model_embedder=None, docs=docs, collection_name=collection_name)
+        read_push_document(docs=docs, collection_name=collection_name, client=client)
     else:
         print('Unknown file type.')
 
