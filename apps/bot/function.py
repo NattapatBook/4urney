@@ -5,8 +5,12 @@ import shutil
 from urllib.parse import urlparse
 
 import boto3
-import asyncio
-import nest_asyncio
+# import asyncio
+# The above Python code is importing the `nest_asyncio` module. This module allows you to run asyncio
+# code in Jupyter notebooks or interactive Python sessions without being blocked by the event loop. It
+# helps to avoid the "RuntimeError: This event loop is already running" error that can occur when
+# running asyncio code in certain environments.
+# import nest_asyncio
 import numpy as np
 import pandas as pd
 import requests
@@ -261,8 +265,8 @@ def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True
         documents = loader.load()
     
     else:
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        nest_asyncio.apply()
+        # asyncio.set_event_loop(asyncio.new_event_loop())
+        # nest_asyncio.apply()
         # set up parser
         parser = LlamaParse(
             result_type="markdown"  # "markdown" and "text" are available
