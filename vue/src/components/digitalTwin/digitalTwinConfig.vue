@@ -434,6 +434,12 @@ export default {
         .post(`api/chat_center/get_chatbot_data/`, { id: this.item.id })
         .then((res) => {
           this.formData = res.data;
+          if (!this.formData.line_integration_uuid) {
+            this.formData.line_integration_uuid = `No`;
+          }
+          if (!this.formData.knowledge_base) {
+            this.formData.knowledge_base = `No`;
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -454,18 +460,18 @@ export default {
         .get(`api/chat_center/list_knowledge_base/`)
         .then((res) => {
           this.defineChatBotItem[5].item = res.data;
-          this.defineChatBotItem[5].item.push("No");
+          this.defineChatBotItem[5].item.unshift("No");
         })
         .catch((err) => {
           console.log(err);
-          this.defineChatBotItem[5].item.push("No");
+          this.defineChatBotItem[5].item.unshift("No");
         });
       // line integration
       axios
         .get(`api/chat_center/list_line_integration/`)
         .then((res) => {
           this.defineChatBotItem[6].item = res.data;
-          this.defineChatBotItem[6].item.push({
+          this.defineChatBotItem[6].item.unshift({
             uuid: "No",
             user_id: "No",
             username: "No",
@@ -473,7 +479,7 @@ export default {
         })
         .catch((err) => {
           console.log(err);
-          this.defineChatBotItem[6].item.push({
+          this.defineChatBotItem[6].item.unshift({
             uuid: "No",
             user_id: "No",
             username: "No",

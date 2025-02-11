@@ -40,8 +40,10 @@ def preprocess_data(df_msgs, df_sums, summary_col='lastest_msg_date'):
 
     return focus_user_ids, grouped
 
-def summarize_conversation(all_msgs, llms):
+def summarize_conversation(all_msgs, llms, tracer=None):
     """สรุปบทสนทนาให้ในภาษาไทย"""
+    
+    callbacks = [tracer] if tracer else None
     
     response = llms.invoke(f"""
     วิเคราะห์บทสนทนาระหว่างลูกค้าและบอท แล้วสรุป **เฉพาะความต้องการหลักของลูกค้า**  
@@ -54,12 +56,15 @@ def summarize_conversation(all_msgs, llms):
 
     **สรุปความต้องการของลูกค้า:**  
     - 
-    """)
+    """, config={"callbacks": callbacks})
 
     return response.content
 
-def score_satisfaction(all_msgs, llms):
+def score_satisfaction(all_msgs, llms, tracer=None):
     """Evaluate customer satisfaction based on the conversation."""
+    
+    callbacks = [tracer] if tracer else None
+    
     response = llms.invoke(f"""
     Analyze the following conversation between a customer and a bot to determine the customer's satisfaction level.  
     Provide a satisfaction score between 0 and 100, where:
@@ -74,12 +79,15 @@ def score_satisfaction(all_msgs, llms):
     ---
 
     Satisfaction Score:
-    """)
+    """, config={"callbacks": callbacks})
 
     return int(response.content)
 
-def score_urgency(all_msgs, llms):
+def score_urgency(all_msgs, llms, tracer=None):
     """Evaluate customer urgency based on the conversation."""
+    
+    callbacks = [tracer] if tracer else None
+    
     response = llms.invoke(f"""
     Analyze the following conversation between a customer and a bot to determine the urgency level of the customer's request.  
 
@@ -101,7 +109,7 @@ def score_urgency(all_msgs, llms):
     ---
 
     Urgency Score:
-    """)
+    """, config={"callbacks": callbacks})
     return int(response.content)
 
 
@@ -128,7 +136,7 @@ def upsert_data(user_id, result, latest_msg_date, connection, table_name, column
     cursor.execute(upsert_query, data_to_upsert)
     connection.commit()
 
-def process_task(focus_user_ids, grouped, llms, task_fn, table_name, column_name):
+def process_task(focus_user_ids, grouped, llms, task_fn, table_name, column_name, tracer=None):
     """Process conversations and update results in the database."""
     print(f'Updating {len(focus_user_ids)} records')
     for group in tqdm(grouped):
@@ -136,7 +144,7 @@ def process_task(focus_user_ids, grouped, llms, task_fn, table_name, column_name
         if user_id in focus_user_ids:
             try:
                 all_msgs = group[1]['whose_msg'].values[-20:]
-                result = task_fn(all_msgs, llms)
+                result = task_fn(all_msgs, llms, tracer)
                 latest_msg_date = group[1]['timestamp'].max()
                 # upsert_data(user_id, result, latest_msg_date, connection, table_name, column_name)
                 return dict(

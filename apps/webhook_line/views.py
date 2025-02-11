@@ -17,7 +17,7 @@ from apps.bot.connection_utils import execute_to_df
 
 from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
-from apps.webhook_line.models import LineIntegration, LineConnection
+from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.chat_center.models import Message, Customer, Organization, RoutingChain
 
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
@@ -107,11 +107,11 @@ async def webhook(request: HttpRequest, uuid):
         
         # Output the messages history
         chat_history = ""
-        for history in latest_messages:
+        for history in latest_messages[::-1]:
             chat_history += f"{history.by}: {history.message}" + '\n'
             
         # get knowledge base (collection name) & routing candidates
-        line_connection = await sync_to_async(lambda: list(LineConnection.objects.filter(uuid=uuid).values_list('bot_id', flat=True)))()
+        line_connection = await sync_to_async(lambda: list(LineConnectionNew.objects.filter(uuid=uuid).values_list('bot_id', flat=True)))()
         routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id__in=line_connection).values()))()
         df_routing_config = pd.DataFrame(routing_configs)
         

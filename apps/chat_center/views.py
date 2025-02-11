@@ -32,8 +32,8 @@ from apps.bot.chatbot_utils import call_bot
 # from sympy import line_integrate
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
-    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage
-from apps.webhook_line.models import LineIntegration, LineConnection, LineConnectionNew
+    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo
+from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
 from rest_framework.views import APIView
@@ -43,6 +43,7 @@ from openai import OpenAI
 from apps.bot.function import *
 from utility.function import *
 from pymilvus import utility
+from langchain.callbacks.tracers import LangChainTracer
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -644,13 +645,13 @@ def create_bot(request):
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
         if not line_integration:
-            LineConnection.objects.create(
+            LineConnectionNew.objects.create(
                 bot_id=routing_chain,
                 uuid=None,
             )
             return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
 
-        LineConnection.objects.create(
+        LineConnectionNew.objects.create(
             bot_id=routing_chain,
             uuid=line_integration,
         )
@@ -720,6 +721,8 @@ def edit_upload_file(request):
 
 def summarize_dashboard(request, user_id):
     # user_id = 'U32afe3db274f527b57262faf86bb1359'
+    
+    tracer = LangChainTracer(project_name="Dashboard Chat Insight")
 
     llms = ChatOpenAI(
         temperature=0.7,  # Controls randomness of responses
@@ -740,7 +743,7 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize")
+    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize", tracer)
     ChatSummarize.objects.update_or_create(
         platform_id=user_id,
         defaults={
@@ -761,7 +764,7 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction")
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction", tracer)
 
     ChatUserSatisfaction.objects.update_or_create(
         platform_id=user_id,
@@ -783,7 +786,7 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent")
+    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent", tracer)
 
     ChatUserUrgent.objects.update_or_create(
         platform_id=user_id,
@@ -874,7 +877,7 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
     elif file_extension == 'pdf':
         print('Processing PDF file...')
         docs = process_pdf(file_path)
-        read_push_document(model_embedder=None, docs=docs, collection_name=collection_name)
+        read_push_document(docs=docs, collection_name=collection_name, client=client)
     else:
         print('Unknown file type.')
 
@@ -1186,7 +1189,7 @@ def internal_chatbot(request):
 
         print('New Message', new_message)
         chat_history = ""
-        for history in latest_messages:
+        for history in latest_messages[::-1]:
             chat_history += f"{history.by}: {history.message}" + '\n'
 
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
@@ -1335,7 +1338,7 @@ def get_chatbot_data(request):
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
         try:
-            line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+            line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
             print(line_connection)
 
             formatted_data = {
@@ -1385,7 +1388,7 @@ def get_chatbot_data_new(request):
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
         try:
-            line_connection = LineConnection.objects.filter(bot_id=routing_chain).values('uuid').first()
+            line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
             print(line_connection)
 
             formatted_data = {
@@ -1475,17 +1478,19 @@ def edit_bot(request):
         routing_chain.save()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
-        line_connection = LineConnection.objects.filter(bot_id=routing_chain).first()
+        line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).first()
         if line_connection is None:
-            LineConnection.objects.create(
+            print('Line connection is None')
+            line_connection = LineConnectionNew.objects.create(
                 bot_id=routing_chain,
                 uuid=None,
             )
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
 
-        line_connection.uuid = line_integration
-        line_connection.save()
+        if line_connection:
+            line_connection.uuid = line_integration
+            line_connection.save()
 
         return JsonResponse({"message": "Done"}, status=200)
     
@@ -1546,5 +1551,18 @@ def add_line_chatbot(request):
         uuid = line_integration.uuid
         uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
+
+        return JsonResponse({"message": "Done"}, status=200)
+
+def request_demo(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        name = data.get('name')
+        company = data.get('company')
+        email = data.get('email')
+        phone = data.get('phone')
+        message = data.get('message')
+
+        new_request_demo = RequestDemo.objects.create(name=name, company=company, email=email, phone=phone, message=message)
 
         return JsonResponse({"message": "Done"}, status=200)

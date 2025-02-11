@@ -341,13 +341,14 @@
                       </v-tooltip>
                     </div>
                     <div :style="{ height: `18dvh`, overflowY: `auto` }">
-                      <li
+                      <p
+                        class="mb-0"
                         :style="{ textAlign: `start` }"
                         v-for="(item, idx) in dashboardDataProp.intentSummary"
                         :key="`intents_summary_dash_chat_${idx}`"
                       >
                         {{ item }}
-                      </li>
+                      </p>
                     </div>
                   </div>
                 </div>

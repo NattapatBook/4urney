@@ -32,12 +32,38 @@
               }"
             >
               <v-text-field
+                v-if="key !== `birthday`"
                 :label="formatLabel(key)"
                 density="compact"
                 variant="outlined"
                 :style="{ borderRadius: '8px', maxWidth: `500px` }"
                 v-model="userInformationForm[key]"
               />
+              <v-menu
+                v-else-if="key === `birthday`"
+                v-model="menuDate"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                max-width="290"
+                offset-y
+              >
+                <template v-slot:activator="{ props }">
+                  <v-text-field
+                    v-model="userInformationForm[key]"
+                    :label="formatLabel(key)"
+                    density="compact"
+                    variant="outlined"
+                    readonly
+                    append-inner-icon="mdi-calendar"
+                    v-bind="props"
+                  ></v-text-field>
+                </template>
+
+                <v-date-picker
+                  v-model="date"
+                  @update:model-value="updateDate(key, date)"
+                ></v-date-picker>
+              </v-menu>
             </div>
           </div>
         </div>
@@ -115,6 +141,8 @@ export default {
   },
   data() {
     return {
+      menuDate: false,
+      date: null,
       userInformationForm: {
         id: "",
         birthday: "",
@@ -152,6 +180,14 @@ export default {
         name: "",
         phoneNumber: "",
       };
+    },
+    updateDate(key, date) {
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+
+      this.userInformationForm[key] = `${day}/${month}/${year}`;
+      this.menuDate = false;
     },
     clickApply() {
       this.userInformationForm.id = this.dashboardDataProp.id;

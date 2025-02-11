@@ -5,8 +5,12 @@ import shutil
 from urllib.parse import urlparse
 
 import boto3
-import asyncio
-import nest_asyncio
+# import asyncio
+# The above Python code is importing the `nest_asyncio` module. This module allows you to run asyncio
+# code in Jupyter notebooks or interactive Python sessions without being blocked by the event loop. It
+# helps to avoid the "RuntimeError: This event loop is already running" error that can occur when
+# running asyncio code in certain environments.
+# import nest_asyncio
 import numpy as np
 import pandas as pd
 import requests
@@ -21,6 +25,7 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
+import re
 
 # load_dotenv()
 
@@ -252,6 +257,9 @@ def get_embeddings(docs_texts):
 
     return np.array(resp).squeeze(axis=1)
 
+def sanitize_collection_name(name):
+    return re.sub(r'[^a-zA-Z0-9_]', '_', name)
+
 
 def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True):
     if native_langchain:
@@ -261,8 +269,8 @@ def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True
         documents = loader.load()
     
     else:
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        nest_asyncio.apply()
+        # asyncio.set_event_loop(asyncio.new_event_loop())
+        # nest_asyncio.apply()
         # set up parser
         parser = LlamaParse(
             result_type="markdown"  # "markdown" and "text" are available
@@ -389,6 +397,7 @@ def get_file_details(object_name, save_dir):
     file_name = object_name.split('/')[-1]
     file_path = os.path.join(save_dir, file_name)
     collection_name = f'org{org_name}__{file_name}'.replace('.', '_').replace(' ', '_')
+    collection_name = sanitize_collection_name(collection_name)
     return org_name, file_name, file_path, collection_name
 
 

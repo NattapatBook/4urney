@@ -6,7 +6,7 @@ def get_multi_routing_chain(chat_history, routing, retrieval_text, df, model):
     """
 
     rag_text = f"""
-    # Current conversation: 
+    # Chat history: 
         {chat_history}
         
     # Your knowledge: 

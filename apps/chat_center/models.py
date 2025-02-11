@@ -355,3 +355,14 @@ class SkillConnection(models.Model):
     
     def __str__(self):
         return f"{self.skill_id} : {self.bot_id}"
+
+class RequestDemo(models.Model):
+    name = models.CharField(max_length=1000, null=True, blank=True)
+    company = models.CharField(max_length=1000, null=True, blank=True)
+    email = models.CharField(max_length=1000, null=True, blank=True)
+    phone = models.CharField(max_length=1000, null=True, blank=True)
+    message = models.CharField(max_length=1000, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} : {self.company}"
