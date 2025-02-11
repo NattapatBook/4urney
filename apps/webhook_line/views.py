@@ -205,20 +205,21 @@ async def webhook(request: HttpRequest, uuid):
         skill_response = extract_user_data(text=message, field_names=field_names)
         
     for (field_name, result), skill_id in zip(skill_response.items(), skill_ids):
-        field_connection = await sync_to_async(FieldConnection.objects.filter(field_name=field_name).first)()
-        routing_skill = await sync_to_async(RoutingSkill.objects.filter(id=skill_id).first)()
-        
-        if field_connection: 
-            info_skill = InformationExtractionSkill(
-                field_id=field_connection,
-                field_name=field_name,
-                result=result,
-                skill_id=routing_skill,
-                user_id=customer_object,
-                message_id=message_object
-            )
+        if result:
+            field_connection = await sync_to_async(FieldConnection.objects.filter(field_name=field_name).first)()
+            routing_skill = await sync_to_async(RoutingSkill.objects.filter(id=skill_id).first)()
+            
+            if field_connection: 
+                info_skill = InformationExtractionSkill(
+                    field_id=field_connection,
+                    field_name=field_name,
+                    result=result,
+                    skill_id=routing_skill,
+                    user_id=customer_object,
+                    message_id=message_object
+                )
 
-            await sync_to_async(info_skill.save)()
+                await sync_to_async(info_skill.save)()
 
     response = HttpResponse('')
     response.headers["Access-Control-Allow-Origin"] = "*"
