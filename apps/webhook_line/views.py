@@ -202,7 +202,8 @@ async def webhook(request: HttpRequest, uuid):
     
     if skill_ids: 
         field_names = await sync_to_async(lambda: list(FieldConnection.objects.filter(skill_id__in=skill_ids).values_list("field_name", flat=True)))()
-        skill_response = extract_user_data(text=message, field_names=field_names)
+        descriptions = await sync_to_async(lambda: list(FieldConnection.objects.filter(skill_id__in=skill_ids).values_list("field_description", flat=True)))()
+        skill_response = extract_user_data(text=message, field_names=field_names, descriptions=descriptions)
         
     for (field_name, result), skill_id in zip(skill_response.items(), skill_ids):
         if result:
