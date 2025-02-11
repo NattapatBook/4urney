@@ -3,7 +3,6 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 
-@tool
 def extract_user_data(text: str, field_names: list) -> dict:
   """
   From the input text, extract user data to the allowed fields.

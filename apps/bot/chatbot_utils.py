@@ -1,10 +1,16 @@
 import os
 import pandas as pd
 from langsmith.anonymizer import create_anonymizer
+from langsmith import traceable
 
 from apps.bot.model_utils import get_openai_model
 from apps.bot.chain_utils import get_multi_routing_chain
 
+@traceable(
+  run_type="llm",
+  name="Chatbot",
+  project_name="Chatbot"
+)
 def call_bot(chat_history: str, routing: str, message: str, retrieval_text: str, df_routing_config: pd.DataFrame):
     
     # routing = "พูดคุยหรือสอบถามทั่วไป"
