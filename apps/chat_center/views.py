@@ -4,6 +4,7 @@ import threading
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.forms import model_to_dict
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -498,6 +499,14 @@ def list_dashboard_test(request, id):
     urgent = ChatUserUrgent.objects.filter(platform_id=id).first()
     summarize = ChatSummarize.objects.filter(platform_id=id).first()
 
+    messages_by_bot = Message.objects.filter(by='bot', platform_id=id) \
+        .values('platform_id') \
+        .annotate(message_count=Count('id')) \
+        .order_by('platform_id')
+    for message in messages_by_bot:
+        count_message = message['message_count']
+        print(f"Platform ID: {message['platform_id']}, Message Count: {message['message_count']}")
+
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
         "intentSummary": summarize.summarize.split('\n') if summarize.summarize else [],
@@ -514,7 +523,8 @@ def list_dashboard_test(request, id):
             "gender": dashboard.gender if dashboard.gender else "untitled",
             "name": dashboard.name if dashboard.name else "untitled",
             "phoneNumber": dashboard.phonenumber if dashboard.phonenumber else "untitled"
-        }
+        },
+        "countBotMessage": count_message,
     }
 
     return JsonResponse(response_data)
