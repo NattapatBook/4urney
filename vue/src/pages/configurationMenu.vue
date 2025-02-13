@@ -139,7 +139,11 @@ export default {
             icon: `mdi-source-branch`,
             name: `Channel Management`,
             description: `Configure and monitor communication channels.`,
-            disabled: true,
+            disabled: false,
+            link: {
+              internal: true,
+              src: `Channel_Management`,
+            },
           },
           {
             icon: `mdi-brain`,
@@ -167,17 +171,6 @@ export default {
             },
           },
         ],
-        // Test: [
-        //   {
-        //     icon: `mdi-upload`,
-        //     name: `Upload_Test`,
-        //     description: `Only for developer`,
-        //     link: {
-        //       internal: true,
-        //       src: `Upload_Test`,
-        //     },
-        //   },
-        // ],
       },
     };
   },

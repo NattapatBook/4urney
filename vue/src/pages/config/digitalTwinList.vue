@@ -24,7 +24,7 @@
               >
                 <v-card-title>
                   <p class="gradient-text" :style="{ fontWeight: 'bold' }">
-                    "Digital Twin Portfolio"
+                    Digital Twin Portfolio
                   </p>
                   <span :style="{ fontSize: '0.8rem', color: 'grey' }">
                     "Explore digital twins or create and optimize your own to

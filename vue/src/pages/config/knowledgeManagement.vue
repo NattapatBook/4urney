@@ -59,6 +59,7 @@
                       <v-tooltip text="Tooltip" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
+                            class="mr-2"
                             v-bind="props"
                             :disabled="isLoading || isError"
                             icon
@@ -69,6 +70,20 @@
                           </v-btn>
                         </template>
                         <span>Upload file</span>
+                      </v-tooltip>
+                      <v-tooltip text="Tooltip" location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            :disabled="isLoading || isError"
+                            icon
+                            color="primary"
+                            @click="getList"
+                          >
+                            <v-icon>mdi-refresh</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Refresh</span>
                       </v-tooltip>
                     </div>
                   </div>
