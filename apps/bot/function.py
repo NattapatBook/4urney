@@ -261,7 +261,7 @@ def sanitize_collection_name(name):
     return re.sub(r'[^a-zA-Z0-9_]', '_', name)
 
 
-def read_pdf(pdf_path, chunk_size =1000, chunk_overlap=20, native_langchain=True):
+def read_pdf(pdf_path, chunk_size=1000, chunk_overlap=20, native_langchain=True):
     if native_langchain:
         loader = PyPDFLoader(pdf_path)
 
