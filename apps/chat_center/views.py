@@ -873,7 +873,7 @@ class TaskStatusView(View):
         else:
             return JsonResponse({"status": "Pending"})
 
-def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client):
+def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client, llms):
     uploaded_file = UploadedFile.objects.get(id=uploaded_file_id)
 
     if file_extension == 'xlsx':
@@ -903,7 +903,12 @@ class EmbeddedDataView(View):
     def get(self, request, *args, **kwargs):
         load_dotenv()
         
-        client = OpenAI()
+        client = OpenAI()   
+        llms = ChatOpenAI(
+                            temperature=0.7,  # Controls randomness of responses
+                            max_tokens=1024,  # Maximum token count in responses
+                            model="gpt-4o"  # Model version
+                        )
 
         save_dir = './downloads/'
 
@@ -921,7 +926,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client, llms)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
