@@ -1,5 +1,7 @@
+import base64
 import mimetypes
 import os
+import re
 import shutil
 # from io import BytesIO
 from urllib.parse import urlparse
@@ -25,7 +27,6 @@ from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 # from sentence_transformers import SentenceTransformer, models
 from tqdm.auto import tqdm
-import re
 
 # load_dotenv()
 
@@ -448,6 +449,58 @@ def process_pdf(file_path):
     """
     docs = read_pdf(file_path, chunk_size=512, chunk_overlap=64, native_langchain=False)
     return docs
+
+
+def process_image(file_path, llm):
+    """
+    Processes a IMAGE file and extracts documents for ingestion.
+
+    Args:
+        file_path (str): Path to the IMAGE file.
+
+    Returns:
+        list: Processed documents.
+    """
+    plain_information = describe_image_with_ocr(file_path, llm)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
+    docs = text_splitter.split_documents([LangChainDocument(page_content=plain_information)])
+    
+    return docs
+
+def describe_image_with_ocr(file_path, llm):
+    with open(file_path, "rb") as image_file:
+        image_data = base64.b64encode(image_file.read()).decode("utf-8")
+        
+    prompts = [
+                {
+                    "role": "system",
+                    "content": (
+                        "วิเคราะห์ภาพที่ให้มาและอธิบายรายละเอียดเป็นภาษาไทยเท่านั้น "
+                        "ผสมผสานข้อความที่ปรากฏในภาพเข้าไปในคำบรรยายอย่างเป็นธรรมชาติ "
+                        "เน้นรายละเอียดสำคัญ เช่น วัตถุ ผู้คน สี สถานที่ และบริบทโดยรวม "
+                        "ทำให้คำบรรยายลื่นไหล อ่านเข้าใจง่าย และไม่แยกข้อความออกจากคำอธิบาย "
+                        "ห้ามใช้ภาษาอื่นนอกจากภาษาไทย และห้ามเพิ่มความคิดเห็นหรือข้อมูลที่ไม่เกี่ยวข้อง"
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "อธิบายรายละเอียดของภาพนี้เป็นภาษาไทย รวมข้อความที่เห็นในภาพเข้าไปอย่างเป็นธรรมชาติ"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        }
+                    ]
+                }
+            ]
+    
+    response = llm.invoke(prompts)
+    
+
+    return response.content
+    
 
 class ModelEmbedder:
 
