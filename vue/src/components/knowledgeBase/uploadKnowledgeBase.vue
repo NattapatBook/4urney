@@ -92,7 +92,7 @@
                 !fileRequiredRule(selectedFile) && selectedFile ? `red` : ``,
             }"
           >
-            CSV, PDF, XLSX format only
+            CSV, PDF, XLSX, JPG, JPEG, JPE format only
           </p>
         </div>
       </v-card-text>
@@ -165,7 +165,7 @@ export default {
   },
   data() {
     return {
-      acceptedFormats: ".xlsx,.csv,.pdf",
+      acceptedFormats: ".xlsx,.csv,.pdf,.jpg,.jpeg,.jpe",
       description: ``,
       selectedFile: null,
       isLoading: false,
@@ -190,14 +190,10 @@ export default {
       if (!file) {
         return false;
       }
-      const allowedExtensions = ["xlsx", "csv", "pdf"];
+      const allowedExtensions = ["xlsx", "csv", "pdf", "jpg", "jpeg", "jpe"];
       const fileExtension = file.name.split(".").pop().toLowerCase();
 
-      if (!allowedExtensions.includes(fileExtension)) {
-        return false;
-      }
-
-      return true;
+      return allowedExtensions.includes(fileExtension);
     },
     formatFileSize(sizeInBytes) {
       if (sizeInBytes < 1024) {
