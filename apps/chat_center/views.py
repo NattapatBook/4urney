@@ -822,6 +822,8 @@ async def process_file_async(file_path, file_extension, collection_name, uploade
         print('Processing PDF file...')
         docs = await asyncio.to_thread(process_pdf, file_path)
         await asyncio.to_thread(read_push_document, docs=docs, collection_name=collection_name, client=client)
+    elif file_extension in ['jpeg', 'jpg']:
+        pass
     else:
         print('Unknown file type.')
 
@@ -887,6 +889,10 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
     elif file_extension == 'pdf':
         print('Processing PDF file...')
         docs = process_pdf(file_path)
+        read_push_document(docs=docs, collection_name=collection_name, client=client)
+    elif file_extension in ['jpeg', 'jpg']:
+        print('Processing IMAGE file...')
+        docs = process_pdf(file_path, llms)
         read_push_document(docs=docs, collection_name=collection_name, client=client)
     else:
         print('Unknown file type.')
