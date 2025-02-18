@@ -1593,3 +1593,27 @@ def request_demo(request):
         new_request_demo = RequestDemo.objects.create(name=name, company=company, email=email, phone=phone, message=message)
 
         return JsonResponse({"message": "Done"}, status=200)
+    
+
+def list_channel_management(request):
+    if request.method == 'GET':
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        # Get all LineIntegration records for this organization
+        line_integrations = LineIntegration.objects.filter(organization_id=organization)
+        
+        formatted_messages = [
+            {
+                'id': line_integration.uuid,
+                'img': '',
+                'accountName': line_integration.username,
+                'type': 'messenger', 
+                'connectedBy': 'developer_test', 
+                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None
+            }
+            for line_integration in line_integrations
+        ]
+
+        return JsonResponse(formatted_messages, safe=False)
