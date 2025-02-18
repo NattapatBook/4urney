@@ -1214,43 +1214,43 @@ def internal_chatbot(request):
             organization_id=organization,
         )
 
-        message_counts = InternalChatMessage.objects.filter(by='bot', organization_id=organization) \
-            .values('organization_id') \
-            .annotate(message_count=Count('id'))
-
-        for result in message_counts:
-            count_message = result['message_count']
-
-        if count_message >= 10:
-            new_bot_message = InternalChatMessage.objects.create(
-                message='ขออภัยค่ะ โควต้าบอทตอบหมด',
-                by='system',
-                user=user,
-                bot_id=routing_chain,
-                session_id=session,
-                timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
-                organization_id=organization,
-            )
-
-            messages = InternalChatMessage.objects.filter(
-                session_id=session, bot_id=routing_chain, user=user,
-            ).order_by('timestamp')
-            chat_logs = []
-            for message in messages:
-                if message.timestamp:
-                    message_timestamp = message.timestamp.astimezone(tz)
-                    timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
-                else:
-                    timestamp_str = ""
-                chat_log = {
-                    "id": message.id,
-                    "msg": message.message if message.message else "",
-                    "by": message.by if message.by else "unknown",
-                    "timestamp": timestamp_str
-                }
-                chat_logs.append(chat_log)
-
-            return JsonResponse(chat_logs, safe=False)
+        # message_counts = InternalChatMessage.objects.filter(by='bot', organization_id=organization) \
+        #     .values('organization_id') \
+        #     .annotate(message_count=Count('id'))
+        #
+        # for result in message_counts:
+        #     count_message = result['message_count']
+        #
+        # if count_message >= 10:
+        #     new_bot_message = InternalChatMessage.objects.create(
+        #         message='ขออภัยค่ะ โควต้าบอทตอบหมด',
+        #         by='system',
+        #         user=user,
+        #         bot_id=routing_chain,
+        #         session_id=session,
+        #         timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+        #         organization_id=organization,
+        #     )
+        #
+        #     messages = InternalChatMessage.objects.filter(
+        #         session_id=session, bot_id=routing_chain, user=user,
+        #     ).order_by('timestamp')
+        #     chat_logs = []
+        #     for message in messages:
+        #         if message.timestamp:
+        #             message_timestamp = message.timestamp.astimezone(tz)
+        #             timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+        #         else:
+        #             timestamp_str = ""
+        #         chat_log = {
+        #             "id": message.id,
+        #             "msg": message.message if message.message else "",
+        #             "by": message.by if message.by else "unknown",
+        #             "timestamp": timestamp_str
+        #         }
+        #         chat_logs.append(chat_log)
+        #
+        #     return JsonResponse(chat_logs, safe=False)
 
 
         print('New Message', new_message)
@@ -1656,3 +1656,43 @@ def list_channel_management(request):
         ]
 
         return JsonResponse(formatted_messages, safe=False)
+
+def count_bot_message(request):
+    if request.method == 'GET':
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        result = dict()
+
+        messages_grouped = Message.objects.filter(by='bot',organization_id=organization) \
+            .select_related('platform_id') \
+            .values('organization_id', 'platform_id', 'platform_id__provider') \
+            .annotate(message_count=Count('id'))
+
+        agent_console_results = []
+        for message_group in messages_grouped:
+            print(f"Organization ID: {message_group['organization_id']}, "
+                  f"Platform ID: {message_group['platform_id']}, "
+                  f"Provider: {message_group['platform_id__provider']}, "
+                  f"Message Count: {message_group['message_count']}")
+            agent_console_results.append(message_group)
+
+        result['agent_console'] = agent_console_results
+
+        internal_chat_messages_grouped = InternalChatMessage.objects.filter(by='bot',organization_id=organization) \
+            .select_related('bot_id') \
+            .values('organization_id', 'bot_id__bot_name', 'user') \
+            .annotate(message_count=Count('id'))
+
+        internal_chat_results = []
+        for message_group in internal_chat_messages_grouped:
+            print(f"Organization ID: {message_group['organization_id']}, "
+                  f"Bot Name: {message_group['bot_id__bot_name']}, "
+                  f"User ID: {message_group['user']}, "
+                  f"Message Count: {message_group['message_count']}")
+            internal_chat_results.append(message_group)
+
+        result['internal_chat'] = internal_chat_results
+
+        return JsonResponse(result, status=200)
