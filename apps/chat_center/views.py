@@ -1197,6 +1197,45 @@ def internal_chatbot(request):
             organization_id=organization,
         )
 
+        message_counts = InternalChatMessage.objects.filter(by='bot', organization_id=organization) \
+            .values('organization_id') \
+            .annotate(message_count=Count('id'))
+
+        for result in message_counts:
+            count_message = result['message_count']
+
+        if count_message >= 10:
+            new_bot_message = InternalChatMessage.objects.create(
+                message='ขออภัยค่ะ โควต้าบอทตอบหมด',
+                by='system',
+                user=user,
+                bot_id=routing_chain,
+                session_id=session,
+                timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+                organization_id=organization,
+            )
+
+            messages = InternalChatMessage.objects.filter(
+                session_id=session, bot_id=routing_chain, user=user,
+            ).order_by('timestamp')
+            chat_logs = []
+            for message in messages:
+                if message.timestamp:
+                    message_timestamp = message.timestamp.astimezone(tz)
+                    timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+                else:
+                    timestamp_str = ""
+                chat_log = {
+                    "id": message.id,
+                    "msg": message.message if message.message else "",
+                    "by": message.by if message.by else "unknown",
+                    "timestamp": timestamp_str
+                }
+                chat_logs.append(chat_log)
+
+            return JsonResponse(chat_logs, safe=False)
+
+
         print('New Message', new_message)
         chat_history = ""
         for history in latest_messages[::-1]:
