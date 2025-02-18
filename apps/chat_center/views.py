@@ -822,6 +822,8 @@ async def process_file_async(file_path, file_extension, collection_name, uploade
         print('Processing PDF file...')
         docs = await asyncio.to_thread(process_pdf, file_path)
         await asyncio.to_thread(read_push_document, docs=docs, collection_name=collection_name, client=client)
+    elif file_extension in ['jpeg', 'jpg']:
+        pass
     else:
         print('Unknown file type.')
 
@@ -873,7 +875,7 @@ class TaskStatusView(View):
         else:
             return JsonResponse({"status": "Pending"})
 
-def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client):
+def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client, llms):
     uploaded_file = UploadedFile.objects.get(id=uploaded_file_id)
 
     if file_extension == 'xlsx':
@@ -887,6 +889,10 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
     elif file_extension == 'pdf':
         print('Processing PDF file...')
         docs = process_pdf(file_path)
+        read_push_document(docs=docs, collection_name=collection_name, client=client)
+    elif file_extension in ['jpeg', 'jpg']:
+        print('Processing IMAGE file...')
+        docs = process_pdf(file_path, llms)
         read_push_document(docs=docs, collection_name=collection_name, client=client)
     else:
         print('Unknown file type.')
@@ -903,7 +909,12 @@ class EmbeddedDataView(View):
     def get(self, request, *args, **kwargs):
         load_dotenv()
         
-        client = OpenAI()
+        client = OpenAI()   
+        llms = ChatOpenAI(
+                            temperature=0.7,  # Controls randomness of responses
+                            max_tokens=1024,  # Maximum token count in responses
+                            model="gpt-4o"  # Model version
+                        )
 
         save_dir = './downloads/'
 
@@ -921,7 +932,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client, llms)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
@@ -938,6 +949,12 @@ class EmbeddedDataView(View):
         
         client = OpenAI()
 
+        llms = ChatOpenAI(
+                            temperature=0.7,  # Controls randomness of responses
+                            max_tokens=1024,  # Maximum token count in responses
+                            model="gpt-4o"  # Model version
+                        )
+        
         save_dir = f'./downloads/{short_uuid4()}'
 
         bucket_name, object_name = extract_bucket_and_object(s3_url)
@@ -953,7 +970,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client, llms)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
@@ -1569,7 +1586,7 @@ def add_line_chatbot(request):
         )
         
         # Add webhook with respect to line user
-        line_integration = LineIntegration.objects.get(user_id=channel_id)
+        line_integration = LineIntegration.objects.get(user_id=channel_id, username=line_username)
         uuid = line_integration.uuid
         uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
@@ -1596,7 +1613,7 @@ def add_line_chatbot(request):
         )
 
         # Add webhook with respect to line user
-        line_integration = LineIntegration.objects.get(user_id=channel_id)
+        line_integration = LineIntegration.objects.get(user_id=channel_id, username=line_username)
         uuid = line_integration.uuid
         uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
@@ -1615,3 +1632,27 @@ def request_demo(request):
         new_request_demo = RequestDemo.objects.create(name=name, company=company, email=email, phone=phone, message=message)
 
         return JsonResponse({"message": "Done"}, status=200)
+    
+
+def list_channel_management(request):
+    if request.method == 'GET':
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        # Get all LineIntegration records for this organization
+        line_integrations = LineIntegration.objects.filter(organization_id=organization)
+        
+        formatted_messages = [
+            {
+                'id': line_integration.uuid,
+                'img': '',
+                'accountName': line_integration.username,
+                'type': 'messenger', 
+                'connectedBy': 'developer_test', 
+                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None
+            }
+            for line_integration in line_integrations
+        ]
+
+        return JsonResponse(formatted_messages, safe=False)
