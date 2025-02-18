@@ -943,6 +943,12 @@ class EmbeddedDataView(View):
         
         client = OpenAI()
 
+        llms = ChatOpenAI(
+                            temperature=0.7,  # Controls randomness of responses
+                            max_tokens=1024,  # Maximum token count in responses
+                            model="gpt-4o"  # Model version
+                        )
+        
         save_dir = f'./downloads/{short_uuid4()}'
 
         bucket_name, object_name = extract_bucket_and_object(s3_url)
@@ -958,7 +964,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client, llms)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
