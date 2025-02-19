@@ -462,7 +462,7 @@ def process_image(file_path, llm):
         list: Processed documents.
     """
     plain_information = describe_image_with_ocr(file_path, llm)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=128)
     docs = text_splitter.split_documents([LangChainDocument(page_content=plain_information)])
     
     return docs
