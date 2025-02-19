@@ -99,6 +99,7 @@
                         <div :style="{ textAlign: `center` }">
                           <v-btn
                             block
+                            :style="{ textTransform: `capitalize` }"
                             variant="text"
                             @click="this.setSort(`file_name`)"
                             >File Name
@@ -120,6 +121,7 @@
                         <div :style="{ textAlign: `center` }">
                           <v-btn
                             block
+                            :style="{ textTransform: `capitalize` }"
                             variant="text"
                             @click="this.setSort(`status`)"
                             >Status
@@ -142,6 +144,7 @@
                         <div :style="{ textAlign: `center` }">
                           <v-btn
                             block
+                            :style="{ textTransform: `capitalize` }"
                             variant="text"
                             @click="this.setSort(`uploaded_at`)"
                             >Date
@@ -164,6 +167,7 @@
                         <div :style="{ textAlign: `center` }">
                           <v-btn
                             block
+                            :style="{ textTransform: `capitalize` }"
                             variant="text"
                             @click="this.setSort(`user`)"
                             >By
