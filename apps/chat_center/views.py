@@ -892,7 +892,7 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
         read_push_document(docs=docs, collection_name=collection_name, client=client)
     elif file_extension in ['jpeg', 'jpg']:
         print('Processing IMAGE file...')
-        docs = process_pdf(file_path, llms)
+        docs = process_image(file_path, llms)
         read_push_document(docs=docs, collection_name=collection_name, client=client)
     else:
         print('Unknown file type.')
