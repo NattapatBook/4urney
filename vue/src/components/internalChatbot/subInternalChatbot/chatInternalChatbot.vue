@@ -143,6 +143,92 @@
             {{ new Date(item.timestamp) }}
           </v-tooltip>
         </div>
+        <!--system-->
+        <div
+          v-else-if="item.by === `system`"
+          :style="{
+            display: `flex`,
+            justifyContent: `flex-start`,
+            flexDirection: `column`,
+            alignItems: `flex-start`,
+          }"
+        >
+          <div
+            :style="{
+              display: `flex`,
+              alignItems: `center`,
+              whiteSpace: `nowrap`,
+              overflow: `hidden`,
+              textOverflow: `ellipsis`,
+              maxWidth: `75%`,
+            }"
+          >
+            <div class="mr-2 mb-1">
+              <v-avatar
+                :style="{ width: `20px`, height: `20px`, aspectRatio: 1 }"
+              >
+                <v-img
+                  v-if="selectedUserProps.img"
+                  :src="selectedUserProps.img"
+                  aspect-ratio="1"
+                ></v-img>
+                <v-img
+                  v-else
+                  :src="`https://ui-avatars.com/api/?name=${checkTextTooLong(
+                    selectedUserProps.name,
+                    15
+                  )}`"
+                  aspect-ratio="1"
+                ></v-img>
+              </v-avatar>
+            </div>
+            <span
+              :style="{
+                whiteSpace: `nowrap`,
+                overflow: `hidden`,
+                textOverflow: `ellipsis`,
+              }"
+              >{{ checkTextTooLong(selectedUserProps.name, 15) }}</span
+            >
+          </div>
+          <v-tooltip location="bottom" text="Tooltip">
+            <template v-slot:activator="{ props }">
+              <div
+                :style="{
+                  //border: `solid 1px rgba(94, 180, 145, 1)`,
+                  backgroundColor: `rgb(255 135 124`,
+                  color: `black`,
+                  maxWidth: `75%`,
+                  borderRadius: `20px`,
+                  borderTopLeftRadius: `0px`,
+                }"
+                class="pa-2"
+                v-bind="props"
+              >
+                <p :style="{ textAlign: `start` }">
+                  {{ item.msg }}
+                </p>
+              </div>
+              <p
+                :style="{
+                  fontSize: `0.72rem`,
+                  color: `grey`,
+                }"
+                class="mb-2 mr-1"
+              >
+                {{ timeSince(item.timestamp) }}
+              </p>
+            </template>
+            <!-- <span
+              :style="{
+                color: `rgba(94, 180, 145, 1)`,
+              }"
+              >* This message has sent by chatbot
+            </span>
+            <br /> -->
+            {{ new Date(item.timestamp) }}
+          </v-tooltip>
+        </div>
       </div>
     </v-card-text>
   </div>

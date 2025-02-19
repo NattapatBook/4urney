@@ -77,7 +77,7 @@
           </div>
           <p
             v-if="fileRequiredRule(selectedFile)"
-            :style="{ textAlign: `end`, fontSize: `0.8rem`, color: `#1867c0` }"
+            :style="{ textAlign: `end`, fontSize: `0.7rem`, color: `#1867c0` }"
             class="pr-2"
           >
             File Size: {{ formatFileSize(selectedFile.size) }}
@@ -87,7 +87,7 @@
             v-else
             :style="{
               textAlign: `end`,
-              fontSize: `0.8rem`,
+              fontSize: `0.7rem`,
               color:
                 !fileRequiredRule(selectedFile) && selectedFile ? `red` : ``,
             }"
