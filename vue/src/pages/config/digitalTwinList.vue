@@ -370,11 +370,13 @@ export default {
       const filtered = {};
 
       for (const key in this.menu) {
-        if (!this.filterTerm.trim()) {
+        const filterTerm = this.filterTerm ? this.filterTerm.trim() : "";
+
+        if (!filterTerm) {
           filtered[key] = this.menu[key];
         } else {
           filtered[key] = this.menu[key].filter((item) =>
-            item.name.toLowerCase().includes(this.filterTerm.toLowerCase())
+            item.name.toLowerCase().includes(filterTerm.toLowerCase())
           );
         }
       }
