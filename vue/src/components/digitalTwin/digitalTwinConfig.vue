@@ -161,7 +161,7 @@
                           :items="item.item"
                           :label="menuNamed(item.key)"
                           :item-value="`uuid`"
-                          :item-title="`user_id`"
+                          :item-title="`username`"
                           variant="outlined"
                           density="compact"
                           :style="{ borderRadius: '8px', maxWidth: `500px` }"

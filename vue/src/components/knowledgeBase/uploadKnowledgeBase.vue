@@ -77,7 +77,7 @@
           </div>
           <p
             v-if="fileRequiredRule(selectedFile)"
-            :style="{ textAlign: `end`, fontSize: `0.8rem`, color: `#1867c0` }"
+            :style="{ textAlign: `end`, fontSize: `0.7rem`, color: `#1867c0` }"
             class="pr-2"
           >
             File Size: {{ formatFileSize(selectedFile.size) }}
@@ -87,12 +87,12 @@
             v-else
             :style="{
               textAlign: `end`,
-              fontSize: `0.8rem`,
+              fontSize: `0.7rem`,
               color:
                 !fileRequiredRule(selectedFile) && selectedFile ? `red` : ``,
             }"
           >
-            CSV, PDF, XLSX format only
+            CSV, PDF, XLSX, JPG, JPEG, JPE format only
           </p>
         </div>
       </v-card-text>
@@ -165,7 +165,7 @@ export default {
   },
   data() {
     return {
-      acceptedFormats: ".xlsx,.csv,.pdf",
+      acceptedFormats: ".xlsx,.csv,.pdf,.jpg,.jpeg,.jpe",
       description: ``,
       selectedFile: null,
       isLoading: false,
@@ -190,14 +190,10 @@ export default {
       if (!file) {
         return false;
       }
-      const allowedExtensions = ["xlsx", "csv", "pdf"];
+      const allowedExtensions = ["xlsx", "csv", "pdf", "jpg", "jpeg", "jpe"];
       const fileExtension = file.name.split(".").pop().toLowerCase();
 
-      if (!allowedExtensions.includes(fileExtension)) {
-        return false;
-      }
-
-      return true;
+      return allowedExtensions.includes(fileExtension);
     },
     formatFileSize(sizeInBytes) {
       if (sizeInBytes < 1024) {

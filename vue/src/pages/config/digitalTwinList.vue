@@ -24,19 +24,48 @@
               >
                 <v-card-title>
                   <p class="gradient-text" :style="{ fontWeight: 'bold' }">
-                    "Digital Twin Portfolio"
+                    Digital Twin Portfolio
                   </p>
                   <span :style="{ fontSize: '0.8rem', color: 'grey' }">
                     "Explore digital twins or create and optimize your own to
                     reflect and enhance real-world assets."
                   </span>
                 </v-card-title>
+                <v-card-text :class="windowWidth > 900 ? `` : `pa-3`">
+                  <div
+                    :style="{
+                      textAlign: `-webkit-center`,
+                    }"
+                  >
+                    <div
+                      :style="{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        alignContent: 'center',
+                        maxWidth: `420px`,
+                      }"
+                    >
+                      <v-text-field
+                        class="mr-3"
+                        v-model="filterTerm"
+                        density="compact"
+                        label="Filter by bot name"
+                        hide-details
+                        variant="outlined"
+                        rounded="xl"
+                        clearable
+                      ></v-text-field>
+                    </div>
+                  </div>
+                </v-card-text>
                 <v-card-text
                   class="pa-4 mb-5"
                   :style="{
                     overflowY: `auto`,
                     overflowX: `hidden`,
-                    maxHeight: `calc(100% - 100px)`,
+                    maxHeight: `calc(100% - 120px)`,
                     width: `100%`,
                   }"
                 >
@@ -46,7 +75,7 @@
                     v-for="(key, idx) in Object.keys(menu)"
                     :key="`main_menu_${key}_${idx}`"
                   >
-                    <v-container>
+                    <v-container class="py-0">
                       <p
                         class="mb-2"
                         :style="{
@@ -69,7 +98,7 @@
                           :cols="
                             windowWidth > 1500 ? 4 : windowWidth > 960 ? 6 : 12
                           "
-                          v-for="item in menu[key]"
+                          v-for="item in filteredMenu[key]"
                         >
                           <v-card
                             :elevation="!item.isActive ? `0` : `3`"
@@ -325,6 +354,7 @@ export default {
       menu: {
         DigitalTwin: [],
       },
+      filterTerm: ``,
       //bot
       componentsMode: `list`,
       botMode: `create`,
@@ -334,6 +364,24 @@ export default {
       snackbarSuccess: false,
       snackbarMsg: `untitled`,
     };
+  },
+  computed: {
+    filteredMenu() {
+      const filtered = {};
+
+      for (const key in this.menu) {
+        const filterTerm = this.filterTerm ? this.filterTerm.trim() : "";
+
+        if (!filterTerm) {
+          filtered[key] = this.menu[key];
+        } else {
+          filtered[key] = this.menu[key].filter((item) =>
+            item.name.toLowerCase().includes(filterTerm.toLowerCase())
+          );
+        }
+      }
+      return filtered;
+    },
   },
   mounted() {
     // responsive

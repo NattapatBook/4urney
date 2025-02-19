@@ -59,6 +59,7 @@
                       <v-tooltip text="Tooltip" location="bottom">
                         <template v-slot:activator="{ props }">
                           <v-btn
+                            class="mr-2"
                             v-bind="props"
                             :disabled="isLoading || isError"
                             icon
@@ -69,6 +70,20 @@
                           </v-btn>
                         </template>
                         <span>Upload file</span>
+                      </v-tooltip>
+                      <v-tooltip text="Tooltip" location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            :disabled="isLoading || isError"
+                            icon
+                            color="primary"
+                            @click="getList"
+                          >
+                            <v-icon>mdi-refresh</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Refresh</span>
                       </v-tooltip>
                     </div>
                   </div>
@@ -82,7 +97,18 @@
                         }"
                       >
                         <div :style="{ textAlign: `center` }">
-                          <span>File Name</span>
+                          <v-btn
+                            block
+                            :style="{ textTransform: `capitalize` }"
+                            variant="text"
+                            @click="this.setSort(`file_name`)"
+                            >File Name
+                            <v-icon v-if="sortKey === `file_name`">
+                              &nbsp;{{
+                                sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
+                              }}
+                            </v-icon>
+                          </v-btn>
                         </div>
                       </v-col>
                       <v-col
@@ -93,7 +119,18 @@
                         }"
                       >
                         <div :style="{ textAlign: `center` }">
-                          <span>Status</span>
+                          <v-btn
+                            block
+                            :style="{ textTransform: `capitalize` }"
+                            variant="text"
+                            @click="this.setSort(`status`)"
+                            >Status
+                            <v-icon v-if="sortKey === `status`">
+                              &nbsp;{{
+                                sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
+                              }}
+                            </v-icon></v-btn
+                          >
                         </div>
                       </v-col>
                       <v-col
@@ -105,7 +142,18 @@
                         }"
                       >
                         <div :style="{ textAlign: `center` }">
-                          <span>Date</span>
+                          <v-btn
+                            block
+                            :style="{ textTransform: `capitalize` }"
+                            variant="text"
+                            @click="this.setSort(`uploaded_at`)"
+                            >Date
+                            <v-icon v-if="sortKey === `uploaded_at`">
+                              &nbsp;{{
+                                sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
+                              }}
+                            </v-icon></v-btn
+                          >
                         </div>
                       </v-col>
                       <v-col
@@ -117,7 +165,18 @@
                         }"
                       >
                         <div :style="{ textAlign: `center` }">
-                          <span>By</span>
+                          <v-btn
+                            block
+                            :style="{ textTransform: `capitalize` }"
+                            variant="text"
+                            @click="this.setSort(`user`)"
+                            >By
+                            <v-icon v-if="sortKey === `user`">
+                              &nbsp;{{
+                                sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
+                              }}
+                            </v-icon></v-btn
+                          >
                         </div>
                       </v-col>
                     </v-row>
@@ -156,7 +215,7 @@
                     class="mb-2 rounded-xl"
                     elevation="0"
                     :style="{ border: `solid 1px lightgrey` }"
-                    v-for="item in filteredFiles"
+                    v-for="item in sort(filteredFiles, sortKey, sortOrder)"
                     :key="`knowledgeManagement_files_list_${item.id}`"
                   >
                     <v-container class="py-0 px-3">
@@ -296,7 +355,7 @@
                         >
                           <div
                             :style="{
-                              textAlign: `start`,
+                              textAlign: `center`,
                               whiteSpace: `nowrap`,
                               overflow: `hidden`,
                               textOverflow: `ellipsis`,
@@ -403,6 +462,9 @@ export default {
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: `untitled`,
+      //sort
+      sortKey: null,
+      sortOrder: null,
     };
   },
   computed: {
@@ -586,6 +648,39 @@ export default {
             snackbarAlert: true,
           });
         });
+    },
+    sort(items, sortKey, order) {
+      if (!this.sortKey || this.order === null) return [...items];
+      const sortedItems = [...items].sort((a, b) => {
+        let valueA = a[sortKey];
+        let valueB = b[sortKey];
+
+        if (sortKey === "status") {
+          const statusOrder = { Pending: 0, Processing: 1, Completed: 2 };
+          valueA = statusOrder[valueA] ?? -1;
+          valueB = statusOrder[valueB] ?? -1;
+        }
+
+        if (valueA < valueB) return order ? -1 : 1;
+        if (valueA > valueB) return order ? 1 : -1;
+        return 0;
+      });
+      return sortedItems;
+    },
+    setSort(key) {
+      if (this.sortKey !== key) {
+        this.sortKey = key;
+        this.sortOrder = true;
+      } else {
+        if (this.sortOrder === null) {
+          this.sortOrder = true;
+        } else if (this.sortOrder === true) {
+          this.sortOrder = false;
+        } else if (this.sortOrder === false) {
+          this.sortOrder = null;
+          this.sortKey = null;
+        }
+      }
     },
   },
 };

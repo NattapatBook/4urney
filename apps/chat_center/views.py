@@ -4,6 +4,7 @@ import threading
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.forms import model_to_dict
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -498,6 +499,14 @@ def list_dashboard_test(request, id):
     urgent = ChatUserUrgent.objects.filter(platform_id=id).first()
     summarize = ChatSummarize.objects.filter(platform_id=id).first()
 
+    messages_by_bot = Message.objects.filter(by='bot', platform_id=id) \
+        .values('platform_id') \
+        .annotate(message_count=Count('id')) \
+        .order_by('platform_id')
+    for message in messages_by_bot:
+        count_message = message['message_count']
+        print(f"Platform ID: {message['platform_id']}, Message Count: {message['message_count']}")
+
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
         "intentSummary": summarize.summarize.split('\n') if summarize.summarize else [],
@@ -514,7 +523,8 @@ def list_dashboard_test(request, id):
             "gender": dashboard.gender if dashboard.gender else "untitled",
             "name": dashboard.name if dashboard.name else "untitled",
             "phoneNumber": dashboard.phonenumber if dashboard.phonenumber else "untitled"
-        }
+        },
+        "countBotMessage": count_message,
     }
 
     return JsonResponse(response_data)
@@ -812,6 +822,8 @@ async def process_file_async(file_path, file_extension, collection_name, uploade
         print('Processing PDF file...')
         docs = await asyncio.to_thread(process_pdf, file_path)
         await asyncio.to_thread(read_push_document, docs=docs, collection_name=collection_name, client=client)
+    elif file_extension in ['jpeg', 'jpg']:
+        pass
     else:
         print('Unknown file type.')
 
@@ -863,7 +875,7 @@ class TaskStatusView(View):
         else:
             return JsonResponse({"status": "Pending"})
 
-def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client):
+def process_file_in_background(file_path, file_extension, collection_name, uploaded_file_id, client, llms):
     uploaded_file = UploadedFile.objects.get(id=uploaded_file_id)
 
     if file_extension == 'xlsx':
@@ -877,6 +889,10 @@ def process_file_in_background(file_path, file_extension, collection_name, uploa
     elif file_extension == 'pdf':
         print('Processing PDF file...')
         docs = process_pdf(file_path)
+        read_push_document(docs=docs, collection_name=collection_name, client=client)
+    elif file_extension in ['jpeg', 'jpg']:
+        print('Processing IMAGE file...')
+        docs = process_image(file_path, llms)
         read_push_document(docs=docs, collection_name=collection_name, client=client)
     else:
         print('Unknown file type.')
@@ -893,7 +909,12 @@ class EmbeddedDataView(View):
     def get(self, request, *args, **kwargs):
         load_dotenv()
         
-        client = OpenAI()
+        client = OpenAI()   
+        llms = ChatOpenAI(
+                            temperature=0.7,  # Controls randomness of responses
+                            max_tokens=1024,  # Maximum token count in responses
+                            model="gpt-4o"  # Model version
+                        )
 
         save_dir = './downloads/'
 
@@ -911,7 +932,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client, llms)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
@@ -928,6 +949,12 @@ class EmbeddedDataView(View):
         
         client = OpenAI()
 
+        llms = ChatOpenAI(
+                            temperature=0.7,  # Controls randomness of responses
+                            max_tokens=1024,  # Maximum token count in responses
+                            model="gpt-4o"  # Model version
+                        )
+        
         save_dir = f'./downloads/{short_uuid4()}'
 
         bucket_name, object_name = extract_bucket_and_object(s3_url)
@@ -943,7 +970,7 @@ class EmbeddedDataView(View):
 
         file_extension = object_name.split('.')[-1]
 
-        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client)).start()
+        threading.Thread(target=process_file_in_background, args=(file_path, file_extension, collection_name, uploaded_file.id, client, llms)).start()
 
         return JsonResponse({"message": "Embedding task has been started."}, status=200)
 
@@ -1186,6 +1213,45 @@ def internal_chatbot(request):
             timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
             organization_id=organization,
         )
+
+        # message_counts = InternalChatMessage.objects.filter(by='bot', organization_id=organization) \
+        #     .values('organization_id') \
+        #     .annotate(message_count=Count('id'))
+        #
+        # for result in message_counts:
+        #     count_message = result['message_count']
+        #
+        # if count_message >= 10:
+        #     new_bot_message = InternalChatMessage.objects.create(
+        #         message='ขออภัยค่ะ โควต้าบอทตอบหมด',
+        #         by='system',
+        #         user=user,
+        #         bot_id=routing_chain,
+        #         session_id=session,
+        #         timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+        #         organization_id=organization,
+        #     )
+        #
+        #     messages = InternalChatMessage.objects.filter(
+        #         session_id=session, bot_id=routing_chain, user=user,
+        #     ).order_by('timestamp')
+        #     chat_logs = []
+        #     for message in messages:
+        #         if message.timestamp:
+        #             message_timestamp = message.timestamp.astimezone(tz)
+        #             timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+        #         else:
+        #             timestamp_str = ""
+        #         chat_log = {
+        #             "id": message.id,
+        #             "msg": message.message if message.message else "",
+        #             "by": message.by if message.by else "unknown",
+        #             "timestamp": timestamp_str
+        #         }
+        #         chat_logs.append(chat_log)
+        #
+        #     return JsonResponse(chat_logs, safe=False)
+
 
         print('New Message', new_message)
         chat_history = ""
@@ -1520,7 +1586,7 @@ def add_line_chatbot(request):
         )
         
         # Add webhook with respect to line user
-        line_integration = LineIntegration.objects.get(user_id=channel_id)
+        line_integration = LineIntegration.objects.get(user_id=channel_id, username=line_username)
         uuid = line_integration.uuid
         uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
@@ -1547,7 +1613,7 @@ def add_line_chatbot(request):
         )
 
         # Add webhook with respect to line user
-        line_integration = LineIntegration.objects.get(user_id=channel_id)
+        line_integration = LineIntegration.objects.get(user_id=channel_id, username=line_username)
         uuid = line_integration.uuid
         uuid = str(uuid)
         response = connect_line_webhook(line_chatbot_api_key, uuid)
@@ -1566,3 +1632,67 @@ def request_demo(request):
         new_request_demo = RequestDemo.objects.create(name=name, company=company, email=email, phone=phone, message=message)
 
         return JsonResponse({"message": "Done"}, status=200)
+    
+
+def list_channel_management(request):
+    if request.method == 'GET':
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        # Get all LineIntegration records for this organization
+        line_integrations = LineIntegration.objects.filter(organization_id=organization)
+        
+        formatted_messages = [
+            {
+                'id': line_integration.uuid,
+                'img': '',
+                'accountName': line_integration.username,
+                'type': 'messenger', 
+                'connectedBy': 'developer_test', 
+                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None
+            }
+            for line_integration in line_integrations
+        ]
+
+        return JsonResponse(formatted_messages, safe=False)
+
+def count_bot_message(request):
+    if request.method == 'GET':
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        result = dict()
+
+        messages_grouped = Message.objects.filter(by='bot',organization_id=organization) \
+            .select_related('platform_id') \
+            .values('organization_id', 'platform_id', 'platform_id__provider') \
+            .annotate(message_count=Count('id'))
+
+        agent_console_results = []
+        for message_group in messages_grouped:
+            print(f"Organization ID: {message_group['organization_id']}, "
+                  f"Platform ID: {message_group['platform_id']}, "
+                  f"Provider: {message_group['platform_id__provider']}, "
+                  f"Message Count: {message_group['message_count']}")
+            agent_console_results.append(message_group)
+
+        result['agent_console'] = agent_console_results
+
+        internal_chat_messages_grouped = InternalChatMessage.objects.filter(by='bot',organization_id=organization) \
+            .select_related('bot_id') \
+            .values('organization_id', 'bot_id__bot_name', 'user') \
+            .annotate(message_count=Count('id'))
+
+        internal_chat_results = []
+        for message_group in internal_chat_messages_grouped:
+            print(f"Organization ID: {message_group['organization_id']}, "
+                  f"Bot Name: {message_group['bot_id__bot_name']}, "
+                  f"User ID: {message_group['user']}, "
+                  f"Message Count: {message_group['message_count']}")
+            internal_chat_results.append(message_group)
+
+        result['internal_chat'] = internal_chat_results
+
+        return JsonResponse(result, status=200)
