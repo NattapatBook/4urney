@@ -72,7 +72,37 @@
                     </div>
                   </div>
                 </v-card-text>
-                <v-card-text class="pt-0">
+                <v-card-text
+                  v-if="isLoading"
+                  class="pt-0"
+                  :style="{
+                    height: `calc(100% - 132px)`,
+                    display: `flex`,
+                    justifyContent: `center`,
+                  }"
+                >
+                  <Loading :message="`Loading Channel List...`" />
+                </v-card-text>
+                <v-card-text
+                  v-else-if="!isLoading && isError"
+                  class="pt-0"
+                  :style="{
+                    height: `calc(100% - 132px)`,
+                    display: `flex`,
+                    justifyContent: `center`,
+                  }"
+                >
+                  <DataError :message="errMsg" />
+                </v-card-text>
+                <v-card-text
+                  v-else-if="!isLoading && !isError"
+                  class="pt-0"
+                  :style="{
+                    height: `calc(100% - 132px)`,
+                    display: `flex`,
+                    justifyContent: `center`,
+                  }"
+                >
                   <v-data-table-virtual
                     fixed-header
                     :style="{
@@ -427,9 +457,12 @@ import messenger_icon from "@/assets/img/provider/messenger_icon.png";
 import instagram_icon from "@/assets/img/provider/instagram_icon.png";
 import tiktok_icon from "@/assets/img/provider/tiktok_icon.png";
 import addChannelDialog from "@/components/channelManage/addChannelDialog.vue";
+import axios from "axios";
+import Loading from "@/components/tools/loading.vue";
+import DataError from "@/components/tools/dataError.vue";
 export default {
   name: "channelManage",
-  components: { addChannelDialog },
+  components: { addChannelDialog, Loading, DataError },
   data() {
     return {
       windowWidth: 0,
@@ -456,24 +489,24 @@ export default {
         { key: "connectedOn", title: "Connected On" },
       ],
       itemTable: [
-        {
-          id: `-1`,
-          img: ``,
-          accountName: `4Plus Consulting_mockup`,
-          type: `messenger`,
-          status: false,
-          connectedBy: `developer_test`,
-          connectedOn: new Date("2024-04-03 17:00:04+07:00"),
-        },
-        {
-          id: `-2`,
-          img: ``,
-          accountName: `4Plus LineOA_mockup`,
-          type: `line`,
-          status: true,
-          connectedBy: `developer_test`,
-          connectedOn: new Date("2024-04-03 17:00:04+07:00"),
-        },
+        // {
+        //   id: `-1`,
+        //   img: ``,
+        //   accountName: `4Plus Consulting_mockup`,
+        //   type: `messenger`,
+        //   status: false,
+        //   connectedBy: `developer_test`,
+        //   connectedOn: new Date("2024-04-03 17:00:04+07:00"),
+        // },
+        // {
+        //   id: `-2`,
+        //   img: ``,
+        //   accountName: `4Plus LineOA_mockup`,
+        //   type: `line`,
+        //   status: true,
+        //   connectedBy: `developer_test`,
+        //   connectedOn: new Date("2024-04-03 17:00:04+07:00"),
+        // },
       ],
       //MENU DIALOG
       dialogMenu: false,
@@ -486,6 +519,10 @@ export default {
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: "untitled",
+      //loading
+      isLoading: false,
+      isError: false,
+      errMsg: `untitled`,
     };
   },
   mounted() {
@@ -494,6 +531,8 @@ export default {
       window.addEventListener("resize", this.onResize);
     });
     this.onResize();
+
+    this.getList();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
@@ -503,6 +542,21 @@ export default {
     onResize() {
       this.windowWidth = window.innerWidth;
       this.windowHeight = window.innerHeight;
+    },
+    async getList() {
+      this.isLoading = true;
+      axios
+        .get(`api/chat_center/list_channel_management/`)
+        .then((res) => {
+          this.itemTable = res.data;
+          this.isLoading = false;
+        })
+        .catch((err) => {
+          console.error(err);
+          this.errMsg = err;
+          this.isError = true;
+          this.isLoading = false;
+        });
     },
     //TOOLS
     timeSince(date, short) {
