@@ -1663,7 +1663,7 @@ def list_channel_management(request):
                 'type': 'line', 
                 'connectedBy': 'developer_test', 
                 'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None, 
-                'is_active': line_integration.is_active
+                'status': line_integration.is_active
             }
             for line_integration in line_integrations
         ]
