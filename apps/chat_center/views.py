@@ -1268,8 +1268,13 @@ def internal_chatbot(request):
 
         print('Model response : ', model_response)
 
-        retrieval_text = model_response.json()['retrieval_text']
-        routing = model_response.json()['routing']
+        try:
+            retrieval_text = model_response.json()['retrieval_text']
+            routing = model_response.json()['routing']
+        except: 
+            print("No retrieval text were given. Use empty knowledge")
+            retrieval_text = ""
+            routing = ""
 
         responses_message = call_bot(chat_history=chat_history, routing=routing, message=message,
                                      retrieval_text=retrieval_text, df_routing_config=df_routing_config)
@@ -1346,8 +1351,13 @@ def internal_chatbot(request):
 
         print('Model response : ',model_response)
 
-        retrieval_text = model_response.json()['retrieval_text']
-        routing = model_response.json()['routing']
+        try:
+            retrieval_text = model_response.json()['retrieval_text']
+            routing = model_response.json()['routing']
+        except: 
+            print("No retrieval text were given. Use empty knowledge")
+            retrieval_text = ""
+            routing = ""
 
         responses_message = call_bot(chat_history=chat_history, routing=routing, message=message,
                                      retrieval_text=retrieval_text, df_routing_config=df_routing_config)
