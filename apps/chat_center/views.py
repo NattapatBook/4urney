@@ -1658,7 +1658,7 @@ def list_channel_management(request):
                 'id': line_integration.uuid,
                 'img': '',
                 'accountName': line_integration.username,
-                'type': 'messenger', 
+                'type': 'line', 
                 'connectedBy': 'developer_test', 
                 'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None
             }
