@@ -1592,7 +1592,8 @@ def add_line_chatbot(request):
             username=line_username, 
             line_chatbot_api_key=line_chatbot_api_key, 
             line_channel_secret=secret_id, 
-            organization=organization
+            organization=organization, 
+            is_active=True
         )
         
         # Add webhook with respect to line user
@@ -1619,7 +1620,8 @@ def add_line_chatbot(request):
             username=line_username,
             line_chatbot_api_key=line_chatbot_api_key,
             line_channel_secret=secret_id,
-            organization=organization
+            organization=organization, 
+            is_active=True
         )
 
         # Add webhook with respect to line user
@@ -1660,7 +1662,8 @@ def list_channel_management(request):
                 'accountName': line_integration.username,
                 'type': 'line', 
                 'connectedBy': 'developer_test', 
-                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None
+                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None, 
+                'is_active': line_integration.is_active
             }
             for line_integration in line_integrations
         ]
