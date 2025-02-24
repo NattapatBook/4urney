@@ -252,7 +252,7 @@ def admin_reply_post_test(request):
     )
 
     organization_member = OrganizationMember.objects.filter(user=user).first()
-    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id, uuid=customer.from_line_uuid).first().line_chatbot_api_key
+    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id, uuid=customer.from_line_uuid.uuid).first().line_chatbot_api_key
     Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
 
     headers = {
