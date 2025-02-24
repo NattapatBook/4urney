@@ -11,7 +11,7 @@
       <v-text-field
         v-model="searchMessage"
         clearable
-        @click:clear="searchText = ''"
+        @click:clear="searchMessage = ''"
         multiple
         label="Enter chatbot name to search"
         variant="outlined"

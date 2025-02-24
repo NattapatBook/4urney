@@ -176,7 +176,7 @@ class OrganizationMember(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.user)
+        return f"{self.user} - {self.user.email}"
 
 class Customer(models.Model):
     platform_id = models.CharField(max_length=1000, primary_key=True) # change pk use id
@@ -192,6 +192,7 @@ class Customer(models.Model):
     message_type = models.CharField(max_length=255, null=True, blank=True)
     reply_token = models.CharField(max_length=1000, null=True, blank=True)
     organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
+    from_line_uuid = models.ForeignKey('webhook_line.LineIntegration', on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.platform_id})"

@@ -10,9 +10,10 @@ class LineIntegration(models.Model):
     line_channel_secret = models.CharField(max_length=255)
     organization = models.ForeignKey('chat_center.Organization', on_delete=models.CASCADE,null=True, blank=True)
     connected_on = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.uuid}"
+        return f"{self.uuid} - {self.username}"
 
 class LineConnectionNew(models.Model):
     bot_id = models.ForeignKey('chat_center.RoutingChain', on_delete=models.CASCADE,null=True, blank=True)

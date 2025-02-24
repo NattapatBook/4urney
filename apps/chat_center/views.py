@@ -225,6 +225,7 @@ def admin_reply_post_test(request):
     data = json.loads(request.body)
     id = data.get('id')
     message = data.get('message')
+    print(data)
 
     username = request.user
 
@@ -251,7 +252,7 @@ def admin_reply_post_test(request):
     )
 
     organization_member = OrganizationMember.objects.filter(user=user).first()
-    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id).first().line_chatbot_api_key
+    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id, uuid=customer.from_line_uuid.uuid).first().line_chatbot_api_key
     Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
 
     headers = {
@@ -1268,8 +1269,13 @@ def internal_chatbot(request):
 
         print('Model response : ', model_response)
 
-        retrieval_text = model_response.json()['retrieval_text']
-        routing = model_response.json()['routing']
+        try:
+            retrieval_text = model_response.json()['retrieval_text']
+            routing = model_response.json()['routing']
+        except: 
+            print("No retrieval text were given. Use empty knowledge")
+            retrieval_text = ""
+            routing = ""
 
         responses_message = call_bot(chat_history=chat_history, routing=routing, message=message,
                                      retrieval_text=retrieval_text, df_routing_config=df_routing_config)
@@ -1346,8 +1352,13 @@ def internal_chatbot(request):
 
         print('Model response : ',model_response)
 
-        retrieval_text = model_response.json()['retrieval_text']
-        routing = model_response.json()['routing']
+        try:
+            retrieval_text = model_response.json()['retrieval_text']
+            routing = model_response.json()['routing']
+        except: 
+            print("No retrieval text were given. Use empty knowledge")
+            retrieval_text = ""
+            routing = ""
 
         responses_message = call_bot(chat_history=chat_history, routing=routing, message=message,
                                      retrieval_text=retrieval_text, df_routing_config=df_routing_config)
@@ -1582,7 +1593,8 @@ def add_line_chatbot(request):
             username=line_username, 
             line_chatbot_api_key=line_chatbot_api_key, 
             line_channel_secret=secret_id, 
-            organization=organization
+            organization=organization, 
+            is_active=True
         )
         
         # Add webhook with respect to line user
@@ -1609,7 +1621,8 @@ def add_line_chatbot(request):
             username=line_username,
             line_chatbot_api_key=line_chatbot_api_key,
             line_channel_secret=secret_id,
-            organization=organization
+            organization=organization, 
+            is_active=True
         )
 
         # Add webhook with respect to line user
@@ -1648,9 +1661,10 @@ def list_channel_management(request):
                 'id': line_integration.uuid,
                 'img': '',
                 'accountName': line_integration.username,
-                'type': 'messenger', 
+                'type': 'line', 
                 'connectedBy': 'developer_test', 
-                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None
+                'connectedOn': line_integration.connected_on.strftime("%Y-%m-%d %H:%M:%S%z") if line_integration.connected_on else None, 
+                'status': line_integration.is_active
             }
             for line_integration in line_integrations
         ]
