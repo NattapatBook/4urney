@@ -57,6 +57,97 @@
                         rounded="xl"
                         clearable
                       ></v-text-field>
+                      <v-tooltip text="Tooltip" location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            class="mr-2"
+                            @click="clickBot(null)"
+                            v-bind="props"
+                            icon
+                            color="primary"
+                          >
+                            <v-icon>mdi-plus</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Create chatbot</span>
+                      </v-tooltip>
+                      <v-menu
+                        v-model="menuFilter"
+                        offset-y
+                        :close-on-content-click="false"
+                        transition="scale-transition"
+                        location="bottom"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-tooltip text="Tooltip" location="bottom">
+                            <template
+                              v-slot:activator="{ props: tooltipProps }"
+                            >
+                              <v-btn
+                                v-bind="{ ...props, ...tooltipProps }"
+                                icon
+                                color="primary"
+                              >
+                                <v-icon>mdi-filter</v-icon>
+                              </v-btn>
+                            </template>
+                            Filter
+                          </v-tooltip>
+                        </template>
+                        <v-card
+                          elevation="0"
+                          :style="{
+                            height: `100%`,
+                            width: `100%`,
+                            borderRadius: `8px`,
+                            border: `solid 1px lightgrey`,
+                          }"
+                        >
+                          <v-card-title
+                            :style="{
+                              display: `flex`,
+                              alignItems: `center`,
+                            }"
+                          >
+                            <span :style="{ fontWeight: `bold` }"
+                              >Chatbot Filter</span
+                            >
+                            <v-spacer />
+                            <v-btn
+                              @click="menuFilter = false"
+                              variant="text"
+                              icon="mdi-close"
+                            ></v-btn>
+                          </v-card-title>
+                          <div
+                            :style="{
+                              overflowY: `auto`,
+                              overflowX: `hidden`,
+                            }"
+                          >
+                            <!-- filter Status -->
+                            <v-card-text class="pt-2 pb-4">
+                              <v-autocomplete
+                                v-model="filterStatus"
+                                label="Status"
+                                variant="outlined"
+                                hide-details
+                                rounded="lg"
+                                item-title="title"
+                                item-value="val"
+                                density="comfortable"
+                                :color="`#ff5d97`"
+                                :items="filterStatusItem"
+                                :style="{
+                                  textTransform: `capitalize`,
+                                }"
+                                @update:model-value="changeStatusFilter"
+                              >
+                              </v-autocomplete>
+                            </v-card-text>
+                          </div>
+                        </v-card>
+                      </v-menu>
                     </div>
                   </div>
                 </v-card-text>
@@ -91,9 +182,11 @@
                         <v-col
                           class="mb-5"
                           :style="{
-                            //height: `15rem`,
-                            //width: `15rem`,
-                            //filter: !item.isActive ? `grayscale(1)` : ``,
+                            display:
+                              filterStatus === null ||
+                              filterStatus === item.isActive
+                                ? ``
+                                : `none`,
                           }"
                           :cols="
                             windowWidth > 1500 ? 4 : windowWidth > 960 ? 6 : 12
@@ -252,51 +345,6 @@
                       </v-row>
                     </v-container>
                   </div>
-                  <!--add new-->
-                  <div :style="{ display: `flex`, flexDirection: `column` }">
-                    <v-container>
-                      <v-row>
-                        <v-col class="mb-5" cols="12">
-                          <v-card
-                            @click="clickBot(null)"
-                            class="rounded-lg hover-tilt-glow-wave"
-                            :style="{
-                              height: `100%`,
-
-                              cursor: `pointer`,
-                            }"
-                          >
-                            <v-card-text
-                              :style="{
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-                                height: `100%`,
-                              }"
-                            >
-                              <div
-                                :style="{
-                                  display: `flex`,
-                                  alignItems: `center`,
-                                  justifyContent: `center`,
-                                }"
-                              >
-                                <v-icon
-                                  class="gradient-text"
-                                  :style="{ fontSize: `1.5rem` }"
-                                  >mdi-plus-circle-outline</v-icon
-                                >
-                                &nbsp;
-                                <span class="gradient-text"
-                                  >Create New Digital Twin</span
-                                >
-                              </div>
-                            </v-card-text>
-                          </v-card>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </div>
                 </v-card-text>
               </v-card>
               <!--create&edit-->
@@ -363,6 +411,14 @@ export default {
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: `untitled`,
+      //filter
+      menuFilter: false,
+      filterStatus: null,
+      filterStatusItem: [
+        { title: "Active", val: true },
+        { title: "Inactive", val: false },
+        { title: "All", val: null },
+      ],
     };
   },
   computed: {
@@ -436,6 +492,9 @@ export default {
         this.snackbarMsg = item.msg;
         this.snackbarAlert = true;
       }
+    },
+    changeStatusFilter(item) {
+      this.filterStatus = item;
     },
   },
 };
