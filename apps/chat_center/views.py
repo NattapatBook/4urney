@@ -225,6 +225,7 @@ def admin_reply_post_test(request):
     data = json.loads(request.body)
     id = data.get('id')
     message = data.get('message')
+    print(data)
 
     username = request.user
 
