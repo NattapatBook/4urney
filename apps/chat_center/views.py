@@ -1750,36 +1750,95 @@ def download_s3_file(request):
             return HttpResponse("AWS credentials not found.", status=403)
         except Exception as e:
             return HttpResponse(f"Error: {str(e)}", status=500)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        file_key = data.get('file')
+        load_dotenv()
+
+        AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+        AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        try:
+            file_obj = s3.get_object(Bucket=AWS_STORAGE_BUCKET_NAME, Key=file_key)
+
+            file_data = file_obj['Body'].read()
+
+            file_extension = file_key.split('.')[-1].lower()
+            mime_type, _ = mimetypes.guess_type(file_key)
+
+            # If MIME type is not detected, default to binary stream
+            if not mime_type:
+                mime_type = "application/octet-stream"
+
+            # Set the response headers with the appropriate MIME type
+            response = HttpResponse(file_data, content_type=mime_type)
+
+            # Set the Content-Disposition header to prompt a download with the correct file name
+            response['Content-Disposition'] = f'attachment; filename={file_key.split("/")[-1]}'
+
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
 
 
-def serve_image(request):
-    # Initialize boto3 client to access S3 (if the image is stored on S3)
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    )
 
-    try:
-        # Decode the file path (handle URL-encoded file names)
-        decoded_file_path = '1 - Demo/X2PJNU3OXJH5VPK23VJOVAWY3U/paragon_festival.jpg'
+def view_image(request):
+    if request.method == 'GET':
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
 
-        # Fetch the image from S3 (or from the local directory if needed)
-        file_obj = s3.get_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=decoded_file_path)
-        file_data = file_obj['Body'].read()
+        try:
+            decoded_file_path = '1 - Demo/X2PJNU3OXJH5VPK23VJOVAWY3U/paragon_festival.jpg'
 
-        # Get the MIME type of the image file based on its extension (e.g., .jpg, .png)
-        mime_type, _ = mimetypes.guess_type(decoded_file_path)
+            file_obj = s3.get_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=decoded_file_path)
+            file_data = file_obj['Body'].read()
 
-        # If MIME type is not detected, set it to a default (fallback to binary stream)
-        if not mime_type:
-            mime_type = "application/octet-stream"
+            mime_type, _ = mimetypes.guess_type(decoded_file_path)
 
-        # Respond with the image data and appropriate content type
-        response = HttpResponse(file_data, content_type=mime_type)
-        return response
+            if not mime_type:
+                mime_type = "application/octet-stream"
 
-    except s3.exceptions.NoCredentialsError:
-        return HttpResponse("AWS credentials not found.", status=403)
-    except Exception as e:
-        return HttpResponse(f"Error: {str(e)}", status=500)
+            response = HttpResponse(file_data, content_type=mime_type)
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        decoded_file_path = data.get('file')
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
+        try:
+            file_obj = s3.get_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=decoded_file_path)
+            file_data = file_obj['Body'].read()
+
+            mime_type, _ = mimetypes.guess_type(decoded_file_path)
+
+            if not mime_type:
+                mime_type = "application/octet-stream"
+
+            response = HttpResponse(file_data, content_type=mime_type)
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
