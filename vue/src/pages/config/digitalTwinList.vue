@@ -415,9 +415,9 @@ export default {
       menuFilter: false,
       filterStatus: null,
       filterStatusItem: [
+        { title: "All", val: null },
         { title: "Active", val: true },
         { title: "Inactive", val: false },
-        { title: "All", val: null },
       ],
     };
   },
