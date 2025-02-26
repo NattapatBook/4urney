@@ -77,9 +77,10 @@
                 class="pa-2"
                 v-bind="props"
               >
-                <p :style="{ textAlign: `start` }">
+                <!-- <p :style="{ textAlign: `start` }">
                   {{ item.msg }}
-                </p>
+                </p> -->
+                <MarkdownRenderer :markdown="item.msg" />
               </div>
               <p
                 :style="{
@@ -236,10 +237,11 @@
 
 <script>
 import DataError from "@/components/tools/dataError.vue";
+import MarkdownRenderer from "@/components/tools/markdownRenderer.vue";
 
 export default {
   name: "Component_ChatInternalChatbot",
-  components: { DataError },
+  components: { DataError, MarkdownRenderer },
   props: {
     selectedUserProps: {
       type: Object,
