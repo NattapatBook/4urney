@@ -464,6 +464,9 @@ export default {
             true,
             true
           );
+          if ((item.mode = `delete`)) {
+            this.removeChatSessionItem();
+          }
         })
         .catch((err) => {
           this.snackbarCallback(err, false, true);
