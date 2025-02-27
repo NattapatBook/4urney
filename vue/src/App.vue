@@ -19,6 +19,8 @@ const currentPage = ref("landing");
 
 const lastestPage = ref("untitled");
 
+const isLoadingLogin = ref(false);
+
 function addChatbotCallback() {
   lastestPage.value = `Configuration`;
   currentPage.value = `AI_Management`;
@@ -70,6 +72,7 @@ const userData = ref({
 // }
 
 function checkLogin() {
+  isLoadingLogin.value = true;
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
@@ -78,6 +81,7 @@ function checkLogin() {
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;
       navigateTo(`Explore Feature`);
+      isLoadingLogin.value = false;
     })
     // .then(() => {
     //   // Open WebSocket connection
@@ -85,6 +89,7 @@ function checkLogin() {
     //   openSocket();
     // })
     .catch((err) => {
+      isLoadingLogin.value = false;
       console.error(err);
     });
 }
@@ -110,7 +115,11 @@ onMounted(async () => {
     <!-- LandingPage -->
     <transition name="fade" mode="out-in">
       <div :key="`landing_app_${currentPage}`">
-        <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
+        <LandingPage
+          :loginLoading="isLoadingLogin"
+          v-if="currentPage === 'landing'"
+          @navigate="navigateTo"
+        />
         <!-- <input v-model="message" @keydown.enter="sendmessage" />{{ messages }} -->
       </div>
     </transition>
