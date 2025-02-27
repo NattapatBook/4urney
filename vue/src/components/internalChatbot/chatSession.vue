@@ -453,7 +453,7 @@ export default {
         .post(`api/chat_center/${api}/`, body)
         .then(() => {
           this.getSession(this.selectedUser.id);
-          if ((item.mode = `delete`)) {
+          if (item.mode === `delete`) {
             this.$emit(`cancelSelected`, {
               flag: this.isChange,
             });
