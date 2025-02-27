@@ -100,6 +100,7 @@
                   :dashboard-data-prop="dashboardData"
                   @changeChatSession="changeChatSession"
                   @snackbar="snackbarAction"
+                  @cancelSelected="cancelSelectedCallback"
                 />
               </v-card>
             </v-col>
@@ -323,6 +324,9 @@ export default {
       this.snackbarMsg = item.snackbarMsg;
       this.snackbarSuccess = item.snackbarSuccess;
       this.snackbarAlert = item.snackbarAlert;
+    },
+    cancelSelectedCallback(item) {
+      this.selectUser(null, item.flag);
     },
     addChatbotCallback() {
       this.$emit("addChatbot");

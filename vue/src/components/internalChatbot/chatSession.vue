@@ -453,6 +453,11 @@ export default {
         .post(`api/chat_center/${api}/`, body)
         .then(() => {
           this.getSession(this.selectedUser.id);
+          if ((item.mode = `delete`)) {
+            this.$emit(`cancelSelected`, {
+              flag: this.isChange,
+            });
+          }
           this.snackbarCallback(
             item.mode === `newChat`
               ? `New session created successfully!`
@@ -464,9 +469,6 @@ export default {
             true,
             true
           );
-          if ((item.mode = `delete`)) {
-            this.removeChatSessionItem();
-          }
         })
         .catch((err) => {
           this.snackbarCallback(err, false, true);
