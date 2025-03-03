@@ -8,7 +8,7 @@ from apps.chat_center.views import list_user, list_message, admin_reply_post, ch
     EmbeddedDataView, TaskStatusView, list_upload_file, list_knowledge_base, list_bot, create_session, list_session, \
     rename_session, remove_session, get_internal_chat, internal_chatbot, remove_upload_file, edit_upload_file, \
     edit_customer_profile, get_chatbot_data, edit_bot, add_line_chatbot, get_chatbot_data_new, request_demo, \
-    list_channel_management, count_bot_message, download_s3_file, view_image
+    list_channel_management, count_bot_message, download_s3_file, view_image, list_information_extraction_result
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -53,6 +53,7 @@ urlpatterns = [
     path('list_channel_management/', list_channel_management),
     path('count_bot_message/', count_bot_message),
     path('download_s3_file/', download_s3_file),
-    path('view_image/', view_image)
+    path('view_image/', view_image), 
+    path('list_information_extraction_result/', list_information_extraction_result)
     # *router.urls,
 ]

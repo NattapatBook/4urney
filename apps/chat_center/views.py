@@ -33,7 +33,8 @@ from apps.bot.chatbot_utils import call_bot
 # from sympy import line_integrate
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
-    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo
+    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo, RoutingSkill, \
+    FieldConnection, SkillConnection, InformationExtractionSkill
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
@@ -642,6 +643,7 @@ def create_bot(request):
         organization_member = OrganizationMember.objects.filter(user=user).first()
         organization = organization_member.organization
 
+        # create bot
         routing_chain = RoutingChain.objects.create(
             bot_name=bot_name,
             routing=routing,
@@ -653,6 +655,114 @@ def create_bot(request):
             created_at=datetime.now(),
             organization_id=organization,
         )
+        
+        # create skill
+        if data.get('skill_name'): 
+            skill_name = data.get('skill_name')
+            skill_description = data.get('skill_description')
+            skill_type = data.get('skill_type')
+            field_names = data.get('field_names')
+            field_descriptions = data.get('field_descriptions')
+            field_types = data.get('field_types')
+        
+            # routing skill
+            routing_skill = RoutingSkill.objects.create(
+                skill_name=skill_name, 
+                skill_description=skill_description, 
+                skill_type=skill_type, 
+                organization_id=organization
+            )
+            
+            # skill connection
+            skill_connection = SkillConnection.objects.create(
+                skill_id=routing_skill, 
+                bot_id=routing_chain
+            )
+            
+            # field connection 
+            for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                field_connection = FieldConnection.objects.create(
+                    field_name=field_name, 
+                    field_description=field_description, 
+                    field_type=field_type, 
+                    skill_id=routing_skill
+                )
+
+        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+        if not line_integration:
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=None,
+            )
+            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
+
+        LineConnectionNew.objects.create(
+            bot_id=routing_chain,
+            uuid=line_integration,
+        )
+
+        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
+    
+    elif request.method == 'GET':
+        bot_name = 'Test Create Bot'
+        routing = 'Test Create Bot'
+        prompt = 'Test Create Bot'
+        industry = 'HR'
+        retrieve_image = False
+        knowledge_base = "org1___Demo__E_receipt_2568_pdf"
+        knowledge_base_list = ["org1___Demo__E_receipt_2568_pdf", "org1___Demo__PVD_4plus_pdf"]
+        is_active = True
+        line_integration_uuid = None
+        skill_name = "Test Personal Information Extraction"
+        skill_description = "This skill extract user data from chat."
+        skill_type = "Information Extraction"
+        field_names = ["name", "email"]
+        field_descriptions = ["Name of the user", "User contact E-mail"]
+        field_types = ["string", "string"]
+
+        user = 2
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+        print(organization)
+
+        # create bot
+        routing_chain = RoutingChain.objects.create(
+            bot_name=bot_name,
+            routing=routing,
+            prompt=prompt,
+            industry=industry,
+            retrieve_image=retrieve_image,
+            knowledge_base=knowledge_base,
+            knowledge_base_list=knowledge_base_list, 
+            is_active=is_active,
+            created_at=datetime.now(),
+            organization_id=organization,
+        )
+        
+        # create skill
+        if skill_name:
+        
+            # routing skill
+            routing_skill = RoutingSkill.objects.create(
+                skill_name=skill_name, 
+                skill_description=skill_description, 
+                skill_type=skill_type
+            )
+            
+            # skill connection
+            skill_connection = SkillConnection.objects.create(
+                skill_id=routing_skill, 
+                bot_id=routing_chain
+            )
+            
+            # field connection 
+            for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                field_connection = FieldConnection.objects.create(
+                    field_name=field_name, 
+                    field_description=field_description, 
+                    field_type=field_type, 
+                    skill_id=routing_skill
+                )
 
         line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
         if not line_integration:
@@ -1311,8 +1421,8 @@ def internal_chatbot(request):
 
         return JsonResponse(chat_logs, safe=False)
     elif request.method == 'GET':
-        bot_id = 7
-        session_id = 1
+        bot_id = 9
+        session_id = 2
         message = 'testja'
         user = request.user
         print(user)
@@ -1345,10 +1455,11 @@ def internal_chatbot(request):
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
         routing_configs = RoutingChain.objects.filter(id=bot_id).values()
         df_routing_config = pd.DataFrame(routing_configs)
-        print(df_routing_config)
+        
+        knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
+        print(knowledge_base_list)
 
-        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
-            df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
 
         print('Model response : ',model_response)
 
@@ -1842,3 +1953,51 @@ def view_image(request):
             return HttpResponse("AWS credentials not found.", status=403)
         except Exception as e:
             return HttpResponse(f"Error: {str(e)}", status=500)
+
+
+def list_information_extraction_result(request): 
+    if request.method == 'GET':
+        # user = request.user
+        user = 2
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+        
+        # Get all RoutingChain instances for the given organization
+        routing_chains = RoutingChain.objects.filter(organization_id=organization)
+
+        # Get all SkillConnection instances related to these RoutingChains
+        skill_connections = SkillConnection.objects.filter(bot_id__in=routing_chains)
+
+        # Get all InformationExtractionSkill records linked to these skills
+        extraction_skills = InformationExtractionSkill.objects.filter(
+            skill_id__in=skill_connections.values_list("skill_id", flat=True)
+        ).select_related("user_id", "message_id")
+
+        # Get all LineIntegration users for the given organization
+        customers = Customer.objects.filter(platform_id__in=extraction_skills.values_list("user_id", flat=True), organization_id=organization)
+        
+        # Create a mapping: {message_id -> message}
+        user_id_to_username = {
+            customer.platform_id: customer.name for customer in customers
+        }     
+        
+        # Get all messages for the given organization
+        messages = Message.objects.filter(id__in=extraction_skills.values_list("message_id", flat=True), organization_id=organization)
+
+        # Create a mapping: {message_id -> message}
+        message_id_to_text = {
+            msg.id: msg.message for msg in messages
+        }
+
+        information_extraction_result = [
+            {
+                "field_name": skill.field_name,
+                "result": skill.result, 
+                "username": user_id_to_username.get(skill.user_id.platform_id) if skill.user_id else None,  # Get username from the mapping
+                "message": message_id_to_text.get(skill.message_id.id) if skill.message_id else None,
+            }
+            for skill in extraction_skills
+        ]
+        
+        
+        return JsonResponse({"data": information_extraction_result}, safe=False)
