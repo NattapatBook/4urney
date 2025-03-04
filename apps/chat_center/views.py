@@ -1998,6 +1998,15 @@ def list_information_extraction_result(request):
             }
             for skill in extraction_skills
         ]
-        
-        
+
+
         return JsonResponse({"data": information_extraction_result}, safe=False)
+
+def search_engine(request):
+    if request.method == 'GET':
+        search = 'test'
+        return HttpResponse(search, status=200)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        search = data.get('search')
+        return HttpResponse(search, status=200)
