@@ -2029,7 +2029,7 @@ def search_engine(request):
         # Initialize Langchain Agent with Tavily Search Tool
         agent = initialize_agent(
             tools=[tool],
-            llm=llm,
+            llm=llms,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
             handle_parsing_errors=True
@@ -2066,7 +2066,7 @@ def search_engine(request):
         # Initialize Langchain Agent with Tavily Search Tool
         agent = initialize_agent(
             tools=[tool],
-            llm=llm,
+            llm=llms,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
             handle_parsing_errors=True
