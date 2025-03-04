@@ -46,6 +46,8 @@ from apps.bot.function import *
 from utility.function import *
 from pymilvus import utility
 from langchain.callbacks.tracers import LangChainTracer
+from langchain_community.tools import TavilySearchResults
+from langchain.agents import AgentType, initialize_agent
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -2004,9 +2006,72 @@ def list_information_extraction_result(request):
 
 def search_engine(request):
     if request.method == 'GET':
-        search = 'test'
-        return HttpResponse(search, status=200)
+        search = 'สยามพาราก้อน มีอะไรเจ๋งๆบ้าง'
+        llms = ChatOpenAI(
+        # temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4o"  # Model version
+        )
+        
+        tool = TavilySearchResults(
+                    max_results=15,
+                    search_depth="advanced",
+                    include_answer=True,
+                    include_raw_content=True,
+                    include_images=True,
+                    # include_domains=[...],
+                    # exclude_domains=[...],
+                    # name="...",            # overwrite default tool name
+                    # description="...",     # overwrite default tool description
+                    # args_schema=...,       # overwrite default args_schema: BaseModel
+                )
+        
+        # Initialize Langchain Agent with Tavily Search Tool
+        agent = initialize_agent(
+            tools=[tool],
+            llm=llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            handle_parsing_errors=True
+        )
+        
+        respones = agent.invoke({"input": search})
+        
+        return HttpResponse(respones['output'], status=200)
+    
+    
     elif request.method == 'POST':
         data = json.loads(request.body)
         search = data.get('search')
-        return HttpResponse(search, status=200)
+        
+        llms = ChatOpenAI(
+        # temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4o"  # Model version
+        )
+        
+        tool = TavilySearchResults(
+                    max_results=15,
+                    search_depth="advanced",
+                    include_answer=True,
+                    include_raw_content=True,
+                    include_images=True,
+                    # include_domains=[...],
+                    # exclude_domains=[...],
+                    # name="...",            # overwrite default tool name
+                    # description="...",     # overwrite default tool description
+                    # args_schema=...,       # overwrite default args_schema: BaseModel
+                )
+        
+        # Initialize Langchain Agent with Tavily Search Tool
+        agent = initialize_agent(
+            tools=[tool],
+            llm=llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            handle_parsing_errors=True
+        )
+        
+        respones = agent.invoke({"input": search})
+        
+        return HttpResponse(respones['output'], status=200)
