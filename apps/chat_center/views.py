@@ -87,7 +87,9 @@ def list_user_test(request):
     user = User.objects.get(username=request.user)
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
-    customers = Customer.objects.filter(organization_id=organization)
+    # customers = Customer.objects.filter(organization_id=organization)
+    customers = Customer.objects.filter(organization_id=organization).select_related('from_line_uuid')
+
     # customers = Customer.objects.all()
     customer_list = []
     for customer in customers:
@@ -103,7 +105,9 @@ def list_user_test(request):
             "provider": customer.provider if customer.provider else "",
             "agent": customer.agent if customer.agent else "",
             "messageType": customer.message_type if customer.message_type else "",
-            "replyToken": customer.reply_token if customer.reply_token else None
+            "replyToken": customer.reply_token if customer.reply_token else None,
+            "lineUUID": customer.from_line_uuid.uuid if customer.from_line_uuid else None,
+            "lineRoomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
         }
         customer_list.append(customer_data)
 
@@ -148,6 +152,33 @@ def list_message_test(request, user_id):
     except Customer.DoesNotExist:
         return JsonResponse({"error": "Customer not found"}, status=400)
     messages = Message.objects.filter(platform_id=customer).order_by('timestamp')
+    chat_logs = []
+    for message in messages:
+        if message.timestamp:
+            message_timestamp = message.timestamp.astimezone(tz)
+            timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+        else:
+            timestamp_str = ""
+        chat_log = {
+            "id": message.platform_id.platform_id if message.platform_id else "",  # Link to the customer platform_id
+            "msg": message.message if message.message else "",
+            "by": message.by if message.by else "unknown",
+            "timestamp": timestamp_str
+        }
+        chat_logs.append(chat_log)
+    response_data = {
+        "messageType": message_type,
+        "chatLogs": chat_logs
+    }
+    return JsonResponse(response_data, safe=False)
+
+def list_message_test_with_line_uuid(request, user_id, line_uuid):
+    try:
+        customer = Customer.objects.get(platform_id=user_id)
+        message_type = customer.message_type if customer.message_type else "Unknown Message Type"
+    except Customer.DoesNotExist:
+        return JsonResponse({"error": "Customer not found"}, status=400)
+    messages = Message.objects.filter(platform_id=customer, from_line_uuid=line_uuid).order_by('timestamp')
     chat_logs = []
     for message in messages:
         if message.timestamp:

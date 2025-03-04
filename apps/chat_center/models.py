@@ -204,6 +204,7 @@ class Message(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True, blank=True) # user => admin(a,b,c) , bot(a,b,c)
     timestamp = models.DateTimeField(null=True, blank=True)
     organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
+    from_line_uuid = models.ForeignKey('webhook_line.LineIntegration', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"Message from {self.by} at {self.timestamp}"

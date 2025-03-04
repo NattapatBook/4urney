@@ -9,7 +9,7 @@ from apps.chat_center.views import list_user, list_message, admin_reply_post, ch
     rename_session, remove_session, get_internal_chat, internal_chatbot, remove_upload_file, edit_upload_file, \
     edit_customer_profile, get_chatbot_data, edit_bot, add_line_chatbot, get_chatbot_data_new, request_demo, \
     list_channel_management, count_bot_message, download_s3_file, view_image, list_information_extraction_result, \
-    search_engine
+    search_engine, list_message_test_with_line_uuid
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -20,6 +20,7 @@ urlpatterns = [
     path('list_user_test/', list_user_test),
     path('list_message/<user_id>', list_message),
     path('list_message_test/<user_id>', list_message_test),
+    path('list_message_test/<user_id>/<line_uuid>', list_message_test_with_line_uuid),
     path('admin_reply_post/', admin_reply_post),
     path('admin_reply_post_test/', admin_reply_post_test),
     path('change_message_type/', change_message_type),
