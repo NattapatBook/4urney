@@ -214,6 +214,7 @@ async def webhook(request: HttpRequest, uuid):
         # user=None,
         timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
         organization_id=organization,
+        from_line_uuid=line_integration
     )
 
     bot_new_message = await sync_to_async(Message.objects.create)(
@@ -223,6 +224,7 @@ async def webhook(request: HttpRequest, uuid):
         # user=user,
         timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
         organization_id=organization,
+        from_line_uuid=line_integration
     )
 
     customer_list = await get_customers()
