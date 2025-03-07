@@ -91,7 +91,7 @@
               </div>
             </v-col>
             <!--v-btn-->
-            <v-col cols="2" class="pa-2">
+            <v-col v-if="!hideTopMenu" cols="2" class="pa-2">
               <div
                 :style="{
                   display: `flex`,
@@ -242,30 +242,16 @@ export default {
       type: Boolean,
       default: false,
     },
-    // userItems: {
-    //   type: Object,
-    //   default: () => {
-    //     return [];
-    //   },
-    // },
+    hideTopMenu: {
+      type: Boolean,
+      default: false,
+    },
   },
   watch: {
-    // isChange(newValue, oldValue) {
-    //   if (newValue !== oldValue) {
-    //     this.selectedUser = JSON.parse(JSON.stringify(this.selectedUserProp));
-    //     this.selectedChat = JSON.parse(JSON.stringify(this.selectedChatProp));
-    //     if (
-    //       this.selectedUser &&
-    //       this.selectedUser.id !== `-1` &&
-    //       this.selectedChat &&
-    //       this.selectedChatProp.id !== `-1`
-    //     ) {
-    //       this.getListMessage(this.selectedUser.id, this.selectedChat.id);
-    //     }
-    //   }
-    // },
     selectedChatProp(newValue, oldValue) {
+      console.log(this.selectedUserProp);
       if (newValue !== oldValue) {
+        console.log(this.selectedUserProp);
         this.selectedUser = JSON.parse(JSON.stringify(this.selectedUserProp));
         this.selectedChat = JSON.parse(JSON.stringify(this.selectedChatProp));
       }
@@ -290,11 +276,6 @@ export default {
         industry: `untitled`,
         mastery: `untitled`,
         isActive: true,
-        // tag: `untitled`,
-        // priority: `untitled`,
-        // lastestMsg: `untitled`,
-        // isUrgent: false,
-        // provider: `untitled`,
       },
       selectedChat: {
         id: `-1`,

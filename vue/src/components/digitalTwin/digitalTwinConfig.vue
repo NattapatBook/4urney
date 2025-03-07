@@ -340,6 +340,7 @@ export default {
           key: "bot_name",
           description: "What would you like to name me?",
           type: "text",
+          value: ``,
         },
         {
           id: 2,

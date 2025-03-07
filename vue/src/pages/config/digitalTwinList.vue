@@ -351,8 +351,9 @@
               <DigitalTwinConfig
                 v-else-if="componentsMode === `createBot`"
                 @backToMain="componentsMode = `list`"
-                @createBotSuccess="createBotAction"
+                @callbackNewSaveDraft="firstTimeSaveDraft"
                 :item="botItem"
+                :session="botSession"
               />
             </v-col>
           </v-row>
@@ -390,7 +391,7 @@
 </template>
 
 <script>
-import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfig.vue";
+import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfigReDesign.vue";
 import axios from "axios";
 export default {
   name: "configurationMenu",
@@ -407,6 +408,7 @@ export default {
       componentsMode: `list`,
       botMode: `create`,
       botItem: null,
+      botSession: null,
       //snackbar
       snackbarAlert: false,
       snackbarSuccess: false,
@@ -480,19 +482,23 @@ export default {
           console.error(err);
         });
     },
-    createBotAction(item) {
-      if (item.case) {
-        this.componentsMode = `list`;
-        this.getListUser();
-        this.snackbarSuccess = true;
-        this.snackbarMsg = item.msg;
-        this.snackbarAlert = true;
-      } else {
-        this.snackbarSuccess = false;
-        this.snackbarMsg = item.msg;
-        this.snackbarAlert = true;
-      }
+    firstTimeSaveDraft(item) {
+      this.botItem = JSON.parse(JSON.stringify(item.botItem));
+      this.botSession = JSON.parse(JSON.stringify(item.botSession));
     },
+    // createBotAction(item) {
+    //   if (item.case) {
+    //     this.componentsMode = `list`;
+    //     this.getListUser();
+    //     this.snackbarSuccess = true;
+    //     this.snackbarMsg = item.msg;
+    //     this.snackbarAlert = true;
+    //   } else {
+    //     this.snackbarSuccess = false;
+    //     this.snackbarMsg = item.msg;
+    //     this.snackbarAlert = true;
+    //   }
+    // },
     changeStatusFilter(item) {
       this.filterStatus = item;
     },
