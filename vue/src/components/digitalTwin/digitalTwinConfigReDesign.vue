@@ -367,30 +367,33 @@
                                 alignItems: `center`,
                               }"
                             >
-                              <div
-                                :style="{
-                                  filter: item.isActive ? `` : `blur(1.5px)`,
-                                }"
+                              <div>
+                                <v-switch
+                                  hide-details
+                                  v-model="item.isActive"
+                                  :color="`#15d766`"
+                                  @click.stop
+                                />
+                              </div>
+                              <v-btn
+                                :size="`x-small`"
+                                variant="plain"
+                                icon
+                                @click="
+                                  setupItem[selectedMenu.menuKey].splice(
+                                    indexMenuKey,
+                                    1
+                                  )
+                                "
                               >
-                                <span
+                                <v-icon
                                   :style="{
                                     fontSize: `2rem`,
-                                    filter: item.isActive ? `` : `grayscale(1)`,
+                                    color: `black`,
                                   }"
+                                  >mdi-close</v-icon
                                 >
-                                  {{
-                                    selectedMenu.menuKey === `defineSkill`
-                                      ? `✨`
-                                      : `🚧`
-                                  }}
-                                </span>
-                              </div>
-                              <v-switch
-                                hide-details
-                                v-model="item.isActive"
-                                :color="`#15d766`"
-                                @click.stop
-                              />
+                              </v-btn>
                               <!-- <v-btn size="x-small" :icon="`mdi-cog`" /> -->
                             </div>
                           </v-card-title>
@@ -434,6 +437,22 @@
                           </v-card-text>
                         </v-card>
                       </template>
+                      <div
+                        :style="{
+                          filter: item.isActive ? `` : `blur(1.5px)`,
+                        }"
+                      >
+                        <span
+                          :style="{
+                            fontSize: `2rem`,
+                            filter: item.isActive ? `` : `grayscale(1)`,
+                          }"
+                        >
+                          {{
+                            selectedMenu.menuKey === `defineSkill` ? `✨` : `🚧`
+                          }}
+                        </span>
+                      </div>
                       <div>
                         <p
                           :style="{
@@ -469,7 +488,7 @@
                   <v-btn
                     :variant="`outlined`"
                     @click="clickBackToMain()"
-                    :style="{ width: `120px` }"
+                    :style="{ width: `90px` }"
                   >
                     Back
                   </v-btn>
@@ -484,17 +503,18 @@
                     @click="clickSaveDraft()"
                     color="primary"
                     text
-                    :style="{ width: `120px` }"
+                    :style="{ width: `130px` }"
                   >
-                    Save Draft
+                    {{ botMode === `create` ? `Create` : `Save Change` }}
                   </v-btn>
                   <v-btn
+                    v-if="botMode === `edit`"
                     @click="clickPublish()"
                     :disabled="checkDisabledPublish"
                     color="#5EB491"
                     class="ml-2"
                     text
-                    :style="{ width: `120px` }"
+                    :style="{ width: `130px` }"
                   >
                     Publish
                   </v-btn>
@@ -510,12 +530,12 @@
                     @click="clickSaveDraft()"
                     color="primary"
                   >
-                    Save Draft
+                    {{ botMode === `create` ? `Create` : `Save Change` }}
                   </v-btn>
                 </div>
                 <div
                   class="mt-2"
-                  v-if="windowWidth <= 500"
+                  v-if="windowWidth <= 500 && botMode === `edit`"
                   :style="{ width: `100%` }"
                 >
                   <v-btn
@@ -562,7 +582,7 @@
               >
                 <DataError
                   :message="`No Data`"
-                  :subMessage="`No chatbot created yet.`"
+                  :subMessage="`⚠️ Guide: Please create chatbot first to unlock another setup.`"
                 />
               </div>
               <ChatPanelBot
@@ -1047,6 +1067,19 @@ export default {
       chatSelected: null,
       selectedUser: null,
       isChange: false,
+      draftItem: {
+        id: null, //null for create , number for upsert
+        bot_name: ``,
+        prompt: ``,
+        routing: ``,
+        industry: ``,
+        retrieve_image: false,
+        knowledge_base: [],
+        line_integration_uuid: ``, // null for no
+        isActive: false,
+        defineSkill: [],
+        setupGuard: [],
+      },
       //item
       setupItem: {
         defineChatbot: {
@@ -1091,7 +1124,8 @@ export default {
           knowledge_base: {
             key: `knowledge_base`,
             id: 6,
-            description: "Where should I pull my information from?",
+            description:
+              "Where should I pull my information from? *not required",
             type: "autocomplete-multiple",
             value: [],
             item: [],
@@ -1110,7 +1144,7 @@ export default {
             description:
               "Should I be active and available for responses? (Yes/No)",
             type: "boolean",
-            value: false,
+            value: true,
           },
         },
         defineSkill: [],
@@ -1210,7 +1244,6 @@ export default {
         "org1___Demo__Contact_the_mall_xlsx",
         "orgDemo__Blocked_HR_Questions_xlsx",
       ];
-      this.setupItem.defineChatbot.knowledge_base.item.unshift("No");
       //line-integration
       this.setupItem.defineChatbot.line_integration_uuid.item = [
         {
@@ -1273,17 +1306,17 @@ export default {
               hate: {
                 value: ``,
                 type: `autocomplete`,
-                items: [`none`, `low`, `mid`, `high`],
+                item: [`none`, `low`, `mid`, `high`],
               },
               insult: {
                 value: ``,
                 type: `autocomplete`,
-                items: [`none`, `low`, `mid`, `high`],
+                item: [`none`, `low`, `mid`, `high`],
               },
               sexuals: {
                 value: ``,
                 type: `autocomplete`,
-                items: [`none`, `low`, `mid`, `high`],
+                item: [`none`, `low`, `mid`, `high`],
               },
             },
           },
@@ -1331,23 +1364,18 @@ export default {
           type: `harmful_content`,
           options: [
             {
-              hate_text: {
-                value: `none`,
+              hate: {
+                value: `mid`,
                 type: `autocomplete`,
                 item: [`none`, `low`, `mid`, `high`],
               },
-              hate_img: {
-                value: `high`,
+              insult: {
+                value: `mid`,
                 type: `autocomplete`,
                 item: [`none`, `low`, `mid`, `high`],
               },
-              sexuals_text: {
-                value: `low`,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-              sexuals_img: {
-                value: `high`,
+              sexuals: {
+                value: `mid`,
                 type: `autocomplete`,
                 item: [`none`, `low`, `mid`, `high`],
               },
@@ -1422,12 +1450,13 @@ export default {
                 // console.warn(`Field "${itemKey}" in "${key}" is not filled.`);
                 return false;
               }
-            } else if (type === "autocomplete-multiple") {
-              if (!Array.isArray(value) || value.length === 0) {
-                // console.warn(`Field "${itemKey}" in "${key}" is not filled.`);
-                return false;
-              }
             }
+            // else if (type === "autocomplete-multiple") {
+            //   if (!Array.isArray(value) || value.length === 0) {
+            //     // console.warn(`Field "${itemKey}" in "${key}" is not filled.`);
+            //     return false;
+            //   }
+            // }
           } else {
             // console.warn(
             //   `Field "${itemKey}" in "${key}" does not have 'value' property.`

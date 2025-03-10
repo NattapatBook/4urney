@@ -11,6 +11,7 @@ import DashboardMenu from "./pages/dashboardMenu.vue";
 import DigitalTwinList from "./pages/config/digitalTwinList.vue";
 import KnowledgeManagement from "./pages/config/knowledgeManagement.vue";
 import ChannelManage from "./pages/config/channelManage.vue";
+import CustomerInsight from "./pages/supportFunction/customerInsight.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 
 const currentPage = ref("landing");
@@ -142,6 +143,10 @@ onMounted(async () => {
           <InternalChatbot
             v-else-if="currentPage === `internalChatbot`"
             @addChatbot="addChatbotCallback"
+          />
+          <CustomerInsight
+            v-else-if="currentPage === 'customerInsight'"
+            @navigate="navigateTo"
           />
           <!--Dashboard Menu-->
           <DashboardMenu

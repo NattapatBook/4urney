@@ -218,6 +218,16 @@ export default {
         ],
         Support_Function: [
           {
+            icon: `mdi-eye-outline`,
+            name: `Customer Insight`,
+            description: `Better understand your customers by capturing chatbot data.`,
+            link: {
+              internal: true,
+              src: `customerInsight`,
+            },
+            disabled: false,
+          },
+          {
             icon: `mdi-account-group`,
             name: `Human Resource`,
             description: `Quickly locate relevant dashboards to address inquiries and needs.`,
