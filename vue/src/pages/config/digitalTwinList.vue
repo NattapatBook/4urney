@@ -128,8 +128,8 @@
                             <!-- filter Status -->
                             <v-card-text class="pt-2 pb-4">
                               <v-autocomplete
-                                v-model="filterStatus"
-                                label="Status"
+                                v-model="isActiveFilter"
+                                label="Is Active Filter"
                                 variant="outlined"
                                 hide-details
                                 rounded="lg"
@@ -137,11 +137,38 @@
                                 item-value="val"
                                 density="comfortable"
                                 :color="`#ff5d97`"
-                                :items="filterStatusItem"
+                                :items="isActiveFilterItem"
                                 :style="{
                                   textTransform: `capitalize`,
                                 }"
-                                @update:model-value="changeStatusFilter"
+                                @update:model-value="
+                                  changeStatusFilter(isActiveFilter, `isActive`)
+                                "
+                              >
+                              </v-autocomplete>
+                            </v-card-text>
+                            <!-- filter isPublish -->
+                            <v-card-text class="pt-2">
+                              <v-autocomplete
+                                v-model="isPublishFilter"
+                                label="Is Publish Filter"
+                                variant="outlined"
+                                hide-details
+                                rounded="lg"
+                                item-title="title"
+                                item-value="val"
+                                density="comfortable"
+                                :color="`#ff5d97`"
+                                :items="isPublishFilterItem"
+                                :style="{
+                                  textTransform: `capitalize`,
+                                }"
+                                @update:model-value="
+                                  changeStatusFilter(
+                                    isPublishFilter,
+                                    `isPublish`
+                                  )
+                                "
                               >
                               </v-autocomplete>
                             </v-card-text>
@@ -152,16 +179,42 @@
                   </div>
                 </v-card-text>
                 <v-card-text
-                  class="pa-4 mb-5"
-                  :style="{
-                    overflowY: `auto`,
-                    overflowX: `hidden`,
-                    maxHeight: `calc(100% - 120px)`,
-                    width: `100%`,
-                  }"
+                  class="pa-4 pt-0"
+                  :style="
+                    isLoading || isError || menu.DigitalTwin.length < 1
+                      ? {
+                          height: `calc(100% - 220px)`,
+                          display: `flex`,
+                          alignItems: `center`,
+                          justifyContent: `center`,
+                        }
+                      : {
+                          overflowY: `auto`,
+                          overflowX: `hidden`,
+                          maxHeight: `calc(100% - 170px)`,
+                          width: `100%`,
+                        }
+                  "
                 >
+                  <div v-if="isLoading">
+                    <Loading
+                      :message="`Loading Chatbot List, please wait...`"
+                    />
+                  </div>
+                  <div
+                    v-else-if="
+                      !isLoading && (isError || menu.DigitalTwin.length < 1)
+                    "
+                  >
+                    <DataError
+                      :message="
+                        menu.DigitalTwin.length < 1 ? `No Data` : errMsg
+                      "
+                    />
+                  </div>
                   <!--menu-->
                   <div
+                    v-else-if="!isLoading && !isError"
                     :style="{ display: `flex`, flexDirection: `column` }"
                     v-for="(key, idx) in Object.keys(menu)"
                     :key="`main_menu_${key}_${idx}`"
@@ -181,24 +234,17 @@
                       <v-row>
                         <v-col
                           class="mb-5"
-                          :style="{
-                            display:
-                              filterStatus === null ||
-                              filterStatus === item.isActive
-                                ? ``
-                                : `none`,
-                          }"
                           :cols="
                             windowWidth > 1500 ? 4 : windowWidth > 960 ? 6 : 12
                           "
                           v-for="item in filteredMenu[key]"
                         >
                           <v-card
-                            :elevation="!item.isActive ? `0` : `3`"
+                            :elevation="!item.isPublish ? `0` : `3`"
                             class="rounded-lg"
                             :style="{
                               height: `100%`,
-                              backgroundColor: !item.isActive
+                              backgroundColor: !item.isPublish
                                 ? `lightgrey`
                                 : ``,
                               //filter: !item.isActive ? `grayscale(1)` : ``,
@@ -221,17 +267,81 @@
                                     alignItems: `center`,
                                   }"
                                 >
-                                  <v-chip
-                                    :color="
-                                      item.isActive ? '#5EB491' : '#D6584D'
-                                    "
-                                  >
-                                    <span>
-                                      {{
-                                        item.isActive ? `Active` : `Inactive`
-                                      }}
-                                    </span>
-                                  </v-chip>
+                                  <div>
+                                    <v-tooltip text="Tooltip" location="bottom">
+                                      <template v-slot:activator="{ props }">
+                                        <div
+                                          v-bind="props"
+                                          :style="{ cursor: `pointer` }"
+                                        >
+                                          <v-chip
+                                            :color="
+                                              item.isPublish
+                                                ? '#5EB491'
+                                                : '#D6584D'
+                                            "
+                                          >
+                                            <span>
+                                              {{
+                                                item.isPublish
+                                                  ? `Publish`
+                                                  : `Unpublish`
+                                              }}
+                                            </span>
+                                          </v-chip>
+                                          <v-chip
+                                            class="ml-1"
+                                            :color="
+                                              item.isActive
+                                                ? '#5EB491'
+                                                : '#D6584D'
+                                            "
+                                            v-bind="props"
+                                          >
+                                            <v-icon>{{
+                                              item.isActive
+                                                ? `mdi-robot`
+                                                : `mdi-robot-off`
+                                            }}</v-icon>
+                                          </v-chip>
+                                        </div>
+                                      </template>
+                                      <p>
+                                        <span>Is Publish : </span>
+                                        <span
+                                          :style="{
+                                            fontWeight: `bold`,
+                                            color: item.isPublish
+                                              ? '#5EB491'
+                                              : '#D6584D',
+                                          }"
+                                        >
+                                          {{
+                                            item.isPublish
+                                              ? `Publish`
+                                              : `Unpublish`
+                                          }}
+                                        </span>
+                                      </p>
+                                      <p>
+                                        <span>Is Active : </span>
+                                        <span
+                                          :style="{
+                                            fontWeight: `bold`,
+                                            color: item.isActive
+                                              ? '#5EB491'
+                                              : '#D6584D',
+                                          }"
+                                        >
+                                          {{
+                                            item.isActive
+                                              ? `Active`
+                                              : `Inactive`
+                                          }}
+                                        </span>
+                                      </p>
+                                    </v-tooltip>
+                                  </div>
                                   <v-btn
                                     @click="clickBot(item)"
                                     :icon="`mdi-cog`"
@@ -392,10 +502,12 @@
 
 <script>
 import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfigReDesign.vue";
+import DataError from "@/components/tools/dataError.vue";
+import Loading from "@/components/tools/loading.vue";
 import axios from "axios";
 export default {
   name: "configurationMenu",
-  components: { DigitalTwinConfig },
+  components: { DigitalTwinConfig, Loading, DataError },
   data() {
     return {
       windowWidth: 0,
@@ -415,12 +527,22 @@ export default {
       snackbarMsg: `untitled`,
       //filter
       menuFilter: false,
-      filterStatus: null,
-      filterStatusItem: [
+      isActiveFilter: null,
+      isActiveFilterItem: [
         { title: "All", val: null },
         { title: "Active", val: true },
         { title: "Inactive", val: false },
       ],
+      isPublishFilter: null,
+      isPublishFilterItem: [
+        { title: "All", val: null },
+        { title: "Publish", val: true },
+        { title: "Unpublish", val: false },
+      ],
+      //loading
+      isLoading: false,
+      isError: false,
+      errorMsg: `untitled`,
     };
   },
   computed: {
@@ -428,16 +550,27 @@ export default {
       const filtered = {};
 
       for (const key in this.menu) {
+        let items = this.menu[key];
         const filterTerm = this.filterTerm ? this.filterTerm.trim() : "";
-
-        if (!filterTerm) {
-          filtered[key] = this.menu[key];
-        } else {
-          filtered[key] = this.menu[key].filter((item) =>
+        if (filterTerm) {
+          items = items.filter((item) =>
             item.name.toLowerCase().includes(filterTerm.toLowerCase())
           );
         }
+
+        if (this.isActiveFilter !== null) {
+          items = items.filter((item) => item.isActive === this.isActiveFilter);
+        }
+
+        if (this.isPublishFilter !== null) {
+          items = items.filter(
+            (item) => item.isPublish === this.isPublishFilter
+          );
+        }
+
+        filtered[key] = items;
       }
+
       return filtered;
     },
   },
@@ -473,13 +606,19 @@ export default {
       this.botItem = item;
     },
     async getListUser() {
+      this.isLoading = true;
+      this.isError = false;
       axios
         .get(`api/chat_center/list_bot/`)
         .then((res) => {
           this.menu.DigitalTwin = res.data;
+          this.isLoading = false;
+          this.isError = false;
         })
         .catch((err) => {
-          console.error(err);
+          this.errorMsg = err;
+          this.isLoading = false;
+          this.isError = true;
         });
     },
     firstTimeSaveDraft(item) {
@@ -499,8 +638,12 @@ export default {
     //     this.snackbarAlert = true;
     //   }
     // },
-    changeStatusFilter(item) {
-      this.filterStatus = item;
+    changeStatusFilter(item, mode) {
+      if (mode === `isActive`) {
+        this.isActiveFilter = item;
+      } else {
+        this.isPublishFilter = item;
+      }
     },
   },
 };

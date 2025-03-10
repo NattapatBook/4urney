@@ -187,7 +187,7 @@
                   :style="
                     isLoading || isError || files.length < 1
                       ? {
-                          height: `calc(100% - 200px)`,
+                          height: `calc(100% - 220px)`,
                           display: `flex`,
                           alignItems: `center`,
                           justifyContent: `center`,
@@ -195,7 +195,7 @@
                       : {
                           overflowY: `auto`,
                           overflowX: `hidden`,
-                          maxHeight: `calc(100% - 200px)`,
+                          maxHeight: `calc(100% - 220px)`,
                           width: `100%`,
                         }
                   "
