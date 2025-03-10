@@ -2045,7 +2045,7 @@ def search_engine(request):
         )
         
         tool = TavilySearchResults(
-                    max_results=15,
+                    max_results=5,
                     search_depth="advanced",
                     include_answer=True,
                     include_raw_content=True,
@@ -2082,7 +2082,7 @@ def search_engine(request):
         )
         
         tool = TavilySearchResults(
-                    max_results=15,
+                    max_results=5,
                     search_depth="advanced",
                     include_answer=True,
                     include_raw_content=True,
