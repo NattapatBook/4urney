@@ -5,7 +5,7 @@ from apps.chat_center.models import Organization, OrganizationMember, Customer, 
     RoutingChain \
     , ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatMessage, InternalChatSession, RoutingSkill, \
     FieldConnection \
-    , InformationExtractionSkill, SkillConnection, RequestDemo
+    , InformationExtractionSkill, SkillConnection, RequestDemo, CustomerNew
 
 # from apps.chat_center.models import Customer, Case, Topic, TopicHandler
 
@@ -29,6 +29,7 @@ admin.site.register(FieldConnection)
 admin.site.register(InformationExtractionSkill)
 admin.site.register(SkillConnection)
 admin.site.register(RequestDemo)
+admin.site.register(CustomerNew)
 
 # class CustomerAdmin(admin.ModelAdmin):
 #     list_display = ['platform_uid', 'id', 'platform', 'platform_name', 'case_count']

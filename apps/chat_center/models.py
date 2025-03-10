@@ -197,6 +197,28 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.name} ({self.platform_id})"
 
+class CustomerNew(models.Model):
+    platform_id = models.CharField(max_length=1000)
+    img = models.CharField(max_length=1000, null=True, blank=True)
+    name = models.CharField(max_length=1000, null=True, blank=True)
+    tag = models.CharField(max_length=1000, null=True, blank=True)
+    priority = models.CharField(max_length=1000, null=True, blank=True)
+    lastest_msg = models.CharField(max_length=1000, null=True, blank=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
+    is_urgent = models.BooleanField(null=True, blank=True)
+    provider = models.CharField(max_length=1000, null=True, blank=True)
+    agent = models.CharField(max_length=1000, null=True, blank=True)
+    message_type = models.CharField(max_length=255, null=True, blank=True)
+    reply_token = models.CharField(max_length=1000, null=True, blank=True)
+    organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
+    from_line_uuid = models.ForeignKey('webhook_line.LineIntegration', on_delete=models.CASCADE,null=True, blank=True)
+
+    class Meta:
+        unique_together = ('platform_id', 'from_line_uuid')
+
+    def __str__(self):
+        return f"{self.name}_{self.from_line_uuid} ({self.platform_id})"
+
 class Message(models.Model):
     platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField(null=True, blank=True)
@@ -208,7 +230,7 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.by} at {self.timestamp}"
-    
+
 
 class Dashboard(models.Model):
     platform_id = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
