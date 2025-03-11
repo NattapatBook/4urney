@@ -231,7 +231,20 @@
                       >
                         {{ menuNamed(key) }}
                       </p>
-                      <v-row>
+                      <v-row
+                        v-if="filteredMenu[key].length < 1"
+                        :style="{
+                          minHeight: `calc(100dvh - 305px)`,
+                          display: `flex`,
+                          alignItems: `center`,
+                          overflow: `hidden`,
+                        }"
+                      >
+                        <v-col cols="12">
+                          <DataError :message="`No Data Avaliable`" />
+                        </v-col>
+                      </v-row>
+                      <v-row v-else>
                         <v-col
                           class="mb-5"
                           :cols="
@@ -342,10 +355,55 @@
                                       </p>
                                     </v-tooltip>
                                   </div>
-                                  <v-btn
+                                  <!-- <v-btn
                                     @click="clickBot(item)"
                                     :icon="`mdi-cog`"
-                                  />
+                                  /> -->
+                                  <v-menu
+                                    transition="fab-transition"
+                                    class="rounded-xl"
+                                  >
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        class="no-ripple"
+                                        icon="mdi-dots-vertical"
+                                        variant="text"
+                                        v-bind="props"
+                                      ></v-btn>
+                                    </template>
+
+                                    <v-list class="pa-0 rounded-lg">
+                                      <!-- Config Action -->
+                                      <v-list-item
+                                        class="pa-0"
+                                        @click="clickBot(item)"
+                                      >
+                                        <v-card
+                                          class="pa-4 d-flex align-center"
+                                          elevation="0"
+                                        >
+                                          <v-icon>mdi-cog</v-icon>
+                                          <span class="ms-2"
+                                            >Configuration</span
+                                          >
+                                        </v-card>
+                                      </v-list-item>
+
+                                      <!-- Delete Action -->
+                                      <v-list-item
+                                        class="pa-0"
+                                        @click="clickDeleteBot(item)"
+                                      >
+                                        <v-card
+                                          class="pa-4 d-flex align-center"
+                                          elevation="0"
+                                        >
+                                          <v-icon>mdi-delete</v-icon>
+                                          <span class="ms-2">Remove</span>
+                                        </v-card>
+                                      </v-list-item>
+                                    </v-list>
+                                  </v-menu>
                                 </div>
                               </div>
                               <div>
@@ -606,20 +664,153 @@ export default {
       this.botItem = item;
     },
     async getListUser() {
-      this.isLoading = true;
-      this.isError = false;
-      axios
-        .get(`api/chat_center/list_bot/`)
-        .then((res) => {
-          this.menu.DigitalTwin = res.data;
-          this.isLoading = false;
-          this.isError = false;
-        })
-        .catch((err) => {
-          this.errorMsg = err;
-          this.isLoading = false;
-          this.isError = true;
-        });
+      this.isLoading = false;
+      this.menu.DigitalTwin = [
+        {
+          id: 29,
+          img: "",
+          name: "Test_Edit_Front",
+          industry: "HR",
+          mastery: "mastery",
+          isActive: false,
+        },
+        {
+          id: 33,
+          img: "",
+          name: "4Plus HR E-receipt 2568",
+          industry: "HR",
+          mastery:
+            "Friendly ตอบกระชับ สั้นๆ ได้ใจความ เล่าเรื่องยากให้คนทั่วไปเข้าใจเรื่องการเงินง่ายๆ เป็น bullet point",
+          isActive: true,
+        },
+        {
+          id: 37,
+          img: "",
+          name: "Test Line Binding",
+          industry: "HR",
+          mastery: "Test",
+          isActive: true,
+        },
+        {
+          id: 13,
+          img: "",
+          name: "TheMall_direction",
+          industry: "RETAIL",
+          mastery: "ระบุที่ตั้งของร้านค้าในห้าง",
+          isActive: true,
+        },
+        {
+          id: 15,
+          img: "",
+          name: "TheMall_parking_service",
+          industry: "RETAIL",
+          mastery: "ให้บริการที่จอดรถ",
+          isActive: true,
+        },
+        {
+          id: 16,
+          img: "",
+          name: "TheMall_stock",
+          industry: "RETAIL",
+          mastery: "ปริมาณสต๊อกสินค้า",
+          isActive: true,
+        },
+        {
+          id: 17,
+          img: "",
+          name: "TheMall_contact",
+          industry: "RETAIL",
+          mastery: "ที่อยู่ติดต่อของห้างในแต่ละสาขา",
+          isActive: true,
+        },
+        {
+          id: 30,
+          img: "",
+          name: "4Plus MyHora",
+          industry: "HR",
+          mastery: "หมอดูมืออาชีพ",
+          isActive: true,
+        },
+        {
+          id: 18,
+          img: "",
+          name: "TheMall_MCARD",
+          industry: "RETAIL",
+          mastery: "แนะนำสิทธิพิเศษจากบัตรสมาชิก MCARD",
+          isActive: true,
+        },
+        {
+          id: 14,
+          img: "",
+          name: "TheMall_promotion",
+          industry: "RETAIL",
+          mastery: "ผู้แนะนำโปรโมชั่น",
+          isActive: true,
+        },
+        {
+          id: 35,
+          img: "",
+          name: "SQL Impact Finder",
+          industry: "RETAIL",
+          mastery: "formal",
+          isActive: true,
+        },
+        {
+          id: 40,
+          img: "",
+          name: "Powerapp_bot",
+          industry: "AGRICULTURE",
+          mastery: "friendly",
+          isActive: true,
+        },
+        {
+          id: 43,
+          img: "",
+          name: "Web Search",
+          industry: "RETAIL",
+          mastery: "formal",
+          isActive: true,
+        },
+        {
+          id: 42,
+          img: "",
+          name: "CatWizard",
+          industry: "RETAIL",
+          mastery: "Kitty Meow Meow",
+          isActive: true,
+        },
+        {
+          id: 20,
+          img: "",
+          name: "TheMall_product",
+          industry: "RETAIL",
+          mastery: "ระบุสินค้าภายในห้าง",
+          isActive: true,
+        },
+        {
+          id: 32,
+          img: "",
+          name: "4Plus HR PVD Fund",
+          industry: "HR",
+          mastery:
+            "Friendly ตอบกระชับ ได้ใจความ เล่าเรื่องยากให้คนทั่วไปเข้าใจเรื่องการเงินง่ายๆ เป็น bullet point",
+          isActive: true,
+        },
+      ];
+      // this.isLoading = true;
+      // this.isError = false;
+      // axios
+      //   .get(`api/chat_center/list_bot/`)
+      //   .then((res) => {
+      //     this.menu.DigitalTwin = res.data;
+      //     this.isLoading = false;
+      //     this.isError = false;
+      //   })
+      //   .catch((err) => {
+      //     this.errorMsg = err;
+      //     this.isLoading = false;
+      //     this.isError = true;
+      //   });
     },
     firstTimeSaveDraft(item) {
       this.botItem = JSON.parse(JSON.stringify(item.botItem));
@@ -638,6 +829,9 @@ export default {
     //     this.snackbarAlert = true;
     //   }
     // },
+    clickDeleteBot(item) {
+      console.log(item);
+    },
     changeStatusFilter(item, mode) {
       if (mode === `isActive`) {
         this.isActiveFilter = item;

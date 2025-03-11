@@ -25,7 +25,8 @@
                     Customer Insight
                   </p>
                   <span :style="{ fontSize: '0.8rem', color: 'grey' }">
-                    "Wording yung kid maii oogk..."
+                    "Better understand your customers by capturing chatbot
+                    data."
                   </span>
                 </v-card-title>
                 <v-card-text class="px-4 pb-0">
@@ -184,7 +185,9 @@
                 <v-card-text
                   class="pa-4 pt-0"
                   :style="
-                    isLoading || isError || customerInsightData.length < 1
+                    isLoading ||
+                    isError ||
+                    sort(filteredData, sortKey, sortOrder).length < 1
                       ? {
                           height: `calc(100% - 200px)`,
                           display: `flex`,
@@ -206,18 +209,24 @@
                   </div>
                   <div
                     v-else-if="
-                      !isLoading && (isError || customerInsightData.length < 1)
+                      !isLoading &&
+                      (isError ||
+                        sort(filteredData, sortKey, sortOrder).length < 1)
                     "
                   >
                     <DataError
                       :message="
-                        customerInsightData.length < 1 ? `No Data` : errMsg
+                        sort(filteredData, sortKey, sortOrder).length < 1
+                          ? `No Data Avaliable`
+                          : errMsg
                       "
                     />
                   </div>
                   <v-card
                     v-else-if="
-                      !isLoading && !isError && customerInsightData.length > 0
+                      !isLoading &&
+                      !isError &&
+                      sort(filteredData, sortKey, sortOrder).length > 0
                     "
                     class="mb-2 rounded-xl py-2"
                     elevation="0"

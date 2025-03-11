@@ -185,7 +185,9 @@
                 <v-card-text
                   class="pa-4 pt-0"
                   :style="
-                    isLoading || isError || files.length < 1
+                    isLoading ||
+                    isError ||
+                    sort(filteredFiles, sortKey, sortOrder).length < 1
                       ? {
                           height: `calc(100% - 220px)`,
                           display: `flex`,
@@ -205,13 +207,27 @@
                       :message="`Loading Knowledge Base, please wait...`"
                     />
                   </div>
-                  <div v-else-if="!isLoading && (isError || files.length < 1)">
+                  <div
+                    v-else-if="
+                      !isLoading &&
+                      (isError ||
+                        sort(filteredFiles, sortKey, sortOrder).length < 1)
+                    "
+                  >
                     <DataError
-                      :message="files.length < 1 ? `No Data` : errMsg"
+                      :message="
+                        sort(filteredFiles, sortKey, sortOrder).length < 1
+                          ? `No Data Avaliable`
+                          : errMsg
+                      "
                     />
                   </div>
                   <v-card
-                    v-else-if="!isLoading && !isError && files.length > 0"
+                    v-else-if="
+                      !isLoading &&
+                      !isError &&
+                      sort(filteredFiles, sortKey, sortOrder).length > 0
+                    "
                     class="mb-2 rounded-xl"
                     elevation="0"
                     :style="{ border: `solid 1px lightgrey` }"
