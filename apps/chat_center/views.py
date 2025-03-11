@@ -2106,3 +2106,24 @@ def search_engine(request):
         respones = agent.invoke({"input": search})
         
         return HttpResponse(respones['output'], status=200)
+
+def plotly_test1(request):
+    if request.method == 'GET':
+        return HttpResponse('plotly_test1', status=200)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        return HttpResponse('plotly_test1', status=200)
+
+def plotly_test2(request):
+    if request.method == 'GET':
+        return HttpResponse('plotly_test2', status=200)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        return HttpResponse('plotly_test2', status=200)
+
+def plotly_test3(request):
+    if request.method == 'GET':
+        return HttpResponse('plotly_test3', status=200)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        return HttpResponse('plotly_test3', status=200)

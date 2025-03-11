@@ -9,7 +9,7 @@ from apps.chat_center.views import list_user, list_message, admin_reply_post, ch
     rename_session, remove_session, get_internal_chat, internal_chatbot, remove_upload_file, edit_upload_file, \
     edit_customer_profile, get_chatbot_data, edit_bot, add_line_chatbot, get_chatbot_data_new, request_demo, \
     list_channel_management, count_bot_message, download_s3_file, view_image, list_information_extraction_result, \
-    search_engine, list_message_test_with_line_uuid
+    search_engine, list_message_test_with_line_uuid, plotly_test1, plotly_test2, plotly_test3
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -57,6 +57,9 @@ urlpatterns = [
     path('download_s3_file/', download_s3_file),
     path('view_image/', view_image), 
     path('list_information_extraction_result/', list_information_extraction_result),
-    path('search_engine/', search_engine)
+    path('search_engine/', search_engine),
+    path('plotly_test1/', plotly_test1),
+    path('plotly_test2/', plotly_test2),
+    path('plotly_test3/', plotly_test3),
     # *router.urls,
 ]
