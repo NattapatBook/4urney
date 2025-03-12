@@ -33,8 +33,9 @@ from apps.bot.chatbot_utils import call_bot
 # from sympy import line_integrate
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
-    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo, RoutingSkill, \
-    FieldConnection, SkillConnection, InformationExtractionSkill
+    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo, \
+    RoutingSkill, \
+    FieldConnection, SkillConnection, InformationExtractionSkill, CustomerNew, MessageNew, DashboardNew
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
@@ -115,6 +116,36 @@ def list_user_test(request):
     # Return the response as JSON
     return JsonResponse(customer_list, safe=False)
 
+def list_user_new(request):
+    user = User.objects.get(username=request.user)
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    organization = organization_member.organization
+    customers = CustomerNew.objects.filter(organization_id=organization).select_related('from_line_uuid')
+
+    customer_list = []
+    for customer in customers:
+        customer_data = {
+            "id": customer.id,
+            "platformID": customer.platform_id,
+            "img": customer.img if customer.img else "",
+            "name": customer.name if customer.name else "",
+            "tag": customer.tag if customer.tag else "",
+            "priority": customer.priority if customer.priority else "",
+            "lastestMsg": customer.lastest_msg if customer.lastest_msg else "",
+            "timestamp": customer.timestamp.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if customer.timestamp else "",
+            "isUrgent": customer.is_urgent if customer.is_urgent is not None else False,
+            "provider": customer.provider if customer.provider else "",
+            "agent": customer.agent if customer.agent else "",
+            "messageType": customer.message_type if customer.message_type else "",
+            "replyToken": customer.reply_token if customer.reply_token else None,
+            "lineUUID": customer.from_line_uuid.uuid if customer.from_line_uuid else None,
+            "lineRoomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
+        }
+        customer_list.append(customer_data)
+
+    # Return the response as JSON
+    return JsonResponse(customer_list, safe=False)
+
 def list_message(request, user_id):
     conn = psycopg2.connect(**DB_CONFIG)
     cursor = conn.cursor()
@@ -153,6 +184,33 @@ def list_message_test(request, user_id):
     except Customer.DoesNotExist:
         return JsonResponse({"error": "Customer not found"}, status=400)
     messages = Message.objects.filter(platform_id=customer).order_by('timestamp')
+    chat_logs = []
+    for message in messages:
+        if message.timestamp:
+            message_timestamp = message.timestamp.astimezone(tz)
+            timestamp_str = message_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+        else:
+            timestamp_str = ""
+        chat_log = {
+            "id": message.platform_id.platform_id if message.platform_id else "",  # Link to the customer platform_id
+            "msg": message.message if message.message else "",
+            "by": message.by if message.by else "unknown",
+            "timestamp": timestamp_str
+        }
+        chat_logs.append(chat_log)
+    response_data = {
+        "messageType": message_type,
+        "chatLogs": chat_logs
+    }
+    return JsonResponse(response_data, safe=False)
+
+def list_message_new(request, user_id):
+    try:
+        customer = CustomerNew.objects.get(id=user_id)
+        message_type = customer.message_type if customer.message_type else "Unknown Message Type"
+    except CustomerNew.DoesNotExist:
+        return JsonResponse({"error": "Customer not found"}, status=400)
+    messages = MessageNew.objects.filter(platform_id=customer).order_by('timestamp')
     chat_logs = []
     for message in messages:
         if message.timestamp:
@@ -343,6 +401,95 @@ def admin_reply_post_test(request):
 
     return JsonResponse(response_data, safe=False)
 
+@csrf_exempt
+def admin_reply_post_new(request):
+    data = json.loads(request.body)
+    id = data.get('id')
+    message = data.get('message')
+    print(data)
+
+    username = request.user
+
+    if not id or not message:
+        return JsonResponse({"error": "Missing 'id' or 'message' in request"}, status=400)
+    try:
+        customer = CustomerNew.objects.get(id=id)
+        message_type = customer.message_type if customer.message_type else "Unknown Message Type"
+    except CustomerNew.DoesNotExist:
+        return JsonResponse({"error": "Customer not found"}, status=400)
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=400)
+
+    new_message = MessageNew.objects.create(
+        platform_id=customer,
+        message=message,
+        by='admin',
+        user=user,
+        timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+        organization_id=customer.organization_id,
+        from_line_uuid=customer.from_line_uuid,
+    )
+
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id, uuid=customer.from_line_uuid.uuid).first().line_chatbot_api_key
+    Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
+
+    headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': Authorization
+    }
+
+    data_to_send = {
+        "to": id,
+        "messages": [
+            {
+                "type": "text",
+                "text": message
+            }
+        ]
+    }
+
+    response = requests.post(LINE_API, headers=headers, data=json.dumps(data_to_send))
+
+    messages = MessageNew.objects.filter(platform_id=customer).order_by('-timestamp')
+
+    tz = pytz.timezone('Asia/Bangkok')  # Ensure the timezone for formatting timestamps
+    formatted_data = []
+    for msg in messages:
+        formatted_data.append({
+            "id": msg.platform_id.platform_id if msg.platform_id else "",
+            "msg": msg.message if msg.message else "",
+            "by": msg.by if msg.by else "",
+            "timestamp": msg.timestamp.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z"),
+            "user": msg.user.username if msg.user else ""
+        })
+
+    # channel_layer = get_channel_layer()
+    # group_name = f'organization_{organization_member.organization.id}'
+
+    response_data = {
+        "id": id,
+        "messageType": message_type,
+        "chatLogs": formatted_data
+    }
+
+    # async_to_sync(channel_layer.group_send)(
+    #     group_name,
+    #     {
+    #         'type': 'send_json_to_client',
+    #         'event': {
+    #             'id': id,
+    #             'type': 'message_update',
+    #             'formatted_data': response_data
+    #         }
+    #     }
+    # )
+
+    return JsonResponse(response_data, safe=False)
+
 def change_message_type(request):
     if request.method == 'POST':
         data = request.json()
@@ -431,6 +578,55 @@ def change_message_type_test(request):
             customer.save()
 
             customers = Customer.objects.filter(message_type='Closed Messages')
+            customers_data = [{
+                'platform_id': customer.platform_id,
+                'messageType': customer.message_type,
+                'timestamp': customer.timestamp.astimezone(tz).strftime(
+                    "%Y-%m-%d %H:%M:%S%z"),
+                'name': customer.name,  # Include any other fields you need
+                'tag': customer.tag,
+                'priority': customer.priority
+            } for customer in customers]
+
+            return JsonResponse({'messageType': 'Closed Messages', 'listCustomer': customers_data})
+        else:
+            return JsonResponse({'error': 'Invalid messageType'}, status=400)
+
+def change_message_type_new(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = data.get('id')
+        message_type = data.get('messageType')
+
+        if not id or not message_type:
+            return JsonResponse({'error': 'Missing required parameters'}, status=400)
+
+        try:
+            customer = CustomerNew.objects.get(id=id)
+        except Customer.DoesNotExist:
+            return JsonResponse({'error': 'Customer not found'}, status=404)
+
+        if message_type == 'Closed Messages':
+            customer.message_type = 'Opened Messages'
+            customer.save()
+
+            customers = CustomerNew.objects.filter(message_type='Opened Messages')
+            customers_data = [{
+                'platform_id': customer.platform_id,
+                'messageType': customer.message_type,
+                'timestamp': customer.timestamp.astimezone(tz).strftime(
+                    "%Y-%m-%d %H:%M:%S%z"),
+                'name': customer.name,  # Include any other fields you need
+                'tag': customer.tag,
+                'priority': customer.priority
+            } for customer in customers]
+
+            return JsonResponse({'messageType': 'Opened Messages', 'listCustomer': customers_data})
+        elif message_type == 'Opened Messages':
+            customer.message_type = 'Closed Messages'
+            customer.save()
+
+            customers = CustomerNew.objects.filter(message_type='Closed Messages')
             customers_data = [{
                 'platform_id': customer.platform_id,
                 'messageType': customer.message_type,
@@ -565,6 +761,63 @@ def list_dashboard_test(request, id):
 
     return JsonResponse(response_data)
 
+def list_dashboard_new(request, id):
+    try:
+        customer = CustomerNew.objects.get(id=id)
+        dashboard = DashboardNew.objects.get(platform_id=customer)
+    except Dashboard.DoesNotExist:
+        customer = CustomerNew.objects.get(id=id)
+        dashboard = DashboardNew.objects.create(
+            platform_id=customer,
+            name="untitled",
+            gender="untitled",
+            phonenumber="untitled",
+            citizenid="untitled",
+            birthday="untitled",
+            email="untitled",
+            satisfaction=None,
+            dissatisfaction=None,
+            totalsession=None,
+            totalmessage=None,
+            urgent=None,
+            priority=None,
+            intentsummary=None,
+        )
+
+    satisfaction = ChatUserSatisfaction.objects.filter(platform_id=customer.platform_id).first()
+    urgent = ChatUserUrgent.objects.filter(platform_id=customer.platform_id).first()
+    summarize = ChatSummarize.objects.filter(platform_id=customer.platform_id).first()
+
+    messages_by_bot = MessageNew.objects.filter(by='bot', platform_id=customer) \
+        .values('platform_id') \
+        .annotate(message_count=Count('id')) \
+        .order_by('platform_id')
+    for message in messages_by_bot:
+        count_message = message['message_count']
+        print(f"Platform ID: {message['platform_id']}, Message Count: {message['message_count']}")
+
+    response_data = {
+        "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
+        "intentSummary": summarize.summarize.split('\n') if summarize.summarize else [],
+        "priority": dashboard.priority if dashboard.priority else None,
+        "satisfaction": satisfaction.satisfaction if satisfaction.satisfaction is not None else 0,
+        "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
+        "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
+        "urgent": urgent.urgent if urgent.urgent is not None else 0,
+        "id": dashboard.id,
+        "userInformation": {
+            "birthday": dashboard.birthday if dashboard.birthday else "untitled",
+            "citizenId": dashboard.citizenid if dashboard.citizenid else "untitled",
+            "email": dashboard.email if dashboard.email else "untitled",
+            "gender": dashboard.gender if dashboard.gender else "untitled",
+            "name": dashboard.name if dashboard.name else "untitled",
+            "phoneNumber": dashboard.phonenumber if dashboard.phonenumber else "untitled"
+        },
+        "countBotMessage": count_message,
+    }
+
+    return JsonResponse(response_data)
+
 def edit_customer_profile(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -576,6 +829,7 @@ def edit_customer_profile(request):
         phonenumber = data.get('phoneNumber')
         citizenid = data.get('citizenId')
 
+
         dashboard = Dashboard.objects.get(id=id)
         dashboard.name = name
         dashboard.email = email
@@ -586,6 +840,54 @@ def edit_customer_profile(request):
         dashboard.save()
 
         dashboard_data = Dashboard.objects.filter(id=id).first()
+
+        satisfaction = ChatUserSatisfaction.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
+        urgent = ChatUserUrgent.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
+        summarize = ChatSummarize.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
+
+        response_data = {
+            "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
+            "intentSummary": summarize.summarize.split('\n') if summarize else [],
+            "priority": dashboard.priority if dashboard.priority else None,
+            "satisfaction": satisfaction.satisfaction if satisfaction is not None else 0,
+            "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
+            "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
+            "urgent": urgent.urgent if urgent is not None else 0,
+            "id": dashboard.id,
+            "userInformation": {
+                "birthday": dashboard.birthday if dashboard.birthday else "untitled",
+                "citizenId": dashboard.citizenid if dashboard.citizenid else "untitled",
+                "email": dashboard.email if dashboard.email else "untitled",
+                "gender": dashboard.gender if dashboard.gender else "untitled",
+                "name": dashboard.name if dashboard.name else "untitled",
+                "phoneNumber": dashboard.phonenumber if dashboard.phonenumber else "untitled"
+            }
+        }
+
+        return JsonResponse(response_data)
+
+def edit_customer_profile_new(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = data.get('id')
+        name = data.get('name')
+        email = data.get('email')
+        gender = data.get('gender')
+        birthday = data.get('birthday')
+        phonenumber = data.get('phoneNumber')
+        citizenid = data.get('citizenId')
+
+        customer = CustomerNew.objects.get(id=id)
+        dashboard = DashboardNew.objects.get(platform_id=customer)
+        dashboard.name = name
+        dashboard.email = email
+        dashboard.gender = gender
+        dashboard.birthday = birthday
+        dashboard.phonenumber = phonenumber
+        dashboard.citizenid = citizenid
+        dashboard.save()
+
+        dashboard_data = DashboardNew.objects.filter(platform_id=customer).first()
 
         satisfaction = ChatUserSatisfaction.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
         urgent = ChatUserUrgent.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
@@ -920,6 +1222,89 @@ def summarize_dashboard(request, user_id):
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
 
     data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction", tracer)
+
+    ChatUserSatisfaction.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "satisfaction": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    # Task 3: Identify urgent user interactions
+    df_urg_query = ChatUserUrgent.objects.filter(platform_id=user_id)
+
+    if df_urg_query.exists():
+        df_urg = pd.DataFrame(
+            list(df_urg_query.values('platform_id', 'urgent', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_urg = pd.DataFrame(columns=['platform_id', 'urgent', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent", tracer)
+
+    ChatUserUrgent.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "urgent": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    return JsonResponse({"message": "Done"}, status=200)
+
+def summarize_dashboard_new(request, user_id):
+    # user_id = 'U32afe3db274f527b57262faf86bb1359'
+
+    tracer = LangChainTracer(project_name="Dashboard Chat Insight")
+
+    llms = ChatOpenAI(
+        temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4o"  # Model version
+    )
+    customer = CustomerNew.objects.get(id=user_id)
+    # Task 1: Summarize conversations
+    df_msgs = pd.DataFrame(list(
+        MessageNew.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp',
+                                                            'organization_id')))
+
+    df_sums_query = ChatSummarize.objects.filter(platform_id=user_id)
+
+    if df_sums_query.exists():
+        df_sums = pd.DataFrame(
+            list(df_sums_query.values('platform_id', 'summarize', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_sums = pd.DataFrame(columns=['platform_id', 'summarize', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize", tracer)
+    ChatSummarize.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "summarize": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    # Task 2: Score customer satisfaction
+    df_sats_query = ChatUserSatisfaction.objects.filter(platform_id=user_id)
+
+    if df_sats_query.exists():
+        df_sats = pd.DataFrame(
+            list(df_sats_query.values('platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_sats = pd.DataFrame(columns=['platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction",
+                        tracer)
 
     ChatUserSatisfaction.objects.update_or_create(
         platform_id=user_id,
