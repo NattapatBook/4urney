@@ -765,7 +765,7 @@ def list_dashboard_new(request, id):
     try:
         customer = CustomerNew.objects.get(id=id)
         dashboard = DashboardNew.objects.get(platform_id=customer)
-    except Dashboard.DoesNotExist:
+    except DashboardNew.DoesNotExist:
         customer = CustomerNew.objects.get(id=id)
         dashboard = DashboardNew.objects.create(
             platform_id=customer,
