@@ -48,6 +48,7 @@ from pymilvus import utility
 from langchain.callbacks.tracers import LangChainTracer
 from langchain_community.tools import TavilySearchResults
 from langchain.agents import AgentType, initialize_agent
+import plotly.graph_objects as go
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -2109,10 +2110,12 @@ def search_engine(request):
 
 def plotly_test1(request):
     if request.method == 'GET':
-        return HttpResponse('plotly_test1', status=200)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        return HttpResponse(fig.to_json(), status=200)
     elif request.method == 'POST':
-        data = json.loads(request.body)
-        return HttpResponse('plotly_test1', status=200)
+        # data = json.loads(request.body)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        return HttpResponse(fig.to_json(), status=200)
 
 def plotly_test2(request):
     if request.method == 'GET':
