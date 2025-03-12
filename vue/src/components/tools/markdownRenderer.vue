@@ -3,14 +3,20 @@
     <span v-for="(item, index) in content" :key="index">
       <template v-if="item.type === 'text'">
         <span v-for="(subItem, subIndex) in item.content" :key="subIndex">
-          <span
+          <!-- <span
             v-if="subItem.type === 'orderList'"
             :style="{
               fontWeight: 'bold',
               marginLeft: (subItem.level - 1) * 20 + 'px',
             }"
           >
-            {{ subItem.msg }}
+            <br />  {{ subItem.msg }}
+          </span> -->
+          <span v-if="subItem.type === 'orderList'">
+            <br />
+            <span :style="{ marginLeft: (subItem.level - 1) * 20 + 'px' }">{{
+              subItem.msg
+            }}</span>
           </span>
           <span v-else-if="subItem.type === 'list'">
             <br />
