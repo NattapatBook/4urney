@@ -28,3 +28,4 @@ langchain-community
 pypdf
 nest_asyncio
 llama_index
+plotly
