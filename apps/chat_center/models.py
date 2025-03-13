@@ -315,6 +315,7 @@ class RoutingChain(models.Model):
     knowledge_base = models.CharField(max_length=255, null=True, blank=True)
     knowledge_base_list = models.JSONField(default=list, blank=True, null=True)
     is_active = models.BooleanField(null=True, blank=True)
+    is_publish = models.BooleanField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     organization_id = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True)
 
