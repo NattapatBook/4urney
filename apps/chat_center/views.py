@@ -877,8 +877,7 @@ def edit_customer_profile_new(request):
         phonenumber = data.get('phoneNumber')
         citizenid = data.get('citizenId')
 
-        customer = CustomerNew.objects.get(id=id)
-        dashboard = DashboardNew.objects.get(platform_id=customer)
+        dashboard = DashboardNew.objects.get(id=id)
         dashboard.name = name
         dashboard.email = email
         dashboard.gender = gender
@@ -887,7 +886,7 @@ def edit_customer_profile_new(request):
         dashboard.citizenid = citizenid
         dashboard.save()
 
-        dashboard_data = DashboardNew.objects.filter(platform_id=customer).first()
+        dashboard_data = DashboardNew.objects.filter(id=id).first()
 
         satisfaction = ChatUserSatisfaction.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
         urgent = ChatUserUrgent.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
