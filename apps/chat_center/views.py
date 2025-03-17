@@ -1113,6 +1113,203 @@ def create_bot(request):
         )
 
         return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
+    
+def save_draft(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_name = data.get('bot_name')
+        routing = data.get('routing')
+        prompt = data.get('prompt')
+        industry = data.get('industry')
+        retrieve_image = data.get('retrieve_image')
+        knowledge_base = data.get('knowledge_base')
+        line_integration_uuid = data.get('line_integration_uuid')
+        is_active = data.get('isActive')
+        is_publish = data.get('isPublish')
+        define_skill = data.get('defineSkill')
+        setup_guard = data.get('setupGuard')
+
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        # create bot
+        routing_chain, _ = RoutingChain.objects.update_or_create(
+            bot_name=bot_name, 
+            defaults={ 
+                "routing": routing,
+                "prompt": prompt,
+                "industry": industry,
+                "retrieve_image": retrieve_image,
+                "knowledge_base": knowledge_base,
+                "knowledge_base_list": knowledge_base_list,
+                "is_active": is_active,
+                "is_publish": is_publish,
+                "created_at": datetime.now(),
+                "organization_id": organization,
+            }
+        )
+        
+        # clear session that related to this bot first
+        InternalChatSession.objects.filter(routing_chain=routing_chain).delete()
+        
+        ### create session here ###
+        temp_id = -1
+        while InternalChatSession.objects.filter(id=temp_id).exists():
+            temp_id -= 1
+            
+        new_session = InternalChatSession(id=temp_id, session_name="save_draft_session", bot_id=routing_chain.id, user=user, timestamp=datetime.now())
+        new_session.save() 
+        
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
+            'id',
+            'session_name',
+            'timestamp',
+        )
+
+        bot_session = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
+            }
+            for item in queryset
+        ]
+        
+        bot_item = [
+            {
+                'id': routing_chain.id, 
+                'img': "", 
+                'name': routing_chain.bot_name, 
+                'industry': routing_chain.industry, 
+                'routing': routing_chain.routing, 
+                'is_active': routing_chain.is_active, 
+                'is_publish': routing_chain.is_publish
+            }
+        ]
+        
+        # Merging the two into the expected response format
+        response_data = {
+            'botItem': bot_item[0],
+            'botSession': bot_session[0]
+        }
+        
+        if line_integration_uuid:
+            line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+            if not line_integration:
+                LineConnectionNew.objects.create(
+                    bot_id=routing_chain,
+                    uuid=None,
+                )
+                return JsonResponse(response_data, status=200)
+
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=line_integration,
+            )
+            
+
+        return JsonResponse(response_data, status=200)
+    
+    elif request.method == 'GET':
+        bot_name = 'Test Create Bot V2'
+        routing = 'Test Create Bot'
+        prompt = 'Test Create Bot'
+        industry = 'HR'
+        retrieve_image = False
+        knowledge_base = "org1___Demo__E_receipt_2568_pdf"
+        knowledge_base_list = ["org1___Demo__E_receipt_2568_pdf", "org1___Demo__PVD_4plus_pdf"]
+        is_active = True
+        line_integration_uuid = None
+        is_publish = True
+        define_skill = []
+        setup_guard = []
+
+        user = 2
+        user = User.objects.get(id=user)
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+        print(user)
+        print(organization)
+
+        # create bot
+        routing_chain, _ = RoutingChain.objects.update_or_create(
+            bot_name=bot_name, 
+            defaults={ 
+                "routing": routing,
+                "prompt": prompt,
+                "industry": industry,
+                "retrieve_image": retrieve_image,
+                "knowledge_base": knowledge_base,
+                "knowledge_base_list": knowledge_base_list,
+                "is_active": is_active,
+                "is_publish": is_publish,
+                "created_at": datetime.now(),
+                "organization_id": organization,
+            }
+        )
+        
+        
+        # clear session that related to this bot first
+        InternalChatSession.objects.filter(bot_id=routing_chain).delete()
+        
+        ### create session here ###
+        temp_id = -1
+        while InternalChatSession.objects.filter(id=temp_id).exists():
+            temp_id -= 1
+            
+        new_session = InternalChatSession(id=temp_id, session_name="save_draft_session", bot_id=routing_chain, user=user, timestamp=datetime.now())
+        new_session.save() 
+        
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
+            'id',
+            'session_name',
+            'timestamp',
+        )
+
+        bot_session = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
+            }
+            for item in queryset
+        ]
+        
+        bot_item = [
+            {
+                'id': routing_chain.id, 
+                'img': "", 
+                'name': routing_chain.bot_name, 
+                'industry': routing_chain.industry, 
+                'routing': routing_chain.routing, 
+                'is_active': routing_chain.is_active, 
+                'is_publish': routing_chain.is_publish
+            }
+        ]
+        
+        # Merging the two into the expected response format
+        response_data = {
+            'botItem': bot_item[0],
+            'botSession': bot_session[0]
+        }
+        
+        if line_integration_uuid:
+            line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+            if not line_integration:
+                LineConnectionNew.objects.create(
+                    bot_id=routing_chain,
+                    uuid=None,
+                )
+                return JsonResponse(response_data, status=200)
+
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=line_integration,
+            )
+            
+
+        return JsonResponse(response_data, status=200)
 
 def list_line_integration(request):
     line_integrations = LineIntegration.objects.all()
@@ -1524,12 +1721,13 @@ def list_bot(request):
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
 
-    queryset = RoutingChain.objects.filter(organization_id=organization).values(
+    queryset = RoutingChain.objects.filter(organization_id=organization, is_publish=False).values(
         'id',
         'bot_name',
         'industry',
         'routing',
-        'is_active'
+        'is_active', 
+        'is_publish'
     )
 
     # Map the queryset to the desired format
@@ -1541,6 +1739,7 @@ def list_bot(request):
             'industry': item['industry'],
             'mastery': item['routing'],
             'isActive': item['is_active'],
+            'is_publish': item['is_publish']
         }
         for item in queryset
     ]
@@ -1586,7 +1785,7 @@ def list_session(request):
         user = request.user
         user = User.objects.get(username=user)
 
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user, id__gte=0).values(
             'id',
             'session_name',
             'timestamp'
@@ -1940,6 +2139,7 @@ def get_chatbot_data(request):
             'routing',
             'knowledge_base',
             'is_active',
+            'is_publish'
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
@@ -1957,6 +2157,7 @@ def get_chatbot_data(request):
                 'retrieve_image': item['retrieve_image'],
                 'knowledge_base': item['knowledge_base'],
                 'isActive': item['is_active'],
+                'is_publish': item['is_publish'], 
                 'line_integration_uuid': line_connection['uuid'] if line_connection else None,
             }
         except:
@@ -1970,6 +2171,7 @@ def get_chatbot_data(request):
                 'retrieve_image': item['retrieve_image'],
                 'knowledge_base': item['knowledge_base'],
                 'isActive': item['is_active'],
+                'is_publish': item['is_publish'], 
                 'line_integration_uuid': None,
             }
 
