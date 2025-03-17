@@ -2517,7 +2517,14 @@ def plotly_test2(request):
 
 def plotly_test3(request):
     if request.method == 'GET':
-        return HttpResponse('plotly_test3', status=200)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        plotly_dict = fig.to_dict()
+        plotly_data = plotly_dict["data"]
+        return HttpResponse(plotly_dict, status=200)
+    
     elif request.method == 'POST':
-        data = json.loads(request.body)
-        return HttpResponse('plotly_test3', status=200)
+        # data = json.loads(request.body)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        plotly_dict = fig.to_dict()
+        plotly_data = plotly_dict["data"]
+        return HttpResponse(plotly_dict, status=200)
