@@ -2506,14 +2506,14 @@ def plotly_test2(request):
         fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
         plotly_dict = fig.to_dict()
         plotly_data = plotly_dict["data"]
-        return HttpResponse(plotly_data, safe=False, status=200)
+        return HttpResponse(plotly_data, status=200)
     
     elif request.method == 'POST':
         # data = json.loads(request.body)
         fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
         plotly_dict = fig.to_dict()
         plotly_data = plotly_dict["data"]
-        return HttpResponse(plotly_data, safe=False, status=200)
+        return HttpResponse(plotly_data, status=200)
 
 def plotly_test3(request):
     if request.method == 'GET':
