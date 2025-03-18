@@ -360,7 +360,7 @@ export default {
     },
     clickSendMsg() {
       axios
-        .post(`api/chat_center/admin_reply_post_test/`, {
+        .post(`api/chat_center/admin_reply_post_new/`, {
           id: this.selectedUser.id,
           message: `${this.msgBox}`,
         })
@@ -385,7 +385,7 @@ export default {
     },
     getListMessage(id) {
       axios
-        .get(`api/chat_center/list_message_test/${id}`)
+        .get(`api/chat_center/list_message_new/${id}`)
         .then((res) => {
           // console.log(res.data);
           this.chatLogs = res.data.chatLogs;
@@ -401,7 +401,7 @@ export default {
     },
     clickChangeMessageType() {
       axios
-        .post(`api/chat_center/change_message_type_test/`, {
+        .post(`api/chat_center/change_message_type_new/`, {
           id: this.selectedUser.id,
           messageType: this.messageType,
         })

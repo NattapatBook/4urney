@@ -314,7 +314,7 @@ export default {
     //getData
     getListUser() {
       axios
-        .get(`api/chat_center/list_user_test/`)
+        .get(`api/chat_center/list_user_new/`)
         .then((res) => {
           // console.log(res.data);
           this.userItems = res.data;
@@ -329,7 +329,7 @@ export default {
       this.isErrorDashboard = false;
       //id === user.id
       axios
-        .get(`api/chat_center/summarize_dashboard/${id}`)
+        .get(`api/chat_center/summarize_dashboard_new/${id}`)
         .then(() => {
           this.getListDashboardSumarized(id);
         })
@@ -347,7 +347,7 @@ export default {
       this.isLoadingDashboard = true;
       this.isErrorDashboard = false;
       axios
-        .get(`api/chat_center/list_dashboard_test/${id}`)
+        .get(`api/chat_center/list_dashboard_new/${id}`)
         .then((res) => {
           // console.log(res.data);
           this.dashboardData = res.data;
@@ -435,7 +435,7 @@ export default {
     confirmEditCustomerProfileDialog(item) {
       if (item.id && item.id !== `-1`) {
         axios
-          .post(`api/chat_center/edit_customer_profile/`, item)
+          .post(`api/chat_center/edit_customer_profile_new/`, item)
           .then((res) => {
             // console.log(res.data);
             this.dashboardData = res.data;
