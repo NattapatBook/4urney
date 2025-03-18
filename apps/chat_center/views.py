@@ -800,10 +800,10 @@ def list_dashboard_new(request, id):
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
         "intentSummary": summarize.summarize.split('\n') if summarize else [],
         "priority": dashboard.priority if dashboard.priority else None,
-        "satisfaction": satisfaction.satisfaction if satisfaction.satisfaction is not None else 0,
+        "satisfaction": satisfaction.satisfaction if satisfaction is not None else 0,
         "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
         "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
-        "urgent": urgent.urgent if urgent.urgent is not None else 0,
+        "urgent": urgent.urgent if urgent is not None else 0,
         "id": dashboard.id,
         "userInformation": {
             "birthday": dashboard.birthday if dashboard.birthday else "untitled",
