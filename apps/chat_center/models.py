@@ -400,6 +400,17 @@ class InformationExtractionSkill(models.Model):
     field_name = models.CharField(max_length=1000, null=True, blank=True)
     result = models.CharField(max_length=1000, null=True, blank=True)
     skill_id = models.ForeignKey('RoutingSkill', on_delete=models.CASCADE, null=True, blank=True)
+    user_id = models.ForeignKey('Customer', on_delete=models.CASCADE, null=True, blank=True)
+    message_id = models.ForeignKey('Message', on_delete=models.CASCADE, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.id} : {self.field_name} -> {self.result}"
+    
+class InformationExtractionSkillNew(models.Model): 
+    field_id = models.ForeignKey('FieldConnection', on_delete=models.CASCADE, null=True, blank=True)
+    field_name = models.CharField(max_length=1000, null=True, blank=True)
+    result = models.CharField(max_length=1000, null=True, blank=True)
+    skill_id = models.ForeignKey('RoutingSkill', on_delete=models.CASCADE, null=True, blank=True)
     user_id = models.ForeignKey('CustomerNew', on_delete=models.CASCADE, null=True, blank=True)
     message_id = models.ForeignKey('Message', on_delete=models.CASCADE, null=True, blank=True)
     

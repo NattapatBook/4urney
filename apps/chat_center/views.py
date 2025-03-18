@@ -34,7 +34,7 @@ from apps.bot.chatbot_utils import call_bot
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
     ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo, \
-    RoutingSkill, \
+    RoutingSkill, InformationExtractionSkillNew, \
     FieldConnection, SkillConnection, InformationExtractionSkill, CustomerNew, MessageNew, DashboardNew
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
@@ -2589,7 +2589,7 @@ def list_information_extraction_result(request):
         skill_connections = SkillConnection.objects.filter(bot_id__in=routing_chains)
 
         # Get all InformationExtractionSkill records linked to these skills
-        extraction_skills = InformationExtractionSkill.objects.filter(
+        extraction_skills = InformationExtractionSkillNew.objects.filter(
             skill_id__in=skill_connections.values_list("skill_id", flat=True)
         ).select_related("user_id", "message_id")
 

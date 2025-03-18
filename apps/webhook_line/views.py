@@ -21,7 +21,7 @@ from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.chat_center.models import Message, Customer, Organization, RoutingChain, SkillConnection, FieldConnection, \
-    InformationExtractionSkill, RoutingSkill, OrganizationMember, CustomerNew, MessageNew
+    InformationExtractionSkill, InformationExtractionSkillNew, RoutingSkill, OrganizationMember, CustomerNew, MessageNew
 
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
@@ -282,7 +282,7 @@ async def webhook(request: HttpRequest, uuid):
             routing_skill = await sync_to_async(RoutingSkill.objects.filter(id=skill_id).first)()
 
             if field_connection:
-                info_skill = InformationExtractionSkill(
+                info_skill = InformationExtractionSkillNew(
                     field_id=field_connection,
                     field_name=field_name,
                     result=result,
