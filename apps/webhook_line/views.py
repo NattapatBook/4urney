@@ -75,7 +75,7 @@ async def webhook(request: HttpRequest, uuid):
         assert request.method == 'POST'
         body = request.body
         data = json.loads(body.decode('utf-8'))
-        # assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
+        assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
     except:
         data = None
 
