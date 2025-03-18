@@ -13,7 +13,7 @@
         clearable
         @click:clear="searchMessage = ''"
         multiple
-        label="Enter name to search"
+        label="Enter name or room's name to search"
         variant="outlined"
         hide-details
         :density="`comfortable`"
@@ -712,7 +712,8 @@ export default {
           (tagSet.size === 0 || tagSet.has(item.tag)) &&
           (agentSet.size === 0 || agentSet.has(item.agent)) &&
           (searchMessage === "" ||
-            item.name.toLowerCase().includes(searchMessage)) // Filter by name
+            item.name.toLowerCase().includes(searchMessage) ||
+            item.roomName.toLowerCase().includes(searchMessage))
         );
       });
 
