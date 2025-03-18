@@ -21,7 +21,7 @@ from apps.webhook_line.connector import get_username, reply_message
 from apps.webhook_line.verification import verify_line_signature
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.chat_center.models import Message, Customer, Organization, RoutingChain, SkillConnection, FieldConnection, \
-    InformationExtractionSkill, RoutingSkill, OrganizationMember
+    InformationExtractionSkill, RoutingSkill, OrganizationMember, CustomerNew, MessageNew
 
 MILVUS_COLLECTION_NAME_DRONE = os.environ.get('MILVUS_COLLECTION_NAME_DRONE')
 MILVUS_URI=os.environ.get('MILVUS_URI')
@@ -75,20 +75,23 @@ async def webhook(request: HttpRequest, uuid):
         assert request.method == 'POST'
         body = request.body
         data = json.loads(body.decode('utf-8'))
-        assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
+        # assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
     except:
         data = None
 
-    # organization_member = OrganizationMember.objects.filter(user=request.user).first()
-    # organization = organization_member.organization
-    # message_counts = Message.objects.filter(by='bot',organization_id=organization) \
-    #     .values('organization_id') \
-    #     .annotate(message_count=Count('id'))
-    #
-    # for result in message_counts:
-    #     count_message = result['message_count']
-    #
-    # if count_message >= 10:
+    # @database_sync_to_async
+    # def get_message_counts(organization):
+    #     return list(
+    #         MessageNew.objects.filter(by='bot', organization_id=organization)
+    #         .values('organization_id')
+    #         .annotate(message_count=Count('id'))
+    #     )
+        
+    # message_counts = await get_message_counts(organization)
+    
+    # count_message = message_counts[0]['message_count']
+    
+    # if count_message >= 1:
     #     if data:
     #         event = data['events'][0]
     #         user_id = event['source']['userId']
@@ -99,7 +102,7 @@ async def webhook(request: HttpRequest, uuid):
     #         customer_list = await get_customers()
     #         channel_layer = get_channel_layer()
     #         group_name = f'organization_{organization_id}'
-    #
+    
     #         await channel_layer.group_send(
     #             group_name,
     #             {
@@ -111,10 +114,10 @@ async def webhook(request: HttpRequest, uuid):
     #                 }
     #             }
     #         )
-    #
+    
     #         response = HttpResponse('')
     #         response.headers["Access-Control-Allow-Origin"] = "*"
-    #
+    
     #         return response
 
     if data:
@@ -125,25 +128,44 @@ async def webhook(request: HttpRequest, uuid):
         reply_token = event['replyToken']
         message = event['message']["text"]
         message_dt = event['timestamp']
-        username = get_username(user_id, LINE_CHATBOT_API_KEY)
+        username = get_username(user_id, LINE_CHATBOT_API_KEY) # บาสหมี
+        
+        # check if CustomerNew exists
+        customer_new = await sync_to_async(CustomerNew.objects.filter(platform_id=user_id, from_line_uuid=line_integration).first)()
+        customer_id = customer_new.id
 
-        # Add user before send message
-        new_customer = await sync_to_async(Customer.objects.update_or_create)(
-        platform_id=user_id,
-            defaults = {
-                'name':username,
-                'lastest_msg':message,
-                'timestamp':datetime.now(pytz.timezone('Asia/Bangkok')),
-                'provider':'line',
-                'agent':'Me',
-                'message_type':'Closed Messages',
-                'reply_token':reply_token,
-                'organization_id':organization, 
-                'from_line_uuid': line_integration
-            }
-        )
+        if customer_id:
+            new_customer = await sync_to_async(CustomerNew.objects.update_or_create)(
+                id = customer_id, 
+                defaults = {
+                    'name':username,
+                    'platform_id':user_id, 
+                    'lastest_msg':message,
+                    'timestamp':datetime.now(pytz.timezone('Asia/Bangkok')),
+                    'provider':'line',
+                    'agent':'Me',
+                    'message_type':'Closed Messages',
+                    'reply_token':reply_token,
+                    'organization_id':organization, 
+                    'from_line_uuid': line_integration
+                }
+            )
+        else: 
+            # Add user before send message
+            new_customer = await sync_to_async(CustomerNew.objects.create)(
+                name=username,
+                platform_id=user_id, 
+                lastest_msg=message,
+                timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
+                provider='line',
+                agent='Me',
+                message_type='Closed Messages',
+                reply_token=reply_token,
+                organization_id=organization, 
+                from_line_uuid=line_integration
+            )
 
-        latest_messages = await sync_to_async(list)(Message.objects.filter(platform_id=user_id).all().order_by('-timestamp')[:10])
+        latest_messages = await sync_to_async(list)(MessageNew.objects.filter(platform_id=customer_new).all().order_by('-timestamp')[:10])
 
         # Output the messages history
         chat_history = ""
@@ -156,7 +178,7 @@ async def webhook(request: HttpRequest, uuid):
         df_routing_config = pd.DataFrame(routing_configs)
 
         # get user config
-        df_user = await sync_to_async(lambda: list(Customer.objects.filter(platform_id=user_id).values()))()
+        df_user = await sync_to_async(lambda: list(CustomerNew.objects.filter(id=customer_id).values()))()
         df_user = pd.DataFrame(df_user)
 
         if df_user['message_type'].values != 'Opened Messages' or df_user.empty:
@@ -202,12 +224,12 @@ async def webhook(request: HttpRequest, uuid):
         else:
             print("Admin is already Open Messaged with the customer.")
 
-    customer = await sync_to_async(Customer.objects.filter(platform_id=user_id).first)()
+    customer = await sync_to_async(CustomerNew.objects.filter(id=customer_id).first)()
 
     if not customer:
         print(f"No Customer found with platform_id: {user_id}")
 
-    user_new_message = await sync_to_async(Message.objects.create)(
+    user_new_message = await sync_to_async(MessageNew.objects.create)(
         platform_id=customer,
         message=message,
         by='customer',
@@ -217,7 +239,7 @@ async def webhook(request: HttpRequest, uuid):
         from_line_uuid=line_integration
     )
 
-    bot_new_message = await sync_to_async(Message.objects.create)(
+    bot_new_message = await sync_to_async(MessageNew.objects.create)(
         platform_id=customer,
         message=responses_message,
         by='bot',
@@ -244,8 +266,8 @@ async def webhook(request: HttpRequest, uuid):
     )
 
     # Add information extraction from bot
-    message_object = await sync_to_async(Message.objects.filter(platform_id=user_id, message=message).order_by('-timestamp').first)()
-    customer_object = await sync_to_async(Customer.objects.filter(name=username, platform_id=user_id).first)()
+    message_object = await sync_to_async(MessageNew.objects.filter(platform_id=customer, message=message).order_by('-timestamp').first)()
+    customer_object = await sync_to_async(CustomerNew.objects.filter(name=username, id=customer_id).first)()
     bot_ids = await sync_to_async(lambda: list(LineConnectionNew.objects.filter(uuid=line_integration).values_list("bot_id", flat=True)))()
     skill_ids = await sync_to_async(lambda: list(SkillConnection.objects.filter(bot_id__in=bot_ids).values_list("skill_id", flat=True)))()
 

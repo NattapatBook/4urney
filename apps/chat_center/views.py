@@ -139,7 +139,7 @@ def list_user_new(request):
             "messageType": customer.message_type if customer.message_type else "",
             "replyToken": customer.reply_token if customer.reply_token else None,
             "lineUUID": customer.from_line_uuid.uuid if customer.from_line_uuid else None,
-            "lineRoomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
+            "roomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
         }
         customer_list.append(customer_data)
 
@@ -2410,7 +2410,7 @@ def count_bot_message(request):
 
         result = dict()
 
-        messages_grouped = Message.objects.filter(by='bot',organization_id=organization) \
+        messages_grouped = MessageNew.objects.filter(by='bot',organization_id=organization) \
             .select_related('platform_id') \
             .values('organization_id', 'platform_id', 'platform_id__provider') \
             .annotate(message_count=Count('id'))
@@ -2594,7 +2594,7 @@ def list_information_extraction_result(request):
         ).select_related("user_id", "message_id")
 
         # Get all LineIntegration users for the given organization
-        customers = Customer.objects.filter(platform_id__in=extraction_skills.values_list("user_id", flat=True), organization_id=organization)
+        customers = CustomerNew.objects.filter(platform_id__in=extraction_skills.values_list("user_id", flat=True), organization_id=organization)
         
         # Create a mapping: {message_id -> message}
         user_id_to_username = {
@@ -2602,7 +2602,7 @@ def list_information_extraction_result(request):
         }     
         
         # Get all messages for the given organization
-        messages = Message.objects.filter(id__in=extraction_skills.values_list("message_id", flat=True), organization_id=organization)
+        messages = MessageNew.objects.filter(id__in=extraction_skills.values_list("message_id", flat=True), organization_id=organization)
 
         # Create a mapping: {message_id -> message}
         message_id_to_text = {
