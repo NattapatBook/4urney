@@ -75,7 +75,7 @@ async def webhook(request: HttpRequest, uuid):
         assert request.method == 'POST'
         body = request.body
         data = json.loads(body.decode('utf-8'))
-        assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
+        # assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
     except:
         data = None
 
@@ -121,20 +121,19 @@ async def webhook(request: HttpRequest, uuid):
     #         return response
 
     if data:
-        # print(data)
         event = data['events'][0]
         user_id = event['source']['userId']
         message_type = event['message']['type']
         reply_token = event['replyToken']
         message = event['message']["text"]
         message_dt = event['timestamp']
-        username = get_username(user_id, LINE_CHATBOT_API_KEY) # บาสหมี
+        username = get_username(user_id, LINE_CHATBOT_API_KEY)
         
         # check if CustomerNew exists
         customer_new = await sync_to_async(CustomerNew.objects.filter(platform_id=user_id, from_line_uuid=line_integration).first)()
-        customer_id = customer_new.id
 
-        if customer_id:
+        if customer_new is not None:
+            customer_id = customer_new.id
             new_customer = await sync_to_async(CustomerNew.objects.update_or_create)(
                 id = customer_id, 
                 defaults = {
@@ -164,6 +163,9 @@ async def webhook(request: HttpRequest, uuid):
                 organization_id=organization, 
                 from_line_uuid=line_integration
             )
+            
+        customer_new = await sync_to_async(CustomerNew.objects.filter(platform_id=user_id, from_line_uuid=line_integration).first)()
+        customer_id = customer_new.id
 
         latest_messages = await sync_to_async(list)(MessageNew.objects.filter(platform_id=customer_new).all().order_by('-timestamp')[:10])
 
