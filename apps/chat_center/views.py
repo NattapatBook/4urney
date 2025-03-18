@@ -798,7 +798,7 @@ def list_dashboard_new(request, id):
 
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
-        "intentSummary": summarize.summarize.split('\n') if summarize.summarize else [],
+        "intentSummary": summarize.summarize.split('\n') if summarize else [],
         "priority": dashboard.priority if dashboard.priority else None,
         "satisfaction": satisfaction.satisfaction if satisfaction.satisfaction is not None else 0,
         "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
