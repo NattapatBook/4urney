@@ -71,6 +71,6 @@ urlpatterns = [
     path('plotly_test2/', plotly_test2),
     path('plotly_test3/', plotly_test3),
     path('save_draft/', save_draft), 
-    path('list_bot_ai_management', list_bot_ai_management), 
+    path('list_bot_ai_management/', list_bot_ai_management), 
     # *router.urls,
 ]

@@ -496,10 +496,12 @@
                 <div v-if="windowWidth >= 501">
                   <v-btn
                     :disabled="
+                      isLoadingSaveDraft ||
                       selectedMenu.menuKey === `defineChatbot`
                         ? !checkValueFilled(setupItem, selectedMenu.menuKey)
                         : checkDisabledSaveDraft
                     "
+                    :loading="isLoadingSaveDraft"
                     @click="clickSaveDraft()"
                     color="primary"
                     text
@@ -523,10 +525,12 @@
                   <v-btn
                     block
                     :disabled="
+                      isLoadingSaveDraft ||
                       selectedMenu.menuKey === `defineChatbot`
                         ? !checkValueFilled(setupItem, selectedMenu.menuKey)
                         : checkDisabledSaveDraft
                     "
+                    :loading="isLoadingSaveDraft"
                     @click="clickSaveDraft()"
                     color="primary"
                   >
@@ -949,8 +953,7 @@
 <script>
 import ChatPanelBot from "../internalChatbot/chatPanelBot.vue";
 import DataError from "../tools/dataError.vue";
-
-// import axios from "axios";
+import axios from "axios";
 
 export default {
   name: "digitalTwinConfig",
@@ -1169,10 +1172,14 @@ export default {
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: "untitled",
+      //isLoading
+      errorMsgSaveDraft: `untitled`,
+      isLoadingSaveDraft: false,
+      isErrorSaveDraft: true,
     };
   },
   beforeMount() {
-    this.preprocessItem();
+    this.getDefineChatbotItem();
   },
   mounted() {
     // responsive
@@ -1185,103 +1192,44 @@ export default {
     window.removeEventListener("resize", this.onResize);
   },
   methods: {
-    preprocessItem() {
-      //defineChatbot
-      //industry
-      this.setupItem.defineChatbot.industry.item = [
-        "AGRICULTURE",
-        "HR",
-        "RETAIL",
-      ];
-      this.setupItem.defineChatbot.industry.item.unshift("No");
-      //knowledge-base
-      this.setupItem.defineChatbot.knowledge_base.item = [
-        "orgDemo__external_customer_csv",
-        "orgDemo__exclusive_benefits_membership_card_csv",
-        "orgDemo__ONESIAM_Events_csv",
-        "org1___Demo__Leave_Data_2017_V2__xlsx",
-        "org1___Demo__paragon_festival_jpg",
-        "org1___Demo__SellingProduct_xlsx",
-        "orgDemo__Holiday2025_pdf",
-        "org1___Demo__Stock_xlsx",
-        "org1___Demo__law_benefits_pdf",
-        "org1___Demo__the_mall_promotion_jpg",
-        "org1___Demo__4Plus_Holiday_2025_xlsx",
-        "orgDemo__siam_paragon_pdf",
-        "orgDemo__Shop_xlsx",
-        "org1___Demo__Knowledge_xlsx",
-        "org1___Demo__janyaban_pdf",
-        "org1___Demo__AI_Now_2018_Report_pdf",
-        "orgDemo__parkinganddirection_csv",
-        "org1___Demo__PVD_4plus_pdf",
-        "org1___Demo__THE_MALL_PARKING_SERVICES_pdf",
-        "org1___Demo__test_naja_csv",
-        "org1___Demo__Hospital_Information_pdf",
-        "org1___Demo__Hospital_Information___Copy_pdf",
-        "org1___Demo__Cervical_Cancer_Vaccine_xlsx",
-        "orgDemo__Leave4Plus_pdf",
-        "org1___Demo__Appointments_Doctor_Schedule_xlsx",
-        "org1___Demo__MCARD_PRIVILEGES_pdf",
-        "org1___Demo__Promotion_Themall_2025_pdf",
-        "org1___Demo__20250221_4PlusHospital_pdf",
-        "org1___Demo__CT_Calcium_Scoring_xlsx",
-        "orgDemo__EC_EI_008_S2_xlsx",
-        "org1___Demo__Provident_Fund_4Plus___Provident_Fund_4Plus_csv",
-        "org1___Demo__Toyota_SQL_Example_xlsx",
-        "orgDemo__facilitation_csv",
-        "org1___Demo__Holiday2025_PDF_pdf",
-        "org1___Demo__simulated_mall_products_xlsx",
-        "orgDemo__privileges_csv",
-        "orgDemo__photograph_spot_xlsx",
-        "orgDemo__siam_discovery_pdf",
-        "orgDemo__Food_and_Dining_Guide_pdf",
-        "org1___Demo__E_receipt_2568_pdf",
-        "orgDemo__TaxRefund_pdf",
-        "org1___Demo__4PlusHospital_pdf",
-        "org1___Demo__the_mall_shop_2025_xlsx",
-        "org1___Demo__KB_Themall_xlsx",
-        "org1___Demo__4PlusHospital___Copy_pdf",
-        "org1___Demo__Contact_the_mall_xlsx",
-        "orgDemo__Blocked_HR_Questions_xlsx",
-      ];
-      //line-integration
-      this.setupItem.defineChatbot.line_integration_uuid.item = [
-        {
-          uuid: "5aedd86d-55d6-4e16-be56-d7c7bf80d4ca",
-          user_id: "line_buffer",
-          username: "buffer_user",
-        },
-        {
-          uuid: "ecd7c648-6e7d-4f5e-b33c-ed702e25107d",
-          user_id: "2006620546",
-          username: "4urney - Internal",
-        },
-        {
-          uuid: "95277674-4c7b-434d-928a-ddad9fe3270a",
-          user_id: "2006940454",
-          username: "4urneyWizard",
-        },
-        {
-          uuid: "21db52bb-8a8e-4b29-a529-89d5fd565b54",
-          user_id: "2005878944",
-          username: "4urney Chatbot",
-        },
-        {
-          uuid: "16fd2706-8baf-433b-82eb-8c7fada847da",
-          user_id: "615xecfj",
-          username: "chiatai_drone",
-        },
-        {
-          uuid: "15e5e138-fb3b-4cac-924a-9046e5a77946",
-          user_id: "2004353263",
-          username: "Retail Chatbot",
-        },
-      ];
-      this.setupItem.defineChatbot.line_integration_uuid.item.unshift({
-        uuid: "No",
-        user_id: "No",
-        username: "No",
-      });
+    getDefineChatbotItem() {
+      // industry
+      axios
+        .get(`api/chat_center/list_industry/`)
+        .then((res) => {
+          this.setupItem.defineChatbot.industry.item = res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      // knowledge base
+      axios
+        .get(`api/chat_center/list_knowledge_base/`)
+        .then((res) => {
+          this.setupItem.defineChatbot.knowledge_base.item = res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      // line integration
+      axios
+        .get(`api/chat_center/list_line_integration/`)
+        .then((res) => {
+          this.setupItem.defineChatbot.line_integration_uuid.item = res.data;
+          this.setupItem.defineChatbot.line_integration_uuid.item.unshift({
+            uuid: "No",
+            user_id: "No",
+            username: "No",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          this.setupItem.defineChatbot.line_integration_uuid.item.unshift({
+            uuid: "No",
+            user_id: "No",
+            username: "No",
+          });
+        });
     },
     preprocessSkillAndGuard() {
       //1. skill and guard type default
@@ -1530,34 +1478,39 @@ export default {
         );
       }
     },
-    clickSaveDraft() {
+    async clickSaveDraft() {
       if (this.selectedMenu.menuKey === `defineChatbot`) {
-        if (this.botMode === `create`) {
-          console.log(this.setupItem);
-
-          this.snackbarAction({
-            snackbarMsg: `Your draft has been saved`,
-            snackbarSuccess: true,
-            snackbarAlert: true,
+        let draftBody = await this.getSaveDraft(
+          this.botMode === `create` ? null : this.selectedUser.id
+        );
+        draftBody.isPublish = false;
+        this.isLoadingSaveDraftSaveDraft = false;
+        this.isLoadingSaveDraft = true;
+        this.isErrorSaveDraft = false;
+        axios
+          .post(`api/chat_center/save_draft/`, {
+            ...draftBody,
+          })
+          .then((res) => {
+            this.isLoadingSaveDraft = false;
+            this.isErrorSaveDraft = false;
+            //when response from api
+            this.$emit(`callbackNewSaveDraft`, {
+              botItem: res.data.botItem,
+              botSession: res.data.botSession,
+            });
+            this.snackbarAction({
+              snackbarMsg: `Bot created successfully!`,
+              snackbarSuccess: true,
+              snackbarAlert: true,
+            });
+          })
+          .catch((err) => {
+            this.errorMsgSaveDraft = err;
+            this.isLoadingSaveDraft = false;
+            this.isErrorSaveDraft = true;
           });
-          //when response from api
-          this.$emit(`callbackNewSaveDraft`, {
-            botItem: {
-              id: 47,
-              img: "",
-              name: "4Care",
-              industry: "HR",
-              mastery: "mastery, friendly, formal",
-              isActive: true,
-            },
-            botSession: {
-              id: 92,
-              name: "test3",
-              lastConversationTime: "2025-03-03 16:13:18+0700",
-            },
-          }); //first time save draft
-        } else if (this.botMode === `edit`) {
-        }
+        console.log(this.setupItem);
       } else if (this.selectedMenu.menuKey === `defineSkill`) {
       } else if (this.selectedMenu.menuKey === `setupGuard`) {
       }
@@ -1570,6 +1523,41 @@ export default {
       this.snackbarMsg = item.snackbarMsg;
       this.snackbarSuccess = item.snackbarSuccess;
       this.snackbarAlert = item.snackbarAlert;
+    },
+    getSaveDraft(id) {
+      this.draftItem = {
+        id: null, //null for create , number for upsert
+        bot_name: ``,
+        prompt: ``,
+        routing: ``,
+        industry: ``,
+        retrieve_image: false,
+        knowledge_base: [],
+        line_integration_uuid: ``, // null for no
+        isActive: false,
+        defineSkill: [],
+        setupGuard: [],
+      };
+      this.draftItem.id = id;
+      this.draftItem.bot_name = this.setupItem.defineChatbot.bot_name.value;
+      this.draftItem.prompt = this.setupItem.defineChatbot.prompt.value;
+      this.draftItem.routing = this.setupItem.defineChatbot.routing.value;
+      this.draftItem.industry =
+        this.setupItem.defineChatbot.industry.value === `No`
+          ? null
+          : this.setupItem.defineChatbot.industry.value;
+      this.draftItem.retrieve_image =
+        this.setupItem.defineChatbot.retrieve_image.value;
+      this.draftItem.knowledge_base =
+        this.setupItem.defineChatbot.knowledge_base.value;
+      this.draftItem.line_integration_uuid =
+        this.setupItem.defineChatbot.line_integration_uuid.value === `No`
+          ? null
+          : this.setupItem.defineChatbot.line_integration_uuid.value;
+      this.draftItem.isActive = this.setupItem.defineChatbot.isActive.value;
+      this.draftItem.defineSkill = this.setupItem.defineSkill;
+      this.draftItem.setupGuard = this.setupItem.setupGuard;
+      return this.draftItem;
     },
   },
 };

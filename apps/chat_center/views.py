@@ -1122,7 +1122,8 @@ def save_draft(request):
         prompt = data.get('prompt')
         industry = data.get('industry')
         retrieve_image = data.get('retrieve_image')
-        knowledge_base = data.get('knowledge_base')
+        # knowledge_base = data.get('knowledge_base')
+        knowledge_base_list = data.get('knowledge_base')
         line_integration_uuid = data.get('line_integration_uuid')
         is_active = data.get('isActive')
         is_publish = data.get('isPublish')
@@ -1141,7 +1142,7 @@ def save_draft(request):
                 "prompt": prompt,
                 "industry": industry,
                 "retrieve_image": retrieve_image,
-                "knowledge_base": knowledge_base,
+                # "knowledge_base": knowledge_base,
                 "knowledge_base_list": knowledge_base_list,
                 "is_active": is_active,
                 "is_publish": is_publish,
@@ -1151,14 +1152,17 @@ def save_draft(request):
         )
         
         # clear session that related to this bot first
-        InternalChatSession.objects.filter(routing_chain=routing_chain).delete()
-        
+        try:
+            # clear session that related to this bot first
+            InternalChatSession.objects.filter(routing_chain=routing_chain).delete()
+        except: 
+            pass
         ### create session here ###
         temp_id = -1
         while InternalChatSession.objects.filter(id=temp_id).exists():
             temp_id -= 1
             
-        new_session = InternalChatSession(id=temp_id, session_name="save_draft_session", bot_id=routing_chain.id, user=user, timestamp=datetime.now())
+        new_session = InternalChatSession(id=temp_id, session_name="save_draft_session", bot_id=routing_chain, user=user, timestamp=datetime.now())
         new_session.save() 
         
         queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
