@@ -665,152 +665,20 @@ export default {
     },
     async getListUser() {
       this.isLoading = false;
-      this.menu.DigitalTwin = [
-        {
-          id: 29,
-          img: "",
-          name: "Test_Edit_Front",
-          industry: "HR",
-          mastery: "mastery",
-          isActive: false,
-        },
-        {
-          id: 33,
-          img: "",
-          name: "4Plus HR E-receipt 2568",
-          industry: "HR",
-          mastery:
-            "Friendly ตอบกระชับ สั้นๆ ได้ใจความ เล่าเรื่องยากให้คนทั่วไปเข้าใจเรื่องการเงินง่ายๆ เป็น bullet point",
-          isActive: true,
-        },
-        {
-          id: 37,
-          img: "",
-          name: "Test Line Binding",
-          industry: "HR",
-          mastery: "Test",
-          isActive: true,
-        },
-        {
-          id: 13,
-          img: "",
-          name: "TheMall_direction",
-          industry: "RETAIL",
-          mastery: "ระบุที่ตั้งของร้านค้าในห้าง",
-          isActive: true,
-        },
-        {
-          id: 15,
-          img: "",
-          name: "TheMall_parking_service",
-          industry: "RETAIL",
-          mastery: "ให้บริการที่จอดรถ",
-          isActive: true,
-        },
-        {
-          id: 16,
-          img: "",
-          name: "TheMall_stock",
-          industry: "RETAIL",
-          mastery: "ปริมาณสต๊อกสินค้า",
-          isActive: true,
-        },
-        {
-          id: 17,
-          img: "",
-          name: "TheMall_contact",
-          industry: "RETAIL",
-          mastery: "ที่อยู่ติดต่อของห้างในแต่ละสาขา",
-          isActive: true,
-        },
-        {
-          id: 30,
-          img: "",
-          name: "4Plus MyHora",
-          industry: "HR",
-          mastery: "หมอดูมืออาชีพ",
-          isActive: true,
-        },
-        {
-          id: 18,
-          img: "",
-          name: "TheMall_MCARD",
-          industry: "RETAIL",
-          mastery: "แนะนำสิทธิพิเศษจากบัตรสมาชิก MCARD",
-          isActive: true,
-        },
-        {
-          id: 14,
-          img: "",
-          name: "TheMall_promotion",
-          industry: "RETAIL",
-          mastery: "ผู้แนะนำโปรโมชั่น",
-          isActive: true,
-        },
-        {
-          id: 35,
-          img: "",
-          name: "SQL Impact Finder",
-          industry: "RETAIL",
-          mastery: "formal",
-          isActive: true,
-        },
-        {
-          id: 40,
-          img: "",
-          name: "Powerapp_bot",
-          industry: "AGRICULTURE",
-          mastery: "friendly",
-          isActive: true,
-        },
-        {
-          id: 43,
-          img: "",
-          name: "Web Search",
-          industry: "RETAIL",
-          mastery: "formal",
-          isActive: true,
-        },
-        {
-          id: 42,
-          img: "",
-          name: "CatWizard",
-          industry: "RETAIL",
-          mastery: "Kitty Meow Meow",
-          isActive: true,
-        },
-        {
-          id: 20,
-          img: "",
-          name: "TheMall_product",
-          industry: "RETAIL",
-          mastery: "ระบุสินค้าภายในห้าง",
-          isActive: true,
-        },
-        {
-          id: 32,
-          img: "",
-          name: "4Plus HR PVD Fund",
-          industry: "HR",
-          mastery:
-            "Friendly ตอบกระชับ ได้ใจความ เล่าเรื่องยากให้คนทั่วไปเข้าใจเรื่องการเงินง่ายๆ เป็น bullet point",
-          isActive: true,
-        },
-      ];
-      // this.isLoading = true;
-      // this.isError = false;
-      // axios
-      //   .get(`api/chat_center/list_bot/`)
-      //   .then((res) => {
-      //     this.menu.DigitalTwin = res.data;
-      //     this.isLoading = false;
-      //     this.isError = false;
-      //   })
-      //   .catch((err) => {
-      //     this.errorMsg = err;
-      //     this.isLoading = false;
-      //     this.isError = true;
-      //   });
+      this.isLoading = true;
+      this.isError = false;
+      axios
+        .get(`api/chat_center/list_bot_ai_management/`)
+        .then((res) => {
+          this.menu.DigitalTwin = res.data;
+          this.isLoading = false;
+          this.isError = false;
+        })
+        .catch((err) => {
+          this.errorMsg = err;
+          this.isLoading = false;
+          this.isError = true;
+        });
     },
     firstTimeSaveDraft(item) {
       this.botItem = JSON.parse(JSON.stringify(item.botItem));
