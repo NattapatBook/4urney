@@ -1721,7 +1721,7 @@ def list_bot(request):
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
 
-    queryset = RoutingChain.objects.filter(organization_id=organization, is_publish=False).values(
+    queryset = RoutingChain.objects.filter(organization_id=organization, is_publish=True).values(
         'id',
         'bot_name',
         'industry',
