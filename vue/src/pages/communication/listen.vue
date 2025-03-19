@@ -388,10 +388,10 @@ export default {
         "chat_center/chat",
         (event) => {
           const data = JSON.parse(event.data);
-
           if (data.type === "message_update") {
+            console.log(`message_update`, data);
             this.userItems = data.formatted_data;
-            this.saveToLocalStorage(this.userItems);
+            // this.saveToLocalStorage(this.userItems);
             if (this.selectedUser && this.selectedUser.id !== `-1`) {
               const item = this.findById(this.selectedUser.id);
               if (item.timestamp !== this.selectedUser.timestamp) {
@@ -409,6 +409,7 @@ export default {
       return this.userItems.find((item) => item.id === id);
     },
     saveToLocalStorage(data) {
+      console.log(`saveToLocalStorage`, data);
       const reducedData = data.map((item) => ({
         id: item.id,
         timestamp: item.timestamp,
