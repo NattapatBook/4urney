@@ -263,7 +263,7 @@ async def webhook(request: HttpRequest, uuid):
         {
             'type': 'send_json_to_client',
             'event': {
-                'id': customer_id,
+                'id': user_id,
                 'type': 'message_update',
                 'formatted_data': customer_list
             }

@@ -58,7 +58,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Create message in the database
         await database_sync_to_async(self.create_message)(
-            id=room_id,
+            platform_id=room_id,
             message=message,
             organization_id=self.organization_id
         )
@@ -86,9 +86,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             # If the expected data structure is not correct, you can handle the error here
             await self.send_json({'error': 'Missing event data'})
 
-    def create_message(self, id, message, organization_id):
+    def create_message(self, platform_id, message, organization_id):
         try:
-            customer = CustomerNew.objects.get(id=id)
+            customer = CustomerNew.objects.get(platform_id=platform_id)
         except CustomerNew.DoesNotExist:
             return
 
