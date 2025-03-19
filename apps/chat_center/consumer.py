@@ -58,7 +58,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Create message in the database
         await database_sync_to_async(self.create_message)(
-            platform_id=room_id,
+            id=room_id,
             message=message,
             organization_id=self.organization_id
         )
