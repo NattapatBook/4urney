@@ -244,7 +244,7 @@ async def webhook(request: HttpRequest, uuid):
         from_line_uuid=line_integration
     )
 
-    if df_user['message_type'].values != 'Opened Messages' or df_user.empty:
+    try:
         bot_new_message = await sync_to_async(MessageNew.objects.create)(
             platform_id=customer,
             message=responses_message,
@@ -254,6 +254,8 @@ async def webhook(request: HttpRequest, uuid):
             organization_id=organization,
             from_line_uuid=line_integration
         )
+    except: 
+        print("Message is Closed. Skip bot response.")
 
     customer_list = await get_customers(organization)
     channel_layer = get_channel_layer()
