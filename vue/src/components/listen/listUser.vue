@@ -804,7 +804,7 @@ export default {
     },
     checkLatest(id, time) {
       console.log(`CheackLastest id`, id);
-      console.log(`CheckLastest timestamp`, timestamp);
+      console.log(`CheckLastest time`, time);
       const storedData = JSON.parse(localStorage.getItem("chatData")) || [];
 
       const item = storedData.find((entry) => entry.id === id);
