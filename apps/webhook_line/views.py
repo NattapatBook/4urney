@@ -269,7 +269,7 @@ async def webhook(request: HttpRequest, uuid):
             }
         }
     )
-
+    print('After group send')
     # Add information extraction from bot
     message_object = await sync_to_async(MessageNew.objects.filter(platform_id=customer, message=message).order_by('-timestamp').first)()
     customer_object = await sync_to_async(CustomerNew.objects.filter(name=username, id=customer_id).first)()
