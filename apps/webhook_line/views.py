@@ -36,24 +36,27 @@ tz = pytz.timezone('Asia/Bangkok')
 
 
 @database_sync_to_async
-def get_customers():
-    customers = Customer.objects.all()
+def get_customers(organization):
+    customers = CustomerNew.objects.filter(organization_id=organization).select_related('from_line_uuid')
+
     customer_list = []
     for customer in customers:
         customer_data = {
-            "id": customer.platform_id,
+            "id": customer.id,
+            "platformID": customer.platform_id,
             "img": customer.img if customer.img else "",
             "name": customer.name if customer.name else "",
             "tag": customer.tag if customer.tag else "",
             "priority": customer.priority if customer.priority else "",
             "lastestMsg": customer.lastest_msg if customer.lastest_msg else "",
-            "timestamp": customer.timestamp.astimezone(tz).strftime(
-                "%Y-%m-%d %H:%M:%S%z") if customer.timestamp else "",
+            "timestamp": customer.timestamp.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if customer.timestamp else "",
             "isUrgent": customer.is_urgent if customer.is_urgent is not None else False,
             "provider": customer.provider if customer.provider else "",
             "agent": customer.agent if customer.agent else "",
             "messageType": customer.message_type if customer.message_type else "",
-            "replyToken": customer.reply_token if customer.reply_token else None
+            "replyToken": customer.reply_token if customer.reply_token else None,
+            "lineUUID": customer.from_line_uuid.uuid if customer.from_line_uuid else None,
+            "roomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
         }
         customer_list.append(customer_data)
     return customer_list
@@ -251,7 +254,7 @@ async def webhook(request: HttpRequest, uuid):
         from_line_uuid=line_integration
     )
 
-    customer_list = await get_customers()
+    customer_list = await get_customers(organization)
     channel_layer = get_channel_layer()
     group_name = f'organization_{organization_id}'
 
@@ -260,7 +263,7 @@ async def webhook(request: HttpRequest, uuid):
         {
             'type': 'send_json_to_client',
             'event': {
-                'id': user_id,
+                'id': customer_id,
                 'type': 'message_update',
                 'formatted_data': customer_list
             }
