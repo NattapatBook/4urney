@@ -443,7 +443,7 @@ def admin_reply_post_new(request):
     }
 
     data_to_send = {
-        "to": id,
+        "to": customer.platform_id,
         "messages": [
             {
                 "type": "text",
@@ -451,14 +451,8 @@ def admin_reply_post_new(request):
             }
         ]
     }
-    
-    print(data_to_send)
-    
-    print("Authorization:", Authorization)
 
     response = requests.post(LINE_API, headers=headers, data=json.dumps(data_to_send))
-    
-    print("Response:", response)
 
     messages = MessageNew.objects.filter(platform_id=customer).order_by('-timestamp')
 
@@ -1129,7 +1123,6 @@ def save_draft(request):
         prompt = data.get('prompt')
         industry = data.get('industry')
         retrieve_image = data.get('retrieve_image')
-        # knowledge_base = data.get('knowledge_base')
         knowledge_base_list = data.get('knowledge_base')
         line_integration_uuid = data.get('line_integration_uuid')
         is_active = data.get('isActive')
@@ -1439,6 +1432,22 @@ def save_draft(request):
             
 
         return JsonResponse(response_data, status=200)
+    
+def chatbot_publish(request): 
+    if request.method == 'POST': 
+        data = json.loads(request.body)
+        id = data.get('id')
+        
+        try:
+            routing_chain = RoutingChain.objects.get(id=id)
+            routing_chain.is_publish = not routing_chain.is_publish
+            routing_chain.save()
+        except RoutingChain.DoesNotExist:
+            print("RoutingChain with the given id does not exist.")
+            
+        response = HttpResponse('', status=200)
+
+        return response
 
 def list_line_integration(request):
     line_integrations = LineIntegration.objects.all()
