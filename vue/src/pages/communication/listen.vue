@@ -389,13 +389,11 @@ export default {
         (event) => {
           const data = JSON.parse(event.data);
           if (data.type === "message_update") {
-            console.log(`message_update`, data);
             this.userItems = data.formatted_data;
             // this.saveToLocalStorage(this.userItems);
             if (this.selectedUser && this.selectedUser.id !== `-1`) {
-              console.log(`this.selectedUser`, this.selectedUser);
               const item = this.findById(this.selectedUser.id);
-              console.log(`item`, item);
+              // updated time stamp if watching the same id as update
               if (item.timestamp !== this.selectedUser.timestamp) {
                 // this.selectUser(item, this.isSelectedDataChange);
                 this.updateTimestamp(this.selectedUser.id, item.timestamp);
