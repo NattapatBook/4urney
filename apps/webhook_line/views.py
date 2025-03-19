@@ -55,7 +55,7 @@ def get_customers(organization):
             "agent": customer.agent if customer.agent else "",
             "messageType": customer.message_type if customer.message_type else "",
             "replyToken": customer.reply_token if customer.reply_token else None,
-            "lineUUID": customer.from_line_uuid.uuid if customer.from_line_uuid else None,
+            "lineUUID": str(customer.from_line_uuid.uuid) if customer.from_line_uuid else None,
             "roomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
         }
         customer_list.append(customer_data)
