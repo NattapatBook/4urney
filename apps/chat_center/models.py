@@ -13,6 +13,7 @@ class INDUSTRY(models.TextChoices):
     AGRICULTURE = 'AGRICULTURE'
     HR = 'HR'
     RETAIL = 'RETAIL'
+    OTHER = 'OTHER'
 
 # Create your models here.
 # class PLATFORM(models.TextChoices):
