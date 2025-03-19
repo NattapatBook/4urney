@@ -1152,38 +1152,54 @@ def save_draft(request):
                 }
             )
             
-            # # create skill
-            # if len(define_skill) > 0: 
-            #     for skill in define_skill:
-            #         skill_name = skill['name']
-            #         skill_description = skill['description']
-            #         skill_type = skill['type']
-            #         field_options = skill['options']
-            #         field_names = [option["plan_name"]["value"] for option in field_options]
-            #         field_descriptions = [option["plan_description"]["value"] for option in field_options]
-            #         field_types = [option["plan_name"]["type"] for option in field_options]
+            # create skill
+            if len(define_skill) > 0: 
+                
+                skill_connections = SkillConnection.objects.filter(bot_id=routing_chain)
+                skill_ids = skill_connections.values_list('skill_id', flat=True)
+                
+                # if skill_ids: 
+                #     print("Skill IDs:", skill_ids)
+                #     field_connection = FieldConnection.objects.filter(skill_id__in=skill_ids)
+                #     routing_skill = RoutingSkill.objects.filter(id__in=skill_ids)
                     
-            #         # routing skill
-            #         routing_skill, _ = RoutingSkill.objects.update_or_create(
-            #             skill_name=skill_name, 
-            #             skill_description=skill_description, 
-            #             skill_type=skill_type, 
-            #         )
+                #     # remove old skills with new skill before create new skills
+                #     FieldConnection.objects.filter(skill_id__in=skill_ids).delete()
+
+                #     skill_connections.delete()
+
+                #     RoutingSkill.objects.filter(id__in=skill_ids).delete()
+                
+                for skill in define_skill:
+                    skill_name = skill['name']
+                    skill_description = skill['description']
+                    skill_type = skill['type']
+                    field_options = skill['options']
+                    field_names = [option["plan_name"]["value"] for option in field_options]
+                    field_descriptions = [option["plan_description"]["value"] for option in field_options]
+                    field_types = [option["plan_name"]["type"] for option in field_options]
                     
-            #         # skill connection
-            #         skill_connection = SkillConnection.objects.create(
-            #             skill_id=routing_skill, 
-            #             bot_id=routing_chain
-            #         )
+                    # routing skill
+                    routing_skill, _ = RoutingSkill.objects.update_or_create(
+                        skill_name=skill_name, 
+                        skill_description=skill_description, 
+                        skill_type=skill_type, 
+                    )
                     
-            #         # field connection 
-            #         for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
-            #             field_connection = FieldConnection.objects.create(
-            #                 field_name=field_name, 
-            #                 field_description=field_description, 
-            #                 field_type=field_type, 
-            #                 skill_id=routing_skill
-            #             )
+                    # skill connection
+                    skill_connection, _ = SkillConnection.objects.update_or_create(
+                        skill_id=routing_skill, 
+                        bot_id=routing_chain
+                    )
+                    
+                    # field connection 
+                    for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                        field_connection, _ = FieldConnection.objects.update_or_create(
+                            field_name=field_name, 
+                            field_description=field_description, 
+                            field_type=field_type, 
+                            skill_id=routing_skill
+                        )
             
         else: 
             routing_chain = RoutingChain.objects.create(
@@ -1266,7 +1282,7 @@ def save_draft(request):
     
     elif request.method == 'GET':
         bot_id = 21
-        bot_name = 'Test Create Bot V4'
+        bot_name = 'Test Create Bot V2'
         routing = 'Test Create Bot'
         prompt = 'Test Create Bot'
         industry = 'HR'
@@ -1278,22 +1294,22 @@ def save_draft(request):
         is_publish = True
         define_skill = [
             {
-                'name': 'Personal Info Extraction',
-                'description': 'Info Extraction for The Mall',
+                'name': 'New Personal Info Extraction V3',
+                'description': 'Info Extraction for The Mall V3',
                 'isActive': False,
                 'type': 'football_skill',
                 'options': [
                     {
-                    'plan_name': { 'value': 'name', 'type': 'text' },
+                    'plan_name': { 'value': 'name V3', 'type': 'text' },
                     'plan_description': {
-                    'value': 'User Name',
+                    'value': 'User Name V3',
                     'type': 'textarea',
                         },
                     },
                     {
-                    'plan_name': { 'value': 'phone_number', 'type': 'int' },
+                    'plan_name': { 'value': 'phone_number V3', 'type': 'int' },
                     'plan_description': {
-                    'value': 'User Phone Number',
+                    'value': 'User Phone Number V3',
                     'type': 'textarea',
                         },
                     },
@@ -1324,8 +1340,25 @@ def save_draft(request):
                     "organization_id": organization,
                 }
             )
+            
             # create skill
             if len(define_skill) > 0: 
+                
+                skill_connections = SkillConnection.objects.filter(bot_id=routing_chain)
+                skill_ids = skill_connections.values_list('skill_id', flat=True)
+                
+                # if skill_ids: 
+                #     print("Skill IDs:", skill_ids)
+                #     field_connection = FieldConnection.objects.filter(skill_id__in=skill_ids)
+                #     routing_skill = RoutingSkill.objects.filter(id__in=skill_ids)
+                    
+                #     # remove old skills with new skill before create new skills
+                #     FieldConnection.objects.filter(skill_id__in=skill_ids).delete()
+
+                #     skill_connections.delete()
+
+                #     RoutingSkill.objects.filter(id__in=skill_ids).delete()
+                
                 for skill in define_skill:
                     skill_name = skill['name']
                     skill_description = skill['description']
@@ -1343,14 +1376,14 @@ def save_draft(request):
                     )
                     
                     # skill connection
-                    skill_connection = SkillConnection.objects.create(
+                    skill_connection, _ = SkillConnection.objects.update_or_create(
                         skill_id=routing_skill, 
                         bot_id=routing_chain
                     )
                     
                     # field connection 
                     for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
-                        field_connection = FieldConnection.objects.create(
+                        field_connection, _ = FieldConnection.objects.update_or_create(
                             field_name=field_name, 
                             field_description=field_description, 
                             field_type=field_type, 
@@ -2441,7 +2474,7 @@ def edit_bot(request):
         prompt = data.get('prompt')
         industry = data.get('industry')
         retrieve_image = data.get('retrieve_image')
-        knowledge_base = data.get('knowledge_base')
+        knowledge_base_list = data.get('knowledge_base')
         is_active = data.get('isActive')
         line_integration_uuid = data.get('line_integration_uuid')
 
@@ -2452,7 +2485,7 @@ def edit_bot(request):
         routing_chain.prompt = prompt
         routing_chain.industry = industry
         routing_chain.retrieve_image = retrieve_image
-        routing_chain.knowledge_base = knowledge_base
+        routing_chain.knowledge_base_list = knowledge_base_list
         routing_chain.is_active = is_active
         routing_chain.save()
 
