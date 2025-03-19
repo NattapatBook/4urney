@@ -244,7 +244,7 @@ async def webhook(request: HttpRequest, uuid):
         from_line_uuid=line_integration
     )
 
-    if responses_message:
+    if df_user['message_type'].values != 'Opened Messages' or df_user.empty:
         bot_new_message = await sync_to_async(MessageNew.objects.create)(
             platform_id=customer,
             message=responses_message,
