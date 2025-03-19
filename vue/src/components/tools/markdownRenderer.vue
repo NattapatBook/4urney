@@ -75,7 +75,7 @@ export default {
   },
   computed: {
     content() {
-      console.log(markdownParse(this.markdown).content);
+      // console.log(markdownParse(this.markdown).content);
       return markdownParse(this.markdown).content;
     },
   },

@@ -249,9 +249,7 @@ export default {
   },
   watch: {
     selectedChatProp(newValue, oldValue) {
-      console.log(this.selectedUserProp);
       if (newValue !== oldValue) {
-        console.log(this.selectedUserProp);
         this.selectedUser = JSON.parse(JSON.stringify(this.selectedUserProp));
         this.selectedChat = JSON.parse(JSON.stringify(this.selectedChatProp));
       }

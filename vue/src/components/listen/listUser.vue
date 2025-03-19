@@ -803,8 +803,6 @@ export default {
       return short ? `now` : "just now";
     },
     checkLatest(id, time) {
-      console.log(`CheackLastest id`, id);
-      console.log(`CheckLastest time`, time);
       const storedData = JSON.parse(localStorage.getItem("chatData")) || [];
 
       const item = storedData.find((entry) => entry.id === id);

@@ -393,9 +393,12 @@ export default {
             this.userItems = data.formatted_data;
             // this.saveToLocalStorage(this.userItems);
             if (this.selectedUser && this.selectedUser.id !== `-1`) {
+              console.log(`this.selectedUser`, this.selectedUser);
               const item = this.findById(this.selectedUser.id);
+              console.log(`item`, item);
               if (item.timestamp !== this.selectedUser.timestamp) {
-                this.selectUser(item, this.isSelectedDataChange);
+                // this.selectUser(item, this.isSelectedDataChange);
+                this.updateTimestamp(this.selectedUser.id, item.timestamp);
                 this.$refs.chat_panel_ref.updateLastestChat();
               }
             }
@@ -403,13 +406,13 @@ export default {
         }
       );
       this.socket = { websocket, send, close };
-      console.log("WebSocket connection established");
+      // console.log("WebSocket connection established");
     },
     findById(id) {
       return this.userItems.find((item) => item.id === id);
     },
     saveToLocalStorage(data) {
-      console.log(`saveToLocalStorage`, data);
+      // console.log(`saveToLocalStorage`, data);
       const reducedData = data.map((item) => ({
         id: item.id,
         timestamp: item.timestamp,
