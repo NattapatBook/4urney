@@ -422,7 +422,7 @@
                       whiteSpace: `nowrap`,
                       overflow: `hidden`,
                       textOverflow: `ellipsis`,
-                      fontStyle: `italic`,
+                      //fontStyle: `italic`,
                       fontSize: `0.7rem`,
                     }"
                     >&nbsp;{{ item.roomName }}
@@ -803,6 +803,8 @@ export default {
       return short ? `now` : "just now";
     },
     checkLatest(id, time) {
+      console.log(`CheackLastest id`, id);
+      console.log(`CheckLastest timestamp`, timestamp);
       const storedData = JSON.parse(localStorage.getItem("chatData")) || [];
 
       const item = storedData.find((entry) => entry.id === id);
