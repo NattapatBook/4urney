@@ -1183,8 +1183,8 @@ def save_draft(request):
                 'name': routing_chain.bot_name, 
                 'industry': routing_chain.industry, 
                 'routing': routing_chain.routing, 
-                'is_active': routing_chain.is_active, 
-                'is_publish': routing_chain.is_publish
+                'isActive': routing_chain.is_active, 
+                'isPublish': routing_chain.is_publish
             }
         ]
         
@@ -1283,8 +1283,8 @@ def save_draft(request):
                 'name': routing_chain.bot_name, 
                 'industry': routing_chain.industry, 
                 'routing': routing_chain.routing, 
-                'is_active': routing_chain.is_active, 
-                'is_publish': routing_chain.is_publish
+                'isActive': routing_chain.is_active, 
+                'isPublish': routing_chain.is_publish
             }
         ]
         
