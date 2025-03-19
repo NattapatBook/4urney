@@ -146,7 +146,7 @@ async def webhook(request: HttpRequest, uuid):
                     'timestamp':datetime.now(pytz.timezone('Asia/Bangkok')),
                     'provider':'line',
                     'agent':'Me',
-                    'message_type':message_type,
+                    # 'message_type':'Closed Messages',
                     'reply_token':reply_token,
                     'organization_id':organization, 
                     'from_line_uuid': line_integration
@@ -161,7 +161,7 @@ async def webhook(request: HttpRequest, uuid):
                 timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
                 provider='line',
                 agent='Me',
-                message_type=message_type,
+                message_type='Closed Messages',
                 reply_token=reply_token,
                 organization_id=organization, 
                 from_line_uuid=line_integration
