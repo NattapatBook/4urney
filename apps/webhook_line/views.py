@@ -257,7 +257,7 @@ async def webhook(request: HttpRequest, uuid):
     customer_list = await get_customers(organization)
     channel_layer = get_channel_layer()
     group_name = f'organization_{organization_id}'
-
+    print('Customer List : ',customer_list)
     await channel_layer.group_send(
         group_name,
         {
