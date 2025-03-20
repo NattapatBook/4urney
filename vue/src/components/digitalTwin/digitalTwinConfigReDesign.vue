@@ -516,9 +516,12 @@
                     color="#5EB491"
                     class="ml-2"
                     text
-                    :style="{ width: `130px` }"
+                    :style="{
+                      width: `130px`,
+                      filter: isPublish ? `hue-rotate(226deg)` : `none`,
+                    }"
                   >
-                    Publish
+                    {{ isPublish ? `Unpublish` : `Publish` }}
                   </v-btn>
                 </div>
                 <div v-if="windowWidth <= 500" :style="{ width: `100%` }">
@@ -547,8 +550,11 @@
                     @click="clickPublish()"
                     :disabled="checkDisabledPublish"
                     color="#5EB491"
+                    :style="{
+                      filter: isPublish ? `hue-rotate(226deg)` : `none`,
+                    }"
                   >
-                    Publish
+                    {{ isPublish ? `Unpublish` : `Publish` }}
                   </v-btn>
                 </div>
                 <div
@@ -969,7 +975,7 @@ export default {
     },
   },
   watch: {
-    "item.id": {
+    item: {
       handler(newVal) {
         if (newVal) {
           this.botMode = `edit`;
@@ -983,6 +989,7 @@ export default {
           });
         }
       },
+      deep: false,
       immediate: true,
     },
     "setupDialogItem.type": {
@@ -1020,7 +1027,7 @@ export default {
       return false;
     },
     checkDisabledPublish() {
-      return true;
+      return false;
     },
     checkIsFixedOption() {
       const menuType =
@@ -1153,6 +1160,7 @@ export default {
         defineSkill: [],
         setupGuard: [],
       },
+      isPublish: false,
       typeDefaultOptions: null,
       typeItem: {
         skillType: [],
@@ -1233,121 +1241,161 @@ export default {
     },
     preprocessSkillAndGuard() {
       //1. skill and guard type default
-      this.typeDefaultOptions = {
-        skillType: {
-          football_skill: {
-            fixed: false,
-            default: {
-              plan_name: { value: ``, type: `text` },
-              plan_description: { value: ``, type: `textarea` },
-            },
-          },
-        },
-        guardType: {
-          pharses_guard: {
-            fixed: false,
-            default: { word: { value: ``, type: `text` } },
-          },
-          harmful_content: {
-            fixed: true,
-            default: {
-              hate: {
-                value: ``,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-              insult: {
-                value: ``,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-              sexuals: {
-                value: ``,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-            },
-          },
-        },
-      };
+      // this.typeDefaultOptions = {
+      //   skillType: {
+      //     football_skill: {
+      //       fixed: false,
+      //       default: {
+      //         plan_name: { value: ``, type: `text` },
+      //         plan_description: { value: ``, type: `textarea` },
+      //       },
+      //     },
+      //   },
+      //   guardType: {
+      //     pharses_guard: {
+      //       fixed: false,
+      //       default: { word: { value: ``, type: `text` } },
+      //     },
+      //     harmful_content: {
+      //       fixed: true,
+      //       default: {
+      //         hate: {
+      //           value: ``,
+      //           type: `autocomplete`,
+      //           item: [`none`, `low`, `mid`, `high`],
+      //         },
+      //         insult: {
+      //           value: ``,
+      //           type: `autocomplete`,
+      //           item: [`none`, `low`, `mid`, `high`],
+      //         },
+      //         sexuals: {
+      //           value: ``,
+      //           type: `autocomplete`,
+      //           item: [`none`, `low`, `mid`, `high`],
+      //         },
+      //       },
+      //     },
+      //   },
+      // };
 
       //2. setup default type
-      this.setSkillTypeItems();
+      // this.setSkillTypeItems();
 
       //3.1 defineSkill
-      this.setupItem.defineSkill = [
-        {
-          name: `football knowledge`,
-          description: `Pep Guardiola knowledge in chatbot.`,
-          isActive: false,
-          type: `football_skill`,
-          options: [
-            {
-              plan_name: { value: `4-3-2-1`, type: `text` },
-              plan_description: {
-                value: `Trible champ plan 2022-2023`,
-                type: `textarea`,
-              },
-            },
-          ],
-        },
-      ];
+      // this.setupItem.defineSkill = [
+      //   {
+      //     name: `football knowledge`,
+      //     description: `Pep Guardiola knowledge in chatbot.`,
+      //     isActive: false,
+      //     type: `football_skill`,
+      //     options: [
+      //       {
+      //         plan_name: { value: `4-3-2-1`, type: `text` },
+      //         plan_description: {
+      //           value: `Trible champ plan 2022-2023`,
+      //           type: `textarea`,
+      //         },
+      //       },
+      //     ],
+      //   },
+      // ];
       //3.2 setupGuard
-      this.setupItem.setupGuard = [
-        {
-          name: `pharses guard`,
-          definition: `blocking hate speech to chatbot.`,
-          isActive: false,
-          type: `pharses_guard`,
-          options: [
-            {
-              word: { value: `where is my salary.`, type: `text` },
-            },
-          ],
-        },
-        {
-          name: `harmful guard`,
-          definition: `blocking sexual messages.`,
-          isActive: false,
-          type: `harmful_content`,
-          options: [
-            {
-              hate: {
-                value: `mid`,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-              insult: {
-                value: `mid`,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-              sexuals: {
-                value: `mid`,
-                type: `autocomplete`,
-                item: [`none`, `low`, `mid`, `high`],
-              },
-            },
-          ],
-        },
-      ];
+      // this.setupItem.setupGuard = [
+      //   {
+      //     name: `pharses guard`,
+      //     definition: `blocking hate speech to chatbot.`,
+      //     isActive: false,
+      //     type: `pharses_guard`,
+      //     options: [
+      //       {
+      //         word: { value: `where is my salary.`, type: `text` },
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     name: `harmful guard`,
+      //     definition: `blocking sexual messages.`,
+      //     isActive: false,
+      //     type: `harmful_content`,
+      //     options: [
+      //       {
+      //         hate: {
+      //           value: `mid`,
+      //           type: `autocomplete`,
+      //           item: [`none`, `low`, `mid`, `high`],
+      //         },
+      //         insult: {
+      //           value: `mid`,
+      //           type: `autocomplete`,
+      //           item: [`none`, `low`, `mid`, `high`],
+      //         },
+      //         sexuals: {
+      //           value: `mid`,
+      //           type: `autocomplete`,
+      //           item: [`none`, `low`, `mid`, `high`],
+      //         },
+      //       },
+      //     ],
+      //   },
+      // ];
 
       //4. unlock skill setup and guard setup
       this.menuItems.forEach((item, idx) => {
         if (idx !== 0) {
-          item.disabled = false;
+          // unlock below
+          // item.disabled = false;
+          // locked for demo
+          item.disabled = true;
         }
       });
 
-      //5. unlock chat panel by setup botItem and botSession
+      //5. get old data to setup
+      axios
+        .post(`api/chat_center/get_chatbot_data_new/`, { id: this.item.id })
+        .then((res) => {
+          Object.keys(res.data).forEach((key) => {
+            if (key === `isPublish`) {
+              this.isPublish = res.data[key];
+            } else if (
+              key !== `id` &&
+              key !== `img` &&
+              key !== `defineSkill` &&
+              key !== `setupGuard`
+            ) {
+              if (key === `line_integration_uuid` && !res.data[key]) {
+                this.setupItem.defineChatbot[key].value = `No`;
+              } else {
+                this.setupItem.defineChatbot[key].value = res.data[key];
+              }
+            }
+          });
+        })
+        .catch((err) => {
+          this.$emit(`catchEditErr`, err);
+        });
+
+      //6. unlock chat panel by setup botItem and botSession
+
       this.selectedUser = this.item;
-      this.chatSelected = this.session;
+      if (this.session) {
+        this.chatSelected = this.session;
+      } else {
+        //get session by id
+        axios
+          .post(`api/chat_center/list_save_draft_session/`, {
+            id: this.item.id,
+          })
+          .then((res) => {
+            this.chatSelected = res.data[0];
+          })
+          .catch((err) => {
+            this.$emit(`catchEditErr`, err);
+          });
+      }
       this.isChange = !this.isChange;
     },
     // resposive
-    clickApply() {
-      console.log(this.setupItem[this.selectedMenu.menuKey]);
-    },
     onResize() {
       this.windowWidth = window.innerWidth;
       this.windowHeight = window.innerHeight;
@@ -1500,7 +1548,9 @@ export default {
               botSession: res.data.botSession,
             });
             this.snackbarAction({
-              snackbarMsg: `Bot created successfully!`,
+              snackbarMsg: `Bot has been ${this.botMode}${
+                this.botMode === `create` ? `d` : `ed`
+              } successfully!`,
               snackbarSuccess: true,
               snackbarAlert: true,
             });
@@ -1517,7 +1567,23 @@ export default {
       console.log("click save draft");
     },
     clickPublish() {
-      console.log("click publish");
+      axios
+        .post(`api/chat_center/chatbot_publish/`, { id: this.selectedUser.id })
+        .then(() => {
+          this.snackbarAction({
+            snackbarMsg: `Your chatbot has been successfully published!`,
+            snackbarSuccess: true,
+            snackbarAlert: true,
+          });
+          this.clickBackToMain();
+        })
+        .catch((err) => {
+          this.snackbarAction({
+            snackbarMsg: err,
+            snackbarSuccess: false,
+            snackbarAlert: true,
+          });
+        });
     },
     snackbarAction(item) {
       this.snackbarMsg = item.snackbarMsg;

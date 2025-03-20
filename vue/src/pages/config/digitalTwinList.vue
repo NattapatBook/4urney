@@ -518,8 +518,9 @@
               <!--create&edit-->
               <DigitalTwinConfig
                 v-else-if="componentsMode === `createBot`"
-                @backToMain="componentsMode = `list`"
+                @backToMain="clickBackToMain"
                 @callbackNewSaveDraft="firstTimeSaveDraft"
+                @catchEditErr="getErrOnEdit"
                 :item="botItem"
                 :session="botSession"
               />
@@ -698,7 +699,17 @@ export default {
     //   }
     // },
     clickDeleteBot(item) {
-      console.log(item);
+      axios
+        .post(`api/chat_center/remove_bot/`, {
+          id: item.id,
+        })
+        .then(() => {
+          // this.menu.DigitalTwin = res.data;
+          this.getListUser();
+        })
+        .catch((err) => {
+          this.$emit(`catchEditErr`, err);
+        });
     },
     changeStatusFilter(item, mode) {
       if (mode === `isActive`) {
@@ -706,6 +717,16 @@ export default {
       } else {
         this.isPublishFilter = item;
       }
+    },
+    clickBackToMain() {
+      this.componentsMode = `list`;
+      this.getListUser();
+    },
+    getErrOnEdit(msg) {
+      this.snackbarMsg = msg;
+      this.snackbarSuccess = false;
+      this.snackbarAlert = true;
+      this.clickBackToMain();
     },
   },
 };
