@@ -2380,7 +2380,7 @@ def get_chatbot_data(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
             'is_publish'
         ).first()
@@ -2398,10 +2398,12 @@ def get_chatbot_data(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
-                'is_publish': item['is_publish'], 
+                'isPublish': item['is_publish'], 
                 'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
         except:
             formatted_data = {
@@ -2412,10 +2414,12 @@ def get_chatbot_data(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
                 'is_publish': item['is_publish'], 
                 'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
 
         return JsonResponse(formatted_data, status=200)
@@ -2433,8 +2437,9 @@ def get_chatbot_data_new(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
+            'is_publish'
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
@@ -2450,9 +2455,12 @@ def get_chatbot_data_new(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
+                'isPublish': item['is_publish'], 
                 'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
         except:
             formatted_data = {
@@ -2463,12 +2471,16 @@ def get_chatbot_data_new(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
+                'isPublish': item['is_publish'],
                 'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
 
         return JsonResponse(formatted_data, status=200)
+    
     elif request.method == 'GET':
         bot_id = 7
 
@@ -2480,27 +2492,48 @@ def get_chatbot_data_new(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
+            'is_publish'
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
-        print(routing_chain)
-        line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
-        print(line_connection)
+        try:
+            line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
+            print(line_connection)
 
-        formatted_data = {
-            'id': item['id'],
-            'img': '',
-            'bot_name': item['bot_name'],
-            'routing': item['routing'],
-            'prompt': item['prompt'],
-            'industry': item['industry'],
-            'retrieve_image': item['retrieve_image'],
-            'knowledge_base': item['knowledge_base'],
-            'isActive': item['is_active'],
-            'line_integration_uuid': line_connection['uuid'] if line_connection else None,
-        }
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base_list'],
+                'isActive': item['is_active'],
+                'isPublish': item['is_publish'], 
+                'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
+            }
+        except:
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base_list'],
+                'isActive': item['is_active'],
+                'isPublish': item['is_publish'],
+                'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
+            }
+
         return JsonResponse(formatted_data, status=200)
 
 
