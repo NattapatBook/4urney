@@ -2118,6 +2118,7 @@ def internal_chatbot(request):
               generate a bot response.
     """
     EMBEDDING_MODEL_API = os.environ.get('EMBEDDING_MODEL_API')
+    
     if request.method == 'POST':
         data = json.loads(request.body)
         bot_id = data.get('id')
@@ -2193,12 +2194,12 @@ def internal_chatbot(request):
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
         routing_configs = RoutingChain.objects.filter(id=bot_id).values()
         df_routing_config = pd.DataFrame(routing_configs)
-        print(df_routing_config)
+        
+        knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
 
-        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
-            df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
 
-        print('Model response : ', model_response)
+        print('Model response : ',model_response)
 
         try:
             retrieval_text = model_response.json()['retrieval_text']
@@ -2242,8 +2243,8 @@ def internal_chatbot(request):
 
         return JsonResponse(chat_logs, safe=False)
     elif request.method == 'GET':
-        bot_id = 9
-        session_id = 2
+        bot_id = 21
+        session_id = 3
         message = 'testja'
         user = request.user
         print(user)
@@ -2278,7 +2279,6 @@ def internal_chatbot(request):
         df_routing_config = pd.DataFrame(routing_configs)
         
         knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
-        print(knowledge_base_list)
 
         model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
 
