@@ -2044,6 +2044,32 @@ def list_session(request):
         ]
 
         return JsonResponse(formatted_data, safe=False)
+    
+def list_save_draft_session(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        user = request.user
+        user = User.objects.get(username=user)
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user, id__lt=0).values(
+            'id',
+            'session_name',
+            'timestamp'
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
 
 def rename_session(request):
     if request.method == 'POST':
