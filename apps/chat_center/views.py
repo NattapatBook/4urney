@@ -2380,7 +2380,7 @@ def get_chatbot_data(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
             'is_publish'
         ).first()
@@ -2398,10 +2398,12 @@ def get_chatbot_data(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
-                'is_publish': item['is_publish'], 
+                'isPublish': item['is_publish'], 
                 'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
         except:
             formatted_data = {
@@ -2412,10 +2414,12 @@ def get_chatbot_data(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
                 'is_publish': item['is_publish'], 
                 'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
 
         return JsonResponse(formatted_data, status=200)
