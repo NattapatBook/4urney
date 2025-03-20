@@ -1917,6 +1917,45 @@ def list_bot(request):
 
     return JsonResponse(formatted_data, safe=False)
 
+def remove_bot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        bot_id = data.get('id')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        routing_chain.delete()
+
+        username = request.user
+        user = User.objects.get(username=username)
+
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        queryset = RoutingChain.objects.filter(organization_id=organization, is_publish=True).values(
+            'id',
+            'bot_name',
+            'industry',
+            'routing',
+            'is_active',
+            'is_publish'
+        )
+
+        # Map the queryset to the desired format
+        formatted_data = [
+            {
+                'id': item['id'],
+                'img': '',
+                'name': item['bot_name'],
+                'industry': item['industry'],
+                'mastery': item['routing'],
+                'isActive': item['is_active'],
+                'isPublish': item['is_publish']
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
 
 def list_bot_ai_management(request):
     username = request.user

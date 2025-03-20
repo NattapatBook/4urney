@@ -11,7 +11,7 @@ from apps.chat_center.views import list_user, list_message, admin_reply_post, ch
     list_channel_management, count_bot_message, download_s3_file, view_image, list_information_extraction_result, \
     search_engine, list_message_test_with_line_uuid, plotly_test1, plotly_test2, plotly_test3, list_user_new, \
     list_message_new, admin_reply_post_new, change_message_type_new, list_dashboard_new, edit_customer_profile_new, \
-    summarize_dashboard_new, save_draft, list_bot_ai_management, chatbot_publish
+    summarize_dashboard_new, save_draft, list_bot_ai_management, chatbot_publish, remove_bot
 
 # router = DefaultRouter()
 # router.register('customer', CustomerViewSet)
@@ -50,6 +50,7 @@ urlpatterns = [
     path('embedded_data/', EmbeddedDataView.as_view(), name='embedded_data'),
     path('task_status/', TaskStatusView.as_view(), name='task_status'),
     path('list_bot/', list_bot),
+    path('remove_bot/', remove_bot),
     path('create_session/', create_session),
     path('list_session/', list_session),
     path('rename_session/', rename_session),
