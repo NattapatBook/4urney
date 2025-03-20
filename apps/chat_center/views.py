@@ -784,9 +784,9 @@ def list_dashboard_new(request, id):
             intentsummary=None,
         )
 
-    satisfaction = ChatUserSatisfaction.objects.filter(platform_id=customer.platform_id).first()
-    urgent = ChatUserUrgent.objects.filter(platform_id=customer.platform_id).first()
-    summarize = ChatSummarize.objects.filter(platform_id=customer.platform_id).first()
+    satisfaction = ChatUserSatisfaction.objects.filter(platform_id=customer.id).first()
+    urgent = ChatUserUrgent.objects.filter(platform_id=customer.id).first()
+    summarize = ChatSummarize.objects.filter(platform_id=customer.id).first()
 
     messages_by_bot = MessageNew.objects.filter(by='bot', platform_id=customer) \
         .values('platform_id') \
