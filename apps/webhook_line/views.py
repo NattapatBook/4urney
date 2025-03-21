@@ -192,7 +192,7 @@ async def webhook(request: HttpRequest, uuid):
                 """
                 If user response as text
                 """
-                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": list(df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": list(df_routing_config['knowledge_base_list']), "candidate_labels": list(df_routing_config['routing'])})
 
                 try:
                     retrieval_text = model_response.json()['retrieval_text']
