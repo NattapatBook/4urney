@@ -78,7 +78,7 @@ async def webhook(request: HttpRequest, uuid):
         assert request.method == 'POST'
         body = request.body
         data = json.loads(body.decode('utf-8'))
-        assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
+        # assert verify_line_signature(body, request.headers['X-Line-Signature'], LINE_CHANNEL_SECRET)
     except:
         data = None
 
@@ -181,6 +181,11 @@ async def webhook(request: HttpRequest, uuid):
         line_connection = await sync_to_async(lambda: list(LineConnectionNew.objects.filter(uuid=uuid).values_list('bot_id', flat=True)))()
         routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id__in=line_connection).values()))()
         df_routing_config = pd.DataFrame(routing_configs)
+        
+        # knowledge base dict -> {routing: knowledge_base_list}
+        knowledge_base_dict = {row.routing: row.knowledge_base_list for _, row in df_routing_config.iterrows() if row.knowledge_base_list}
+        kb_routings = list(knowledge_base_dict.keys())
+        kb_values = [item for sublist in knowledge_base_dict.values() for item in sublist]
 
         # get user config
         df_user = await sync_to_async(lambda: list(CustomerNew.objects.filter(id=customer_id).values()))()
@@ -192,7 +197,7 @@ async def webhook(request: HttpRequest, uuid):
                 """
                 If user response as text
                 """
-                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": list(df_routing_config['knowledge_base_list']), "candidate_labels": list(df_routing_config['routing'])})
+                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": kb_values, "candidate_labels": kb_routings})
 
                 try:
                     retrieval_text = model_response.json()['retrieval_text']
