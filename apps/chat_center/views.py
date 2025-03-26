@@ -2027,6 +2027,10 @@ def edit_bot(request):
 @csrf_exempt
 def add_line_chatbot(request): 
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
 
         user = request.user
