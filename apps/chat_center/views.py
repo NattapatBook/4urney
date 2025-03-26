@@ -75,10 +75,10 @@ def check_user_groups(user, group_names):
 
 
 def list_user_new(request):
-    user = request.user
-    response = check_user_groups(user, ['test'])
-    if response:
-        return response
+    # user = request.user
+    # response = check_user_groups(user, [])
+    # if response:
+    #     return response
     user = User.objects.get(username=request.user)
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
