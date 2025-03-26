@@ -1867,6 +1867,10 @@ def get_chatbot_data(request):
 
 def get_chatbot_data_new(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         bot_id = int(data.get('id'))
 
