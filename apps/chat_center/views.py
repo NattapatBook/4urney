@@ -73,7 +73,7 @@ def check_user_groups(user, group_names):
         )
     return None
 
-
+# agent console
 def list_user_new(request):
     # user = request.user
     # response = check_user_groups(user, [])
@@ -382,6 +382,91 @@ def edit_customer_profile_new(request):
 
         return JsonResponse(response_data)
 
+
+def summarize_dashboard_new(request, user_id):
+    # user_id = 'U32afe3db274f527b57262faf86bb1359'
+
+    tracer = LangChainTracer(project_name="Dashboard Chat Insight")
+
+    llms = ChatOpenAI(
+        temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4o"  # Model version
+    )
+    customer = CustomerNew.objects.get(id=user_id)
+    # Task 1: Summarize conversations
+    df_msgs = pd.DataFrame(list(
+        MessageNew.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp',
+                                                            'organization_id')))
+
+    df_sums_query = ChatSummarize.objects.filter(platform_id=user_id)
+
+    if df_sums_query.exists():
+        df_sums = pd.DataFrame(
+            list(df_sums_query.values('platform_id', 'summarize', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_sums = pd.DataFrame(columns=['platform_id', 'summarize', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize", tracer)
+    ChatSummarize.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "summarize": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    # Task 2: Score customer satisfaction
+    df_sats_query = ChatUserSatisfaction.objects.filter(platform_id=user_id)
+
+    if df_sats_query.exists():
+        df_sats = pd.DataFrame(
+            list(df_sats_query.values('platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_sats = pd.DataFrame(columns=['platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction",
+                        tracer)
+
+    ChatUserSatisfaction.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "satisfaction": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    # Task 3: Identify urgent user interactions
+    df_urg_query = ChatUserUrgent.objects.filter(platform_id=user_id)
+
+    if df_urg_query.exists():
+        df_urg = pd.DataFrame(
+            list(df_urg_query.values('platform_id', 'urgent', 'lastest_msg_date', 'generated_date')))
+    else:
+        df_urg = pd.DataFrame(columns=['platform_id', 'urgent', 'lastest_msg_date', 'generated_date'])
+
+    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
+
+    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent", tracer)
+
+    ChatUserUrgent.objects.update_or_create(
+        platform_id=user_id,
+        defaults={
+            "urgent": data['result'],
+            "lastest_msg_date": data['lastest_msg_date'],
+            "generated_date": timezone.now(),
+        }
+    )
+
+    return JsonResponse({"message": "Done"}, status=200)
+
+
 def get_user_detail(request):
     if request.user.is_authenticated:
         user = User.objects.get(username=request.user)
@@ -435,6 +520,10 @@ class FileUploadView(APIView):
 
 def create_bot(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         bot_name = data.get('bot_name')
         routing = data.get('routing')
@@ -584,9 +673,14 @@ def create_bot(request):
         )
 
         return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
-    
+
+
 def save_draft(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         bot_id = data.get('id')
         bot_name = data.get('bot_name')
@@ -936,9 +1030,14 @@ def save_draft(request):
             
 
         return JsonResponse(response_data, status=200)
-    
+
+
 def chatbot_publish(request): 
-    if request.method == 'POST': 
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         id = data.get('id')
         
@@ -953,6 +1052,7 @@ def chatbot_publish(request):
 
         return response
 
+
 def list_line_integration(request):
     line_integrations = LineIntegration.objects.all()
     # uuids = [integration.uuid for integration in line_integrations]
@@ -965,6 +1065,7 @@ def list_line_integration(request):
         for integration in line_integrations
     ]
     return JsonResponse(line_integration_data, safe=False)
+
 
 def list_industry_choices(request):
     industry_choices = RoutingChain._meta.get_field('industry').choices
@@ -981,6 +1082,7 @@ def list_upload_file(request):
 
     return JsonResponse(file_details, safe=False)
 
+
 def remove_upload_file(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -995,6 +1097,7 @@ def remove_upload_file(request):
             file['file_name'] = file['file'].split('/')[-1]
 
         return JsonResponse(file_details, safe=False)
+
 
 def edit_upload_file(request):
     if request.method == 'POST':
@@ -1013,169 +1116,6 @@ def edit_upload_file(request):
 
         return JsonResponse(file_details, safe=False)
 
-
-def summarize_dashboard(request, user_id):
-    # user_id = 'U32afe3db274f527b57262faf86bb1359'
-    
-    tracer = LangChainTracer(project_name="Dashboard Chat Insight")
-
-    llms = ChatOpenAI(
-        temperature=0.7,  # Controls randomness of responses
-        max_tokens=1024,  # Maximum token count in responses
-        model="gpt-4o"  # Model version
-    )
-    customer = Customer.objects.get(platform_id=user_id)
-    # Task 1: Summarize conversations
-    df_msgs = pd.DataFrame(list(Message.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp', 'organization_id')))
-
-    df_sums_query = ChatSummarize.objects.filter(platform_id=user_id)
-
-    if df_sums_query.exists():
-        df_sums = pd.DataFrame(
-            list(df_sums_query.values('platform_id', 'summarize', 'lastest_msg_date', 'generated_date')))
-    else:
-        df_sums = pd.DataFrame(columns=['platform_id', 'summarize', 'lastest_msg_date', 'generated_date'])
-
-    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
-
-    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize", tracer)
-    ChatSummarize.objects.update_or_create(
-        platform_id=user_id,
-        defaults={
-            "summarize": data['result'],
-            "lastest_msg_date": data['lastest_msg_date'],
-            "generated_date": timezone.now(),
-        }
-    )
-
-    # Task 2: Score customer satisfaction
-    df_sats_query = ChatUserSatisfaction.objects.filter(platform_id=user_id)
-
-    if df_sats_query.exists():
-        df_sats = pd.DataFrame(
-            list(df_sats_query.values('platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date')))
-    else:
-        df_sats = pd.DataFrame(columns=['platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date'])
-
-    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
-
-    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction", tracer)
-
-    ChatUserSatisfaction.objects.update_or_create(
-        platform_id=user_id,
-        defaults={
-            "satisfaction": data['result'],
-            "lastest_msg_date": data['lastest_msg_date'],
-            "generated_date": timezone.now(),
-        }
-    )
-
-    # Task 3: Identify urgent user interactions
-    df_urg_query = ChatUserUrgent.objects.filter(platform_id=user_id)
-
-    if df_urg_query.exists():
-        df_urg = pd.DataFrame(
-            list(df_urg_query.values('platform_id', 'urgent', 'lastest_msg_date', 'generated_date')))
-    else:
-        df_urg = pd.DataFrame(columns=['platform_id', 'urgent', 'lastest_msg_date', 'generated_date'])
-
-    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
-
-    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent", tracer)
-
-    ChatUserUrgent.objects.update_or_create(
-        platform_id=user_id,
-        defaults={
-            "urgent": data['result'],
-            "lastest_msg_date": data['lastest_msg_date'],
-            "generated_date": timezone.now(),
-        }
-    )
-
-    return JsonResponse({"message": "Done"}, status=200)
-
-def summarize_dashboard_new(request, user_id):
-    # user_id = 'U32afe3db274f527b57262faf86bb1359'
-
-    tracer = LangChainTracer(project_name="Dashboard Chat Insight")
-
-    llms = ChatOpenAI(
-        temperature=0.7,  # Controls randomness of responses
-        max_tokens=1024,  # Maximum token count in responses
-        model="gpt-4o"  # Model version
-    )
-    customer = CustomerNew.objects.get(id=user_id)
-    # Task 1: Summarize conversations
-    df_msgs = pd.DataFrame(list(
-        MessageNew.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp',
-                                                            'organization_id')))
-
-    df_sums_query = ChatSummarize.objects.filter(platform_id=user_id)
-
-    if df_sums_query.exists():
-        df_sums = pd.DataFrame(
-            list(df_sums_query.values('platform_id', 'summarize', 'lastest_msg_date', 'generated_date')))
-    else:
-        df_sums = pd.DataFrame(columns=['platform_id', 'summarize', 'lastest_msg_date', 'generated_date'])
-
-    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sums, summary_col='lastest_msg_date')
-
-    data = process_task(focus_user_ids, grouped, llms, summarize_conversation, "chat_summarize", "summarize", tracer)
-    ChatSummarize.objects.update_or_create(
-        platform_id=user_id,
-        defaults={
-            "summarize": data['result'],
-            "lastest_msg_date": data['lastest_msg_date'],
-            "generated_date": timezone.now(),
-        }
-    )
-
-    # Task 2: Score customer satisfaction
-    df_sats_query = ChatUserSatisfaction.objects.filter(platform_id=user_id)
-
-    if df_sats_query.exists():
-        df_sats = pd.DataFrame(
-            list(df_sats_query.values('platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date')))
-    else:
-        df_sats = pd.DataFrame(columns=['platform_id', 'satisfaction', 'lastest_msg_date', 'generated_date'])
-
-    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
-
-    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction",
-                        tracer)
-
-    ChatUserSatisfaction.objects.update_or_create(
-        platform_id=user_id,
-        defaults={
-            "satisfaction": data['result'],
-            "lastest_msg_date": data['lastest_msg_date'],
-            "generated_date": timezone.now(),
-        }
-    )
-
-    # Task 3: Identify urgent user interactions
-    df_urg_query = ChatUserUrgent.objects.filter(platform_id=user_id)
-
-    if df_urg_query.exists():
-        df_urg = pd.DataFrame(
-            list(df_urg_query.values('platform_id', 'urgent', 'lastest_msg_date', 'generated_date')))
-    else:
-        df_urg = pd.DataFrame(columns=['platform_id', 'urgent', 'lastest_msg_date', 'generated_date'])
-
-    focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_urg, summary_col='lastest_msg_date')
-
-    data = process_task(focus_user_ids, grouped, llms, score_urgency, "chat_user_urgent", "urgent", tracer)
-
-    ChatUserUrgent.objects.update_or_create(
-        platform_id=user_id,
-        defaults={
-            "urgent": data['result'],
-            "lastest_msg_date": data['lastest_msg_date'],
-            "generated_date": timezone.now(),
-        }
-    )
-
-    return JsonResponse({"message": "Done"}, status=200)
 
 async def process_file_async(file_path, file_extension, collection_name, uploaded_file):
     if file_extension == 'xlsx':
@@ -1390,6 +1330,10 @@ def list_bot(request):
 
 def remove_bot(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
 
         bot_id = data.get('id')
