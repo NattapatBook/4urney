@@ -490,6 +490,10 @@ def get_user_detail(request):
 
 
 class FileUploadView(APIView):
+    # user = request.user
+    # response = check_user_groups(user, ['admin', 'standard'])
+    # if response:
+    #     return response
     queryset = UploadedFile.objects.all()
 
     permission_classes = [AllowAny]
@@ -1085,6 +1089,10 @@ def list_upload_file(request):
 
 def remove_upload_file(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         id = data.get('id')
 
@@ -1101,6 +1109,10 @@ def remove_upload_file(request):
 
 def edit_upload_file(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         id = data.get('id')
         description = data.get('description')
