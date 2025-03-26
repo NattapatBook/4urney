@@ -36,6 +36,7 @@
                   @minimize="hideListuserPanel = !hideListuserPanel"
                   :selected-user-prop="selectedUser"
                   :user-items="userItems"
+                  :mode="`ChatWithData`"
                 />
               </v-card>
             </v-col>
@@ -101,6 +102,7 @@
                   @changeChatSession="changeChatSession"
                   @snackbar="snackbarAction"
                   @cancelSelected="cancelSelectedCallback"
+                  :mode="`ChatWithData`"
                 />
               </v-card>
             </v-col>
@@ -142,6 +144,7 @@
                   :fullscreen="fullscreen"
                   @fullscreen="fullscreen = !fullscreen"
                   @snackbar="snackbarAction"
+                  :mode="`ChatWithData`"
                 />
               </v-card>
             </v-col>
@@ -180,7 +183,7 @@
 </template>
 
 <script>
-import axios from "axios";
+// import axios from "axios";
 import ChatSession from "@/components/internalChatbot/chatSession.vue";
 import ListChatbot from "@/components/internalChatbot/listChatbot.vue";
 import ListChatbotCompact from "@/components/internalChatbot/listChatbotCompact.vue";
@@ -284,15 +287,25 @@ export default {
       }
     },
     //getData
-    async getListUser() {
-      axios
-        .get(`api/chat_center/list_bot/`)
-        .then((res) => {
-          this.userItems = res.data;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+    getListUser() {
+      this.userItems = [
+        {
+          id: `999`,
+          img: ``,
+          name: `test`,
+          industry: `untitled`,
+          mastery: `untitled`,
+          isActive: true,
+        },
+      ];
+      // axios
+      //   .get(`api/chat_center/list_bot/`)
+      //   .then((res) => {
+      //     this.userItems = res.data;
+      //   })
+      //   .catch((err) => {
+      //     console.error(err);
+      //   });
     },
     findById(id) {
       return this.userItems.find((item) => item.id === id);

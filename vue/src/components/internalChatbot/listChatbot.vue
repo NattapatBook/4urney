@@ -28,6 +28,7 @@
         }"
       >
         <v-btn
+          v-if="mode === `internalChatbot`"
           @click="clickAddChatbot()"
           :size="
             windowWidth > 960 && windowWidth < 1400 ? `x-small` : `default`
@@ -225,6 +226,10 @@ export default {
       default: () => {
         return [];
       },
+    },
+    mode: {
+      type: String,
+      default: `internalChatbot`,
     },
   },
   data() {

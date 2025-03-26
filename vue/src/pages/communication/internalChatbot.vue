@@ -284,7 +284,7 @@ export default {
       }
     },
     //getData
-    async getListUser() {
+    getListUser() {
       axios
         .get(`api/chat_center/list_bot/`)
         .then((res) => {

@@ -70,9 +70,10 @@
                 :style="{
                   border: `solid 1px rgba(94, 180, 145, 1)`,
                   color: `black`,
-                  maxWidth: `75%`,
+                  maxWidth: `95%`,
                   borderRadius: `20px`,
                   borderTopLeftRadius: `0px`,
+                  width: item.plotly ? `95%` : `auto`,
                 }"
                 class="pa-2"
                 v-bind="props"
@@ -80,7 +81,15 @@
                 <!-- <p :style="{ textAlign: `start` }">
                   {{ item.msg }}
                 </p> -->
-                <MarkdownRenderer :markdown="item.msg" />
+                <div v-if="item.plotly">
+                  <PlotlyGraph
+                    :key="`plotly_id_${item.id}`"
+                    :chartId="item.id"
+                    :chartData="item.package"
+                  />
+                </div>
+
+                <MarkdownRenderer v-else :markdown="item.msg" />
               </div>
               <p
                 :style="{
@@ -238,10 +247,11 @@
 <script>
 import DataError from "@/components/tools/dataError.vue";
 import MarkdownRenderer from "@/components/tools/markdownRenderer.vue";
+import PlotlyGraph from "@/components/tools/plotlyGraph.vue";
 
 export default {
   name: "Component_ChatInternalChatbot",
-  components: { DataError, MarkdownRenderer },
+  components: { DataError, MarkdownRenderer, PlotlyGraph },
   props: {
     selectedUserProps: {
       type: Object,
@@ -270,6 +280,7 @@ export default {
     return {
       windowWidth: 0,
       windowHeight: 0,
+      lastestChatlogLength: 0,
     };
   },
   mounted() {
@@ -286,8 +297,10 @@ export default {
   watch: {
     chatLogProp: {
       handler() {
-        // console.log(`chatLogChange`);
-        this.scrollToBottom();
+        if (this.chatLogProp.length > this.lastestChatlogLength) {
+          this.lastestChatlogLength = this.chatLogProp.length;
+          this.scrollToBottom();
+        }
       },
       deep: true,
     },
@@ -339,7 +352,7 @@ export default {
       return short ? `now` : "just now";
     },
     scrollToBottom() {
-      // console.log(`scroll`);
+      console.log(`scroll`);
       const chatContainer = document.getElementById("chatContainer");
       if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
