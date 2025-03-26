@@ -67,10 +67,18 @@ tz = pytz.timezone('Asia/Bangkok')
 
 def check_user_groups(user, group_names):
     if not any(user.groups.filter(name=group).exists() for group in group_names):
-        raise PermissionDenied(f"You do not have permission to access this resource. One of the following groups is required: {', '.join(group_names)}.")
+        return JsonResponse(
+            {"detail": f"You do not have permission to access this resource. One of the following groups is required: {', '.join(group_names)}."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    return None
 
 
 def list_user_new(request):
+    user = request.user
+    response = check_user_groups(user, ['test'])
+    if response:
+        return response
     user = User.objects.get(username=request.user)
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
