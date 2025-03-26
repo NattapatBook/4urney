@@ -12,6 +12,7 @@ import DigitalTwinList from "./pages/config/digitalTwinList.vue";
 import KnowledgeManagement from "./pages/config/knowledgeManagement.vue";
 import ChannelManage from "./pages/config/channelManage.vue";
 import CustomerInsight from "./pages/supportFunction/customerInsight.vue";
+import ChatWithData from "./pages/communication/chatWithData.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 
 const currentPage = ref("landing");
@@ -146,6 +147,10 @@ onMounted(async () => {
           />
           <CustomerInsight
             v-else-if="currentPage === 'customerInsight'"
+            @navigate="navigateTo"
+          />
+          <ChatWithData
+            v-else-if="currentPage === 'ChatWithData'"
             @navigate="navigateTo"
           />
           <!--Dashboard Menu-->

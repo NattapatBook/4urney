@@ -156,6 +156,16 @@ export default {
             name: `Chat with Data`,
             description: `Dive deep into enterprise data to uncover key insights and serve users effectively.`,
             link: {
+              internal: true,
+              src: `ChatWithData`,
+            },
+            disabled: false,
+          },
+          {
+            icon: `mdi-database`,
+            name: `Chat with Data (Demo)`,
+            description: `Dive deep into enterprise data to uncover key insights and serve users effectively.`,
+            link: {
               internal: false,
               src: `http://fourplus.asuscomm.com:8501/`,
             },
