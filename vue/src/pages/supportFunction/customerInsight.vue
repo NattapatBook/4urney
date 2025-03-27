@@ -22,11 +22,11 @@
               >
                 <v-card-title>
                   <p class="gradient-text" :style="{ fontWeight: 'bold' }">
-                    Knowledge Base
+                    Customer Insight
                   </p>
                   <span :style="{ fontSize: '0.8rem', color: 'grey' }">
-                    "Manage the data sources your bot uses to access and respond
-                    to user queries."
+                    "Better understand your customers by capturing chatbot
+                    data."
                   </span>
                 </v-card-title>
                 <v-card-text class="px-4 pb-0">
@@ -49,7 +49,7 @@
                         class="mr-3"
                         v-model="filter"
                         density="compact"
-                        label="Filter by name"
+                        label="Filter"
                         hide-details
                         variant="outlined"
                         rounded="xl"
@@ -66,10 +66,10 @@
                             color="primary"
                             @click="onUpload"
                           >
-                            <v-icon>mdi-upload</v-icon>
+                            <v-icon>mdi-download</v-icon>
                           </v-btn>
                         </template>
-                        <span>Upload file</span>
+                        <span>Download</span>
                       </v-tooltip>
                       <v-tooltip text="Tooltip" location="bottom">
                         <template v-slot:activator="{ props }">
@@ -101,9 +101,9 @@
                             block
                             :style="{ textTransform: `capitalize` }"
                             variant="text"
-                            @click="this.setSort(`file_name`)"
-                            >File Name
-                            <v-icon v-if="sortKey === `file_name`">
+                            @click="this.setSort(`field_name`)"
+                            >Field Name
+                            <v-icon v-if="sortKey === `field_name`">
                               &nbsp;{{
                                 sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
                               }}
@@ -123,9 +123,9 @@
                             block
                             :style="{ textTransform: `capitalize` }"
                             variant="text"
-                            @click="this.setSort(`status`)"
-                            >Status
-                            <v-icon v-if="sortKey === `status`">
+                            @click="this.setSort(`result`)"
+                            >Result
+                            <v-icon v-if="sortKey === `result`">
                               &nbsp;{{
                                 sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
                               }}
@@ -146,8 +146,8 @@
                             block
                             :style="{ textTransform: `capitalize` }"
                             variant="text"
-                            @click="this.setSort(`uploaded_at`)"
-                            >Date
+                            @click="this.setSort(`username`)"
+                            >Username
                             <v-icon v-if="sortKey === `uploaded_at`">
                               &nbsp;{{
                                 sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
@@ -169,9 +169,9 @@
                             block
                             :style="{ textTransform: `capitalize` }"
                             variant="text"
-                            @click="this.setSort(`user`)"
-                            >By
-                            <v-icon v-if="sortKey === `user`">
+                            @click="this.setSort(`message`)"
+                            >Message
+                            <v-icon v-if="sortKey === `message`">
                               &nbsp;{{
                                 sortOrder ? `mdi-arrow-up` : `mdi-arrow-down`
                               }}
@@ -187,9 +187,9 @@
                   :style="
                     isLoading ||
                     isError ||
-                    sort(filteredFiles, sortKey, sortOrder).length < 1
+                    sort(filteredData, sortKey, sortOrder).length < 1
                       ? {
-                          height: `calc(100% - 220px)`,
+                          height: `calc(100% - 200px)`,
                           display: `flex`,
                           alignItems: `center`,
                           justifyContent: `center`,
@@ -197,26 +197,26 @@
                       : {
                           overflowY: `auto`,
                           overflowX: `hidden`,
-                          maxHeight: `calc(100% - 220px)`,
+                          maxHeight: `calc(100% - 200px)`,
                           width: `100%`,
                         }
                   "
                 >
                   <div v-if="isLoading">
                     <Loading
-                      :message="`Loading Knowledge Base, please wait...`"
+                      :message="`Loading Customer Insight, please wait...`"
                     />
                   </div>
                   <div
                     v-else-if="
                       !isLoading &&
                       (isError ||
-                        sort(filteredFiles, sortKey, sortOrder).length < 1)
+                        sort(filteredData, sortKey, sortOrder).length < 1)
                     "
                   >
                     <DataError
                       :message="
-                        sort(filteredFiles, sortKey, sortOrder).length < 1
+                        sort(filteredData, sortKey, sortOrder).length < 1
                           ? `No Data Avaliable`
                           : errMsg
                       "
@@ -226,13 +226,17 @@
                     v-else-if="
                       !isLoading &&
                       !isError &&
-                      sort(filteredFiles, sortKey, sortOrder).length > 0
+                      sort(filteredData, sortKey, sortOrder).length > 0
                     "
-                    class="mb-2 rounded-xl"
+                    class="mb-2 rounded-xl py-2"
                     elevation="0"
                     :style="{ border: `solid 1px lightgrey` }"
-                    v-for="item in sort(filteredFiles, sortKey, sortOrder)"
-                    :key="`knowledgeManagement_files_list_${item.id}`"
+                    v-for="(item, idx) in sort(
+                      filteredData,
+                      sortKey,
+                      sortOrder
+                    )"
+                    :key="`customerInsight_list_${idx}`"
                   >
                     <v-container class="py-0 px-3">
                       <v-row>
@@ -243,91 +247,33 @@
                             alignContent: `center`,
                           }"
                         >
-                          <div
-                            :style="{
-                              textAlign: `start`,
-                              whiteSpace: `nowrap`,
-                              overflow: `hidden`,
-                              textOverflow: `ellipsis`,
-                            }"
-                          >
-                            <v-menu
-                              transition="fab-transition"
-                              class="rounded-xl"
-                            >
+                          <div :style="{ textAlign: `center` }">
+                            <v-tooltip text="Tooltip" location="bottom">
                               <template v-slot:activator="{ props }">
-                                <v-btn
+                                <v-chip
+                                  :color="`#1867c0`"
+                                  v-bind="props"
                                   :size="
                                     windowWidth > 660 ? `default` : `small`
                                   "
-                                  class="no-ripple"
-                                  icon="mdi-dots-vertical"
-                                  variant="text"
-                                  v-bind="props"
-                                ></v-btn>
-                              </template>
-                              <v-list class="pa-0 rounded-lg">
-                                <v-list-item
-                                  class="pa-0"
-                                  v-if="item.status === `Pending`"
+                                  dark
+                                  small
                                 >
-                                  <v-card
-                                    @click="
-                                      knowledgeActionDialog(item, `process`)
-                                    "
-                                    class="pa-4"
-                                    elevation="0"
+                                  <div
                                     :style="{
-                                      display: `flex`,
-                                      alignItems: `center`,
+                                      whiteSpace: `nowrap`,
+                                      overflow: `hidden`,
+                                      textOverflow: `ellipsis`,
+                                      maxWidth: `140px`,
+                                      cursor: `pointer`,
                                     }"
                                   >
-                                    <v-icon>mdi-play</v-icon>
-                                    <span>&nbsp;Process</span>
-                                  </v-card>
-                                </v-list-item>
-                                <v-list-item class="pa-0">
-                                  <v-card
-                                    @click="knowledgeActionDialog(item, `edit`)"
-                                    class="pa-4"
-                                    elevation="0"
-                                    :style="{
-                                      display: `flex`,
-                                      alignItems: `center`,
-                                    }"
-                                  >
-                                    <v-icon>mdi-pencil</v-icon>
-                                    <span>&nbsp;Edit Descriptions</span>
-                                  </v-card>
-                                </v-list-item>
-                                <v-list-item class="pa-0">
-                                  <v-card
-                                    @click="
-                                      knowledgeActionDialog(item, `remove`)
-                                    "
-                                    class="pa-4"
-                                    elevation="0"
-                                    :style="{
-                                      display: `flex`,
-                                      alignItems: `center`,
-                                    }"
-                                  >
-                                    <v-icon>mdi-delete</v-icon>
-                                    <span>&nbsp;Remove</span>
-                                  </v-card>
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
-                            &nbsp;
-                            <v-tooltip text="Tooltip" location="bottom">
-                              <template v-slot:activator="{ props }">
-                                <span
-                                  :style="{ cursor: `pointer` }"
-                                  v-bind="props"
-                                  >{{ item.file_name }}</span
-                                >
+                                    {{ item.field_name }}
+                                  </div>
+                                </v-chip>
                               </template>
-                              <span>Description: {{ item.description }}</span>
+                              <p :style="{ fontWeight: `bold` }">Field Name</p>
+                              <span> {{ item.field_name }}</span>
                             </v-tooltip>
                           </div>
                         </v-col>
@@ -339,14 +285,27 @@
                           }"
                         >
                           <div :style="{ textAlign: `center` }">
-                            <v-chip
-                              :size="windowWidth > 660 ? `default` : `small`"
-                              :color="getStatusColor(item.status)"
-                              dark
-                              small
-                            >
-                              {{ item.status }}
-                            </v-chip>
+                            <v-tooltip text="Tooltip" location="bottom">
+                              <template v-slot:activator="{ props }">
+                                <div
+                                  v-bind="props"
+                                  :style="{
+                                    textAlign: `center`,
+                                    whiteSpace: `nowrap`,
+                                    overflow: `hidden`,
+                                    textOverflow: `ellipsis`,
+                                    maxWidth: `90%`,
+                                    cursor: `pointer`,
+                                  }"
+                                >
+                                  <span :style="{ fontWeight: `bold` }">{{
+                                    item.result
+                                  }}</span>
+                                </div>
+                              </template>
+                              <p :style="{ fontWeight: `bold` }">Result</p>
+                              <span> {{ item.result }}</span>
+                            </v-tooltip>
                           </div>
                         </v-col>
                         <v-col
@@ -358,7 +317,27 @@
                           }"
                         >
                           <div :style="{ textAlign: `center` }">
-                            <span>{{ timeSince(item.uploaded_at) }}</span>
+                            <v-tooltip text="Tooltip" location="bottom">
+                              <template v-slot:activator="{ props }">
+                                <div
+                                  v-bind="props"
+                                  :style="{
+                                    textAlign: `center`,
+                                    whiteSpace: `nowrap`,
+                                    overflow: `hidden`,
+                                    textOverflow: `ellipsis`,
+                                    maxWidth: `90%`,
+                                    cursor: `pointer`,
+                                  }"
+                                >
+                                  <span :style="{ fontWeight: `bold` }">{{
+                                    item.username
+                                  }}</span>
+                                </div>
+                              </template>
+                              <p>Username</p>
+                              <span> {{ item.username }}</span>
+                            </v-tooltip>
                           </div>
                         </v-col>
                         <v-col
@@ -369,34 +348,33 @@
                             alignContent: `center`,
                           }"
                         >
-                          <div
-                            :style="{
-                              textAlign: `center`,
-                              whiteSpace: `nowrap`,
-                              overflow: `hidden`,
-                              textOverflow: `ellipsis`,
-                            }"
-                          >
-                            <span>{{ item.user }}</span>
-                          </div>
+                          <v-tooltip text="Tooltip" location="bottom">
+                            <template v-slot:activator="{ props }">
+                              <div
+                                v-bind="props"
+                                :style="{
+                                  textAlign: `center`,
+                                  whiteSpace: `nowrap`,
+                                  overflow: `hidden`,
+                                  textOverflow: `ellipsis`,
+                                  maxWidth: `90%`,
+                                  cursor: `pointer`,
+                                }"
+                              >
+                                <span :style="{ fontWeight: `bold` }">{{
+                                  item.message
+                                }}</span>
+                              </div>
+                            </template>
+                            <p>Message</p>
+                            <span> {{ item.message }}</span>
+                          </v-tooltip>
                         </v-col>
                       </v-row>
                     </v-container>
                   </v-card>
                 </v-card-text>
               </v-card>
-              <!--dialog-->
-              <UploadKnowledgeBase
-                v-model="uploadDialog"
-                @snackbar="snackbarAction"
-                @successUpload="getList"
-              />
-              <KnowledgeBaseActionDialog
-                v-model="actionDialog"
-                :mode="actionMode"
-                :item="actionItem"
-                @callbackAction="callbackAction"
-              />
             </v-col>
           </v-row>
         </div>
@@ -433,8 +411,6 @@
 </template>
 
 <script>
-import UploadKnowledgeBase from "@/components/knowledgeBase/uploadKnowledgeBase.vue";
-import KnowledgeBaseActionDialog from "@/components/knowledgeBase/knowledgeBaseActionDialog.vue";
 import DataError from "@/components/tools/dataError.vue";
 import Loading from "@/components/tools/loading.vue";
 import axios from "axios";
@@ -444,36 +420,17 @@ export default {
   components: {
     DataError,
     Loading,
-    UploadKnowledgeBase,
-    KnowledgeBaseActionDialog,
   },
   data() {
     return {
       windowWidth: 0,
       windowHeight: 0,
       filter: "",
-      files: [],
+      customerInsightData: [],
       //loading
       isLoading: true,
       isError: false,
       errMsg: `Untitled`,
-      //upload dialog
-      uploadDialog: false,
-      //action dialog
-      actionDialog: false,
-      actionMode: `untitled`,
-      actionItem: {
-        id: -1,
-        file: "untitled",
-        uploaded_at: null,
-        collection_name: null,
-        embedded_date: null,
-        status: null,
-        user: "untitled",
-        file_url: "untitled",
-        file_name: "untitled",
-        description: "untitled",
-      },
       //snackbar
       snackbarAlert: false,
       snackbarSuccess: false,
@@ -484,11 +441,12 @@ export default {
     };
   },
   computed: {
-    filteredFiles() {
-      if (!this.filter) return this.files;
-      return this.files.filter((file) =>
-        file.file_name.toLowerCase().includes(this.filter.toLowerCase())
-      );
+    filteredData() {
+      if (!this.filter || this.filter.trim().length < 1) {
+        return this.customerInsightData;
+      } else {
+        return this.searchInObjects(this.customerInsightData, this.filter);
+      }
     },
   },
   mounted() {
@@ -508,60 +466,54 @@ export default {
       this.windowWidth = window.innerWidth;
       this.windowHeight = window.innerHeight;
     },
-    getStatusColor(status) {
-      if (typeof status !== "string") {
-        return "grey";
-      }
-
-      switch (status.toLowerCase()) {
-        case "pending":
-          return "orange";
-        case "processing":
-          return "blue";
-        case "completed":
-          return "green";
-        default:
-          return "grey";
-      }
-    },
-    // renameFile(item) {
-    //   console.log("Rename file:", item.fileName);
-    // },
-    // removeFile(item) {
-    //   console.log("Remove file:", item.fileName);
-    // },
     onUpload() {
       this.uploadDialog = true;
     },
     getList() {
       this.isLoading = true;
-      axios
-        .get(`api/chat_center/list_upload_file/`)
-        .then((res) => {
-          this.files = res.data;
-          this.checkAndAddDescription();
-          return this.$nextTick();
-        })
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch((err) => {
-          this.errMsg = err;
-          this.isError = true;
-          this.isLoading = false;
-          this.snackbarAction({
-            snackbarMsg: err,
-            snackbarSuccess: false,
-            snackbarAlert: true,
-          });
-        });
+      this.customerInsightData = [
+        {
+          field_name: `name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1name1`,
+          result: `นันทกร1นันทกร1นันทกร1นันทกร1นันทกร1นันทกร1นันทกร1นันทกร1นันทกร1`,
+          username: `บาสหมี9บาสหมี9บาสหมี9บาสหมี9บาสหมี9บาสหมี9บาสหมี9บาสหมี9บาสหมี9`,
+          message: `5สวัสดีครับ ผมนันทกร เบอร์โทร 088778899088778899088778899088778899088778899088778899088778899088778899088778899088778899088778899`,
+        },
+        {
+          field_name: `name2`,
+          result: `6นันทกร`,
+          username: `2บาสหมี`,
+          message: `4สวัสดีครับ ผมนันทกร เบอร์โทร 088778899`,
+        },
+        {
+          field_name: `name3`,
+          result: `นันทกร5`,
+          username: `บาสหมี3`,
+          message: `1สวัสดีครับ ผมนันทกร เบอร์โทร 088778899`,
+        },
+      ];
+      this.isLoading = false;
+      //   axios
+      //     .get(`api/chat_center/list_upload_file/`)
+      //     .then((res) => {
+      //       this.files = res.data;
+      //       this.checkAndAddDescription();
+      //       return this.$nextTick();
+      //     })
+      //     .then(() => {
+      //       this.isLoading = false;
+      //     })
+      //     .catch((err) => {
+      //       this.errMsg = err;
+      //       this.isError = true;
+      //       this.isLoading = false;
+      //       this.snackbarAction({
+      //         snackbarMsg: err,
+      //         snackbarSuccess: false,
+      //         snackbarAlert: true,
+      //       });
+      //     });
     },
-    checkAndAddDescription() {
-      this.files = this.files.map((file) => ({
-        ...file,
-        description: file.description ?? "No Description",
-      }));
-    },
+
     snackbarAction(item) {
       this.snackbarMsg = item.snackbarMsg;
       this.snackbarSuccess = item.snackbarSuccess;
@@ -599,83 +551,11 @@ export default {
 
       return short ? `now` : "just now";
     },
-    knowledgeActionDialog(item, mode) {
-      this.actionItem = item;
-      this.actionMode = mode;
-      this.actionDialog = true;
-    },
-    callbackAction(item) {
-      const path =
-        item.mode === `process`
-          ? `/api/chat_center/embedded_data/`
-          : item.mode === `remove`
-          ? `/api/chat_center/remove_upload_file/`
-          : item.mode === `edit`
-          ? `/api/chat_center/edit_upload_file/`
-          : ``;
-      const body =
-        item.mode === `process`
-          ? {
-              file_url: item.item.file_url,
-            }
-          : item.mode === `remove`
-          ? { id: item.item.id }
-          : item.mode === `edit`
-          ? { id: item.item.id, description: item.description }
-          : {};
-
-      this.isLoading = true;
-      axios
-        .post(path, body)
-        .then((res) => {
-          if (item.mode === `remove` || item.mode === `edit`) {
-            this.files = res.data;
-            this.checkAndAddDescription();
-          }
-          return this.$nextTick();
-        })
-        .then(() => {
-          if (item.mode === `remove` || item.mode === `edit`) {
-            this.snackbarAction({
-              snackbarMsg:
-                item.mode === "remove"
-                  ? "File removed successfully!"
-                  : "Description updated successfully!",
-              snackbarSuccess: true,
-              snackbarAlert: true,
-            });
-            this.isLoading = false;
-          } else if (item.mode === `process`) {
-            this.snackbarAction({
-              snackbarMsg: `Embedding task has been started.`,
-              snackbarSuccess: true,
-              snackbarAlert: true,
-            });
-            this.getList();
-          }
-        })
-        .catch((err) => {
-          this.errMsg = err;
-          // this.isError = true;
-          this.isLoading = false;
-          this.snackbarAction({
-            snackbarMsg: err,
-            snackbarSuccess: false,
-            snackbarAlert: true,
-          });
-        });
-    },
     sort(items, sortKey, order) {
       if (!this.sortKey || this.order === null) return [...items];
       const sortedItems = [...items].sort((a, b) => {
         let valueA = a[sortKey];
         let valueB = b[sortKey];
-
-        if (sortKey === "status") {
-          const statusOrder = { Pending: 0, Processing: 1, Completed: 2 };
-          valueA = statusOrder[valueA] ?? -1;
-          valueB = statusOrder[valueB] ?? -1;
-        }
 
         if (valueA < valueB) return order ? -1 : 1;
         if (valueA > valueB) return order ? 1 : -1;
@@ -697,6 +577,21 @@ export default {
           this.sortKey = null;
         }
       }
+    },
+    searchInObjects(dataArray, searchString) {
+      const results = [];
+      for (const obj of dataArray) {
+        for (const key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            const value = obj[key];
+            if (typeof value === "string" && value.includes(searchString)) {
+              results.push(obj);
+              break;
+            }
+          }
+        }
+      }
+      return results;
     },
   },
 };

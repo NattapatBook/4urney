@@ -11,9 +11,9 @@
       <v-text-field
         v-model="searchMessage"
         clearable
-        @click:clear="searchText = ''"
+        @click:clear="searchMessage = ''"
         multiple
-        label="Enter name to search"
+        label="Enter name or room's name to search"
         variant="outlined"
         hide-details
         :density="`comfortable`"
@@ -321,9 +321,14 @@
       >
         <v-container>
           <v-row>
-            <v-col class="pr-0" cols="6" :style="{ display: `flex` }">
+            <v-col class="pr-0 py-1" cols="6" :style="{ display: `flex` }">
               <!--user avatar-->
-              <div>
+              <div
+                :style="{
+                  display: `flex`,
+                  alignItems: `center`,
+                }"
+              >
                 <v-avatar>
                   <v-img
                     v-if="item.img"
@@ -365,7 +370,7 @@
                     width: `15px`,
                     position: `absolute`,
                     top: `13px`,
-                    left: `43px`,
+                    left: `42px`,
                     color: `rgb(254, 56, 147)`,
                     //color:
                     // item.priority === `high`
@@ -381,6 +386,7 @@
                   mdi-alert-circle
                 </v-icon>
               </div>
+              <!--name and lastestMsg-->
               <div
                 class="ml-2"
                 :style="{
@@ -400,8 +406,26 @@
                       whiteSpace: `nowrap`,
                       overflow: `hidden`,
                       textOverflow: `ellipsis`,
+                      fontWeight: `500`,
                     }"
                     >&nbsp;{{ item.name }}
+                  </span>
+                </div>
+                <div
+                  :style="{
+                    display: `flex`,
+                    justifyContent: `flex-start`,
+                  }"
+                >
+                  <span
+                    :style="{
+                      whiteSpace: `nowrap`,
+                      overflow: `hidden`,
+                      textOverflow: `ellipsis`,
+                      //fontStyle: `italic`,
+                      fontSize: `0.7rem`,
+                    }"
+                    >&nbsp;{{ item.roomName }}
                   </span>
                 </div>
                 <v-tooltip text="Tooltip" location="bottom">
@@ -420,6 +444,7 @@
                         borderRadius: `20px`,
                         width: `fit-content`,
                         maxWidth: `100%`,
+                        fontSize: `0.75rem`,
                       }"
                     >
                       <span>{{ item.lastestMsg }} </span>
@@ -435,7 +460,7 @@
               :style="{
                 display: `flex`,
                 flexDirection: `column`,
-                justifyContent: `flex-end`,
+                justifyContent: `space-between`,
               }"
             >
               <div
@@ -687,7 +712,8 @@ export default {
           (tagSet.size === 0 || tagSet.has(item.tag)) &&
           (agentSet.size === 0 || agentSet.has(item.agent)) &&
           (searchMessage === "" ||
-            item.name.toLowerCase().includes(searchMessage)) // Filter by name
+            item.name.toLowerCase().includes(searchMessage) ||
+            item.roomName.toLowerCase().includes(searchMessage))
         );
       });
 

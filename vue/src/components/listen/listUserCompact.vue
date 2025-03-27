@@ -82,8 +82,8 @@
                   :style="{
                     width: `15px`,
                     position: `absolute`,
-                    top: `35px`,
-                    left: `41px`,
+                    top: `36px`,
+                    left: `37px`,
                   }"
                   :src="providerIcon[item.provider]"
                   aspect-ratio="1"

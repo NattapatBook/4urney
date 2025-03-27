@@ -3,7 +3,7 @@ from datetime import datetime
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from apps.chat_center.models import OrganizationMember, Message, Customer
+from apps.chat_center.models import OrganizationMember, Message, Customer, CustomerNew, MessageNew
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -88,14 +88,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     def create_message(self, platform_id, message, organization_id):
         try:
-            customer = Customer.objects.get(platform_id=platform_id)
-        except Customer.DoesNotExist:
+            customer = CustomerNew.objects.get(platform_id=platform_id)
+        except CustomerNew.DoesNotExist:
             return
 
-        Message.objects.create(
-            platform_id=platform_id,
+        MessageNew.objects.create(
+            platform_id=customer,
             message=message,
             by='admin',
             timestamp=datetime.now(),
-            organization_id=organization_id
+            organization_id=organization_id, 
+            from_line_uuid=customer.from_line_uuid
         )

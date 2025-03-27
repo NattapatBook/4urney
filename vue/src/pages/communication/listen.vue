@@ -314,7 +314,7 @@ export default {
     //getData
     getListUser() {
       axios
-        .get(`api/chat_center/list_user_test/`)
+        .get(`api/chat_center/list_user_new/`)
         .then((res) => {
           // console.log(res.data);
           this.userItems = res.data;
@@ -329,7 +329,7 @@ export default {
       this.isErrorDashboard = false;
       //id === user.id
       axios
-        .get(`api/chat_center/summarize_dashboard/${id}`)
+        .get(`api/chat_center/summarize_dashboard_new/${id}`)
         .then(() => {
           this.getListDashboardSumarized(id);
         })
@@ -347,7 +347,7 @@ export default {
       this.isLoadingDashboard = true;
       this.isErrorDashboard = false;
       axios
-        .get(`api/chat_center/list_dashboard_test/${id}`)
+        .get(`api/chat_center/list_dashboard_new/${id}`)
         .then((res) => {
           // console.log(res.data);
           this.dashboardData = res.data;
@@ -388,14 +388,15 @@ export default {
         "chat_center/chat",
         (event) => {
           const data = JSON.parse(event.data);
-
           if (data.type === "message_update") {
             this.userItems = data.formatted_data;
-            this.saveToLocalStorage(this.userItems);
+            // this.saveToLocalStorage(this.userItems);
             if (this.selectedUser && this.selectedUser.id !== `-1`) {
               const item = this.findById(this.selectedUser.id);
+              // updated time stamp if watching the same id as update
               if (item.timestamp !== this.selectedUser.timestamp) {
-                this.selectUser(item, this.isSelectedDataChange);
+                // this.selectUser(item, this.isSelectedDataChange);
+                this.updateTimestamp(this.selectedUser.id, item.timestamp);
                 this.$refs.chat_panel_ref.updateLastestChat();
               }
             }
@@ -403,12 +404,13 @@ export default {
         }
       );
       this.socket = { websocket, send, close };
-      console.log("WebSocket connection established");
+      // console.log("WebSocket connection established");
     },
     findById(id) {
       return this.userItems.find((item) => item.id === id);
     },
     saveToLocalStorage(data) {
+      // console.log(`saveToLocalStorage`, data);
       const reducedData = data.map((item) => ({
         id: item.id,
         timestamp: item.timestamp,
@@ -435,7 +437,7 @@ export default {
     confirmEditCustomerProfileDialog(item) {
       if (item.id && item.id !== `-1`) {
         axios
-          .post(`api/chat_center/edit_customer_profile/`, item)
+          .post(`api/chat_center/edit_customer_profile_new/`, item)
           .then((res) => {
             // console.log(res.data);
             this.dashboardData = res.data;

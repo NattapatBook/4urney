@@ -11,6 +11,8 @@ import DashboardMenu from "./pages/dashboardMenu.vue";
 import DigitalTwinList from "./pages/config/digitalTwinList.vue";
 import KnowledgeManagement from "./pages/config/knowledgeManagement.vue";
 import ChannelManage from "./pages/config/channelManage.vue";
+import CustomerInsight from "./pages/supportFunction/customerInsight.vue";
+import ChatWithData from "./pages/communication/chatWithData.vue";
 // import { createPersistentWebSocket } from "@/utils/websocket";
 
 const currentPage = ref("landing");
@@ -18,6 +20,8 @@ const currentPage = ref("landing");
 //const currentPage = ref("Explore Feature");
 
 const lastestPage = ref("untitled");
+
+const isLoadingLogin = ref(false);
 
 function addChatbotCallback() {
   lastestPage.value = `Configuration`;
@@ -70,6 +74,7 @@ const userData = ref({
 // }
 
 function checkLogin() {
+  isLoadingLogin.value = true;
   axios
     .get(`api/chat_center/get_user/`)
     .then((res) => {
@@ -78,6 +83,7 @@ function checkLogin() {
       userData.value.name = res.data.email;
       userData.value.role = `Test-Member`;
       navigateTo(`Explore Feature`);
+      isLoadingLogin.value = false;
     })
     // .then(() => {
     //   // Open WebSocket connection
@@ -85,6 +91,7 @@ function checkLogin() {
     //   openSocket();
     // })
     .catch((err) => {
+      isLoadingLogin.value = false;
       console.error(err);
     });
 }
@@ -110,7 +117,11 @@ onMounted(async () => {
     <!-- LandingPage -->
     <transition name="fade" mode="out-in">
       <div :key="`landing_app_${currentPage}`">
-        <LandingPage v-if="currentPage === 'landing'" @navigate="navigateTo" />
+        <LandingPage
+          :loginLoading="isLoadingLogin"
+          v-if="currentPage === 'landing'"
+          @navigate="navigateTo"
+        />
         <!-- <input v-model="message" @keydown.enter="sendmessage" />{{ messages }} -->
       </div>
     </transition>
@@ -133,6 +144,14 @@ onMounted(async () => {
           <InternalChatbot
             v-else-if="currentPage === `internalChatbot`"
             @addChatbot="addChatbotCallback"
+          />
+          <CustomerInsight
+            v-else-if="currentPage === 'customerInsight'"
+            @navigate="navigateTo"
+          />
+          <ChatWithData
+            v-else-if="currentPage === 'ChatWithData'"
+            @navigate="navigateTo"
           />
           <!--Dashboard Menu-->
           <DashboardMenu

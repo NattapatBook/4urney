@@ -57,20 +57,164 @@
                         rounded="xl"
                         clearable
                       ></v-text-field>
+                      <v-tooltip text="Tooltip" location="bottom">
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            class="mr-2"
+                            @click="clickBot(null)"
+                            v-bind="props"
+                            icon
+                            color="primary"
+                          >
+                            <v-icon>mdi-plus</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Create chatbot</span>
+                      </v-tooltip>
+                      <v-menu
+                        v-model="menuFilter"
+                        offset-y
+                        :close-on-content-click="false"
+                        transition="scale-transition"
+                        location="bottom"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-tooltip text="Tooltip" location="bottom">
+                            <template
+                              v-slot:activator="{ props: tooltipProps }"
+                            >
+                              <v-btn
+                                v-bind="{ ...props, ...tooltipProps }"
+                                icon
+                                color="primary"
+                              >
+                                <v-icon>mdi-filter</v-icon>
+                              </v-btn>
+                            </template>
+                            Filter
+                          </v-tooltip>
+                        </template>
+                        <v-card
+                          elevation="0"
+                          :style="{
+                            height: `100%`,
+                            width: `100%`,
+                            borderRadius: `8px`,
+                            border: `solid 1px lightgrey`,
+                          }"
+                        >
+                          <v-card-title
+                            :style="{
+                              display: `flex`,
+                              alignItems: `center`,
+                            }"
+                          >
+                            <span :style="{ fontWeight: `bold` }"
+                              >Chatbot Filter</span
+                            >
+                            <v-spacer />
+                            <v-btn
+                              @click="menuFilter = false"
+                              variant="text"
+                              icon="mdi-close"
+                            ></v-btn>
+                          </v-card-title>
+                          <div
+                            :style="{
+                              overflowY: `auto`,
+                              overflowX: `hidden`,
+                            }"
+                          >
+                            <!-- filter Status -->
+                            <v-card-text class="pt-2 pb-4">
+                              <v-autocomplete
+                                v-model="isActiveFilter"
+                                label="Is Active Filter"
+                                variant="outlined"
+                                hide-details
+                                rounded="lg"
+                                item-title="title"
+                                item-value="val"
+                                density="comfortable"
+                                :color="`#ff5d97`"
+                                :items="isActiveFilterItem"
+                                :style="{
+                                  textTransform: `capitalize`,
+                                }"
+                                @update:model-value="
+                                  changeStatusFilter(isActiveFilter, `isActive`)
+                                "
+                              >
+                              </v-autocomplete>
+                            </v-card-text>
+                            <!-- filter isPublish -->
+                            <v-card-text class="pt-2">
+                              <v-autocomplete
+                                v-model="isPublishFilter"
+                                label="Is Publish Filter"
+                                variant="outlined"
+                                hide-details
+                                rounded="lg"
+                                item-title="title"
+                                item-value="val"
+                                density="comfortable"
+                                :color="`#ff5d97`"
+                                :items="isPublishFilterItem"
+                                :style="{
+                                  textTransform: `capitalize`,
+                                }"
+                                @update:model-value="
+                                  changeStatusFilter(
+                                    isPublishFilter,
+                                    `isPublish`
+                                  )
+                                "
+                              >
+                              </v-autocomplete>
+                            </v-card-text>
+                          </div>
+                        </v-card>
+                      </v-menu>
                     </div>
                   </div>
                 </v-card-text>
                 <v-card-text
-                  class="pa-4 mb-5"
-                  :style="{
-                    overflowY: `auto`,
-                    overflowX: `hidden`,
-                    maxHeight: `calc(100% - 120px)`,
-                    width: `100%`,
-                  }"
+                  class="pa-4 pt-0"
+                  :style="
+                    isLoading || isError || menu.DigitalTwin.length < 1
+                      ? {
+                          height: `calc(100% - 220px)`,
+                          display: `flex`,
+                          alignItems: `center`,
+                          justifyContent: `center`,
+                        }
+                      : {
+                          overflowY: `auto`,
+                          overflowX: `hidden`,
+                          maxHeight: `calc(100% - 170px)`,
+                          width: `100%`,
+                        }
+                  "
                 >
+                  <div v-if="isLoading">
+                    <Loading
+                      :message="`Loading Chatbot List, please wait...`"
+                    />
+                  </div>
+                  <div
+                    v-else-if="
+                      !isLoading && (isError || menu.DigitalTwin.length < 1)
+                    "
+                  >
+                    <DataError
+                      :message="
+                        menu.DigitalTwin.length < 1 ? `No Data` : errMsg
+                      "
+                    />
+                  </div>
                   <!--menu-->
                   <div
+                    v-else-if="!isLoading && !isError"
                     :style="{ display: `flex`, flexDirection: `column` }"
                     v-for="(key, idx) in Object.keys(menu)"
                     :key="`main_menu_${key}_${idx}`"
@@ -87,25 +231,33 @@
                       >
                         {{ menuNamed(key) }}
                       </p>
-                      <v-row>
+                      <v-row
+                        v-if="filteredMenu[key].length < 1"
+                        :style="{
+                          minHeight: `calc(100dvh - 305px)`,
+                          display: `flex`,
+                          alignItems: `center`,
+                          overflow: `hidden`,
+                        }"
+                      >
+                        <v-col cols="12">
+                          <DataError :message="`No Data Avaliable`" />
+                        </v-col>
+                      </v-row>
+                      <v-row v-else>
                         <v-col
                           class="mb-5"
-                          :style="{
-                            //height: `15rem`,
-                            //width: `15rem`,
-                            //filter: !item.isActive ? `grayscale(1)` : ``,
-                          }"
                           :cols="
                             windowWidth > 1500 ? 4 : windowWidth > 960 ? 6 : 12
                           "
                           v-for="item in filteredMenu[key]"
                         >
                           <v-card
-                            :elevation="!item.isActive ? `0` : `3`"
+                            :elevation="!item.isPublish ? `0` : `3`"
                             class="rounded-lg"
                             :style="{
                               height: `100%`,
-                              backgroundColor: !item.isActive
+                              backgroundColor: !item.isPublish
                                 ? `lightgrey`
                                 : ``,
                               //filter: !item.isActive ? `grayscale(1)` : ``,
@@ -128,21 +280,130 @@
                                     alignItems: `center`,
                                   }"
                                 >
-                                  <v-chip
-                                    :color="
-                                      item.isActive ? '#5EB491' : '#D6584D'
-                                    "
-                                  >
-                                    <span>
-                                      {{
-                                        item.isActive ? `Active` : `Inactive`
-                                      }}
-                                    </span>
-                                  </v-chip>
-                                  <v-btn
+                                  <div>
+                                    <v-tooltip text="Tooltip" location="bottom">
+                                      <template v-slot:activator="{ props }">
+                                        <div
+                                          v-bind="props"
+                                          :style="{ cursor: `pointer` }"
+                                        >
+                                          <v-chip
+                                            :color="
+                                              item.isPublish
+                                                ? '#5EB491'
+                                                : '#D6584D'
+                                            "
+                                          >
+                                            <span>
+                                              {{
+                                                item.isPublish
+                                                  ? `Publish`
+                                                  : `Unpublish`
+                                              }}
+                                            </span>
+                                          </v-chip>
+                                          <v-chip
+                                            class="ml-1"
+                                            :color="
+                                              item.isActive
+                                                ? '#5EB491'
+                                                : '#D6584D'
+                                            "
+                                            v-bind="props"
+                                          >
+                                            <v-icon>{{
+                                              item.isActive
+                                                ? `mdi-robot`
+                                                : `mdi-robot-off`
+                                            }}</v-icon>
+                                          </v-chip>
+                                        </div>
+                                      </template>
+                                      <p>
+                                        <span>Is Publish : </span>
+                                        <span
+                                          :style="{
+                                            fontWeight: `bold`,
+                                            color: item.isPublish
+                                              ? '#5EB491'
+                                              : '#D6584D',
+                                          }"
+                                        >
+                                          {{
+                                            item.isPublish
+                                              ? `Publish`
+                                              : `Unpublish`
+                                          }}
+                                        </span>
+                                      </p>
+                                      <p>
+                                        <span>Is Active : </span>
+                                        <span
+                                          :style="{
+                                            fontWeight: `bold`,
+                                            color: item.isActive
+                                              ? '#5EB491'
+                                              : '#D6584D',
+                                          }"
+                                        >
+                                          {{
+                                            item.isActive
+                                              ? `Active`
+                                              : `Inactive`
+                                          }}
+                                        </span>
+                                      </p>
+                                    </v-tooltip>
+                                  </div>
+                                  <!-- <v-btn
                                     @click="clickBot(item)"
                                     :icon="`mdi-cog`"
-                                  />
+                                  /> -->
+                                  <v-menu
+                                    transition="fab-transition"
+                                    class="rounded-xl"
+                                  >
+                                    <template v-slot:activator="{ props }">
+                                      <v-btn
+                                        class="no-ripple"
+                                        icon="mdi-dots-vertical"
+                                        variant="text"
+                                        v-bind="props"
+                                      ></v-btn>
+                                    </template>
+
+                                    <v-list class="pa-0 rounded-lg">
+                                      <!-- Config Action -->
+                                      <v-list-item
+                                        class="pa-0"
+                                        @click="clickBot(item)"
+                                      >
+                                        <v-card
+                                          class="pa-4 d-flex align-center"
+                                          elevation="0"
+                                        >
+                                          <v-icon>mdi-cog</v-icon>
+                                          <span class="ms-2"
+                                            >Configuration</span
+                                          >
+                                        </v-card>
+                                      </v-list-item>
+
+                                      <!-- Delete Action -->
+                                      <v-list-item
+                                        class="pa-0"
+                                        @click="clickDeleteBot(item)"
+                                      >
+                                        <v-card
+                                          class="pa-4 d-flex align-center"
+                                          elevation="0"
+                                        >
+                                          <v-icon>mdi-delete</v-icon>
+                                          <span class="ms-2">Remove</span>
+                                        </v-card>
+                                      </v-list-item>
+                                    </v-list>
+                                  </v-menu>
                                 </div>
                               </div>
                               <div>
@@ -252,59 +513,16 @@
                       </v-row>
                     </v-container>
                   </div>
-                  <!--add new-->
-                  <div :style="{ display: `flex`, flexDirection: `column` }">
-                    <v-container>
-                      <v-row>
-                        <v-col class="mb-5" cols="12">
-                          <v-card
-                            @click="clickBot(null)"
-                            class="rounded-lg hover-tilt-glow-wave"
-                            :style="{
-                              height: `100%`,
-
-                              cursor: `pointer`,
-                            }"
-                          >
-                            <v-card-text
-                              :style="{
-                                display: `flex`,
-                                flexDirection: `column`,
-                                justifyContent: `center`,
-                                height: `100%`,
-                              }"
-                            >
-                              <div
-                                :style="{
-                                  display: `flex`,
-                                  alignItems: `center`,
-                                  justifyContent: `center`,
-                                }"
-                              >
-                                <v-icon
-                                  class="gradient-text"
-                                  :style="{ fontSize: `1.5rem` }"
-                                  >mdi-plus-circle-outline</v-icon
-                                >
-                                &nbsp;
-                                <span class="gradient-text"
-                                  >Create New Digital Twin</span
-                                >
-                              </div>
-                            </v-card-text>
-                          </v-card>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </div>
                 </v-card-text>
               </v-card>
               <!--create&edit-->
               <DigitalTwinConfig
                 v-else-if="componentsMode === `createBot`"
-                @backToMain="componentsMode = `list`"
-                @createBotSuccess="createBotAction"
+                @backToMain="clickBackToMain"
+                @callbackNewSaveDraft="firstTimeSaveDraft"
+                @catchEditErr="getErrOnEdit"
                 :item="botItem"
+                :session="botSession"
               />
             </v-col>
           </v-row>
@@ -342,11 +560,13 @@
 </template>
 
 <script>
-import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfig.vue";
+import DigitalTwinConfig from "@/components/digitalTwin/digitalTwinConfigReDesign.vue";
+import DataError from "@/components/tools/dataError.vue";
+import Loading from "@/components/tools/loading.vue";
 import axios from "axios";
 export default {
   name: "configurationMenu",
-  components: { DigitalTwinConfig },
+  components: { DigitalTwinConfig, Loading, DataError },
   data() {
     return {
       windowWidth: 0,
@@ -359,10 +579,29 @@ export default {
       componentsMode: `list`,
       botMode: `create`,
       botItem: null,
+      botSession: null,
       //snackbar
       snackbarAlert: false,
       snackbarSuccess: false,
       snackbarMsg: `untitled`,
+      //filter
+      menuFilter: false,
+      isActiveFilter: null,
+      isActiveFilterItem: [
+        { title: "All", val: null },
+        { title: "Active", val: true },
+        { title: "Inactive", val: false },
+      ],
+      isPublishFilter: null,
+      isPublishFilterItem: [
+        { title: "All", val: null },
+        { title: "Publish", val: true },
+        { title: "Unpublish", val: false },
+      ],
+      //loading
+      isLoading: false,
+      isError: false,
+      errorMsg: `untitled`,
     };
   },
   computed: {
@@ -370,16 +609,27 @@ export default {
       const filtered = {};
 
       for (const key in this.menu) {
+        let items = this.menu[key];
         const filterTerm = this.filterTerm ? this.filterTerm.trim() : "";
-
-        if (!filterTerm) {
-          filtered[key] = this.menu[key];
-        } else {
-          filtered[key] = this.menu[key].filter((item) =>
+        if (filterTerm) {
+          items = items.filter((item) =>
             item.name.toLowerCase().includes(filterTerm.toLowerCase())
           );
         }
+
+        if (this.isActiveFilter !== null) {
+          items = items.filter((item) => item.isActive === this.isActiveFilter);
+        }
+
+        if (this.isPublishFilter !== null) {
+          items = items.filter(
+            (item) => item.isPublish === this.isPublishFilter
+          );
+        }
+
+        filtered[key] = items;
       }
+
       return filtered;
     },
   },
@@ -415,27 +665,68 @@ export default {
       this.botItem = item;
     },
     async getListUser() {
+      this.isLoading = false;
+      this.isLoading = true;
+      this.isError = false;
       axios
-        .get(`api/chat_center/list_bot/`)
+        .get(`api/chat_center/list_bot_ai_management/`)
         .then((res) => {
           this.menu.DigitalTwin = res.data;
+          this.isLoading = false;
+          this.isError = false;
         })
         .catch((err) => {
-          console.error(err);
+          this.errorMsg = err;
+          this.isLoading = false;
+          this.isError = true;
         });
     },
-    createBotAction(item) {
-      if (item.case) {
-        this.componentsMode = `list`;
-        this.getListUser();
-        this.snackbarSuccess = true;
-        this.snackbarMsg = item.msg;
-        this.snackbarAlert = true;
+    firstTimeSaveDraft(item) {
+      this.botItem = JSON.parse(JSON.stringify(item.botItem));
+      this.botSession = JSON.parse(JSON.stringify(item.botSession));
+    },
+    // createBotAction(item) {
+    //   if (item.case) {
+    //     this.componentsMode = `list`;
+    //     this.getListUser();
+    //     this.snackbarSuccess = true;
+    //     this.snackbarMsg = item.msg;
+    //     this.snackbarAlert = true;
+    //   } else {
+    //     this.snackbarSuccess = false;
+    //     this.snackbarMsg = item.msg;
+    //     this.snackbarAlert = true;
+    //   }
+    // },
+    clickDeleteBot(item) {
+      axios
+        .post(`api/chat_center/remove_bot/`, {
+          id: item.id,
+        })
+        .then(() => {
+          // this.menu.DigitalTwin = res.data;
+          this.getListUser();
+        })
+        .catch((err) => {
+          this.$emit(`catchEditErr`, err);
+        });
+    },
+    changeStatusFilter(item, mode) {
+      if (mode === `isActive`) {
+        this.isActiveFilter = item;
       } else {
-        this.snackbarSuccess = false;
-        this.snackbarMsg = item.msg;
-        this.snackbarAlert = true;
+        this.isPublishFilter = item;
       }
+    },
+    clickBackToMain() {
+      this.componentsMode = `list`;
+      this.getListUser();
+    },
+    getErrOnEdit(msg) {
+      this.snackbarMsg = msg;
+      this.snackbarSuccess = false;
+      this.snackbarAlert = true;
+      this.clickBackToMain();
     },
   },
 };

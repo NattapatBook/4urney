@@ -4,6 +4,7 @@ import threading
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.forms import model_to_dict
 from django.http import JsonResponse, HttpResponse
@@ -33,7 +34,9 @@ from apps.bot.chatbot_utils import call_bot
 # from sympy import line_integrate
 
 from apps.chat_center.models import User, OrganizationMember, Customer, Message, Dashboard, UploadedFile, RoutingChain, \
-    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo
+    ChatSummarize, ChatUserSatisfaction, ChatUserUrgent, InternalChatSession, InternalChatMessage, RequestDemo, \
+    RoutingSkill, InformationExtractionSkillNew, \
+    FieldConnection, SkillConnection, InformationExtractionSkill, CustomerNew, MessageNew, DashboardNew
 from apps.webhook_line.models import LineIntegration, LineConnectionNew
 from apps.webhook_line.connector import generate_access_key, connect_line_webhook
 from apps.chat_center.serializers import FileUploadSerializer
@@ -45,6 +48,9 @@ from apps.bot.function import *
 from utility.function import *
 from pymilvus import utility
 from langchain.callbacks.tracers import LangChainTracer
+from langchain_community.tools import TavilySearchResults
+from langchain.agents import AgentType, initialize_agent
+import plotly.graph_objects as go
 
 DB_CONFIG = {
     'host': os.environ.get('DEMO_DATABASE_HOST'),
@@ -59,37 +65,30 @@ LINE_API = 'https://api.line.me/v2/bot/message/push'
 
 tz = pytz.timezone('Asia/Bangkok')
 
-@csrf_exempt
-def list_user(request):
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    conn.autocommit = False
-    cursor.execute('''select * from "4urney".users''')
-    rows = cursor.fetchall()
-    formatted_data = []
-    for row in rows:
-        column_names = [desc[0] for desc in cursor.description]
-        row_data = {column_names[i]: row[i] for i in range(len(column_names))}
-        row_data['timestamp'] = str(row_data['timestamp'].astimezone(tz))
-        formatted_data.append(row_data)
-    cursor.close()
-    conn.close()
+def check_user_groups(user, group_names):
+    if not any(user.groups.filter(name=group).exists() for group in group_names):
+        return JsonResponse(
+            {"detail": f"You do not have permission to access this resource. One of the following groups is required: {', '.join(group_names)}."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    return None
 
-    # users = User.objects.all()
-    # data = serialize('json', users)
-    return JsonResponse(formatted_data, safe=False)
-
-@login_required
-def list_user_test(request):
+# agent console
+def list_user_new(request):
+    # user = request.user
+    # response = check_user_groups(user, [])
+    # if response:
+    #     return response
     user = User.objects.get(username=request.user)
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
-    customers = Customer.objects.filter(organization_id=organization)
-    # customers = Customer.objects.all()
+    customers = CustomerNew.objects.filter(organization_id=organization).select_related('from_line_uuid')
+
     customer_list = []
     for customer in customers:
         customer_data = {
-            "id": customer.platform_id,
+            "id": customer.id,
+            "platformID": customer.platform_id,
             "img": customer.img if customer.img else "",
             "name": customer.name if customer.name else "",
             "tag": customer.tag if customer.tag else "",
@@ -100,51 +99,23 @@ def list_user_test(request):
             "provider": customer.provider if customer.provider else "",
             "agent": customer.agent if customer.agent else "",
             "messageType": customer.message_type if customer.message_type else "",
-            "replyToken": customer.reply_token if customer.reply_token else None
+            "replyToken": customer.reply_token if customer.reply_token else None,
+            "lineUUID": customer.from_line_uuid.uuid if customer.from_line_uuid else None,
+            "roomName": customer.from_line_uuid.username if customer.from_line_uuid else None,
         }
         customer_list.append(customer_data)
 
     # Return the response as JSON
     return JsonResponse(customer_list, safe=False)
 
-def list_message(request, user_id):
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    conn.autocommit = False
-    cursor.execute(
-        f'''select id, message, by, "timestamp" from "4urney".messages where id = '{user_id}' order by "timestamp" desc''')
-    rows = cursor.fetchall()
-    formatted_data = []
-    for row in rows:
-        column_names = [desc[0] for desc in cursor.description]
-        column_names = ['id', 'msg', 'by', 'timestamp']
-        row_data = {column_names[i]: row[i] for i in range(len(column_names))}
-        row_data['timestamp'] = str(row_data['timestamp'].astimezone(tz))
-        formatted_data.append(row_data)
-    cursor.execute(f'''select "messageType" from "4urney".users where id='{user_id}' ''')
-    result = cursor.fetchone()
-    if result:
-        data = dict(
-            messageType=result[0],
-            chatLogs=formatted_data,
-        )
-    else:
-        data = dict(
-            messageType='',
-            chatLogs=formatted_data,
-        )
-    cursor.close()
-    conn.close()
 
-    return JsonResponse(data, safe=False)
-
-def list_message_test(request, user_id):
+def list_message_new(request, user_id):
     try:
-        customer = Customer.objects.get(platform_id=user_id)
+        customer = CustomerNew.objects.get(id=user_id)
         message_type = customer.message_type if customer.message_type else "Unknown Message Type"
-    except Customer.DoesNotExist:
+    except CustomerNew.DoesNotExist:
         return JsonResponse({"error": "Customer not found"}, status=400)
-    messages = Message.objects.filter(platform_id=customer).order_by('timestamp')
+    messages = MessageNew.objects.filter(platform_id=customer).order_by('timestamp')
     chat_logs = []
     for message in messages:
         if message.timestamp:
@@ -165,75 +136,22 @@ def list_message_test(request, user_id):
     }
     return JsonResponse(response_data, safe=False)
 
-def admin_reply_post(request):
-    data = request.data
-    id = data['id']
-    message = data['message']
-
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    conn.autocommit = False
-    insert_query = '''
-    INSERT INTO "4urney".messages (id, message, "by", "timestamp")
-    VALUES (%s, %s, %s, %s)
-    '''
-
-    data_to_insert = (
-        id,
-        message,
-        'admin',
-        datetime.now()
-    )
-
-    cursor.execute(insert_query, data_to_insert)
-    conn.commit()
-
-    Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
-
-    headers = {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': Authorization
-    }
-
-    data = {
-        "to": f"{id}",
-        "messages": [
-            {
-                "type": "text",
-                "text": f"{message}"
-            }
-        ]
-    }
-
-    data = json.dumps(data)
-    response = requests.post(LINE_API, headers=headers, data=data)
-
-    cursor.execute(f'''select * from "4urney".messages where id = '{id}' order by "timestamp" desc''')
-    rows = cursor.fetchall()
-    formatted_data = []
-    for row in rows:
-        column_names = ['id','msg','by','timestamp']
-        row_data = {column_names[i]: row[i] for i in range(len(column_names))}
-        row_data['timestamp'] = str(row_data['timestamp'].astimezone(tz))
-        formatted_data.append(row_data)
-    cursor.close()
-    conn.close()
-    return JsonResponse(formatted_data, safe=False)
 
 @csrf_exempt
-def admin_reply_post_test(request):
+def admin_reply_post_new(request):
     data = json.loads(request.body)
     id = data.get('id')
     message = data.get('message')
+    print(data)
 
     username = request.user
 
     if not id or not message:
         return JsonResponse({"error": "Missing 'id' or 'message' in request"}, status=400)
     try:
-        customer = Customer.objects.get(platform_id=id)
+        customer = CustomerNew.objects.get(id=id)
         message_type = customer.message_type if customer.message_type else "Unknown Message Type"
-    except Customer.DoesNotExist:
+    except CustomerNew.DoesNotExist:
         return JsonResponse({"error": "Customer not found"}, status=400)
 
     try:
@@ -241,17 +159,18 @@ def admin_reply_post_test(request):
     except User.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=400)
 
-    new_message = Message.objects.create(
+    new_message = MessageNew.objects.create(
         platform_id=customer,
         message=message,
         by='admin',
         user=user,
         timestamp=datetime.now(pytz.timezone('Asia/Bangkok')),
         organization_id=customer.organization_id,
+        from_line_uuid=customer.from_line_uuid,
     )
 
     organization_member = OrganizationMember.objects.filter(user=user).first()
-    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id).first().line_chatbot_api_key
+    LINE_CHATBOT_API_KEY = LineIntegration.objects.filter(organization_id=organization_member.organization_id, uuid=customer.from_line_uuid.uuid).first().line_chatbot_api_key
     Authorization = f'Bearer {LINE_CHATBOT_API_KEY}'
 
     headers = {
@@ -260,7 +179,7 @@ def admin_reply_post_test(request):
     }
 
     data_to_send = {
-        "to": id,
+        "to": customer.platform_id,
         "messages": [
             {
                 "type": "text",
@@ -271,7 +190,7 @@ def admin_reply_post_test(request):
 
     response = requests.post(LINE_API, headers=headers, data=json.dumps(data_to_send))
 
-    messages = Message.objects.filter(platform_id=customer).order_by('-timestamp')
+    messages = MessageNew.objects.filter(platform_id=customer).order_by('-timestamp')
 
     tz = pytz.timezone('Asia/Bangkok')  # Ensure the timezone for formatting timestamps
     formatted_data = []
@@ -307,60 +226,8 @@ def admin_reply_post_test(request):
 
     return JsonResponse(response_data, safe=False)
 
-def change_message_type(request):
-    if request.method == 'POST':
-        data = request.json()
-        id = data['id']
-        message_type = data['messageType']
 
-        conn = psycopg2.connect(**DB_CONFIG)
-        cursor = conn.cursor()
-        conn.autocommit = False
-        if message_type == 'Closed Messages':
-            update_query_closed_to_opened = f'''
-                UPDATE "4urney".users
-                SET "messageType" = 'Opened Messages'
-                WHERE "messageType" = 'Closed Messages' and id = '{id}'
-                '''
-
-            cursor.execute(update_query_closed_to_opened)
-            conn.commit()
-
-            cursor.execute('''select * from "4urney".users''')
-            rows = cursor.fetchall()
-            formatted_data = []
-            for row in rows:
-                column_names = [desc[0] for desc in cursor.description]
-                row_data = {column_names[i]: row[i] for i in range(len(column_names))}
-                row_data['timestamp'] = str(row_data['timestamp'].astimezone(tz))
-                formatted_data.append(row_data)
-            cursor.close()
-            conn.close()
-
-            return JsonResponse({'messageType': 'Opened Messages', 'listUser': formatted_data})
-        elif message_type == 'Opened Messages':
-            update_query_opened_to_closed = f'''
-                UPDATE "4urney".users
-                SET "messageType" = 'Closed Messages'
-                WHERE "messageType" = 'Opened Messages' and id = '{id}'
-                '''
-
-            cursor.execute(update_query_opened_to_closed)
-            conn.commit()
-
-            cursor.execute('''select * from "4urney".users''')
-            rows = cursor.fetchall()
-            formatted_data = []
-            for row in rows:
-                column_names = [desc[0] for desc in cursor.description]
-                row_data = {column_names[i]: row[i] for i in range(len(column_names))}
-                formatted_data.append(row_data)
-            cursor.close()
-            conn.close()
-
-            return JsonResponse({'messageType': 'Closed Messages', 'listUser': formatted_data})
-
-def change_message_type_test(request):
+def change_message_type_new(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         id = data.get('id')
@@ -370,7 +237,7 @@ def change_message_type_test(request):
             return JsonResponse({'error': 'Missing required parameters'}, status=400)
 
         try:
-            customer = Customer.objects.get(platform_id=id)
+            customer = CustomerNew.objects.get(id=id)
         except Customer.DoesNotExist:
             return JsonResponse({'error': 'Customer not found'}, status=404)
 
@@ -378,7 +245,7 @@ def change_message_type_test(request):
             customer.message_type = 'Opened Messages'
             customer.save()
 
-            customers = Customer.objects.filter(message_type='Opened Messages')
+            customers = CustomerNew.objects.filter(message_type='Opened Messages')
             customers_data = [{
                 'platform_id': customer.platform_id,
                 'messageType': customer.message_type,
@@ -394,7 +261,7 @@ def change_message_type_test(request):
             customer.message_type = 'Closed Messages'
             customer.save()
 
-            customers = Customer.objects.filter(message_type='Closed Messages')
+            customers = CustomerNew.objects.filter(message_type='Closed Messages')
             customers_data = [{
                 'platform_id': customer.platform_id,
                 'messageType': customer.message_type,
@@ -409,76 +276,14 @@ def change_message_type_test(request):
         else:
             return JsonResponse({'error': 'Invalid messageType'}, status=400)
 
-def list_dashboard(request, id):
-    print(id)
-    conn = psycopg2.connect(**DB_CONFIG)
-    cursor = conn.cursor()
-    conn.autocommit = False
-    cursor.execute(f'''SELECT * FROM "4urney".dashboard WHERE id = '{id}' ''')
-    result = cursor.fetchone()
-    cursor.execute(f'''select summarize from "4urney".chat_summarize where user_id='{id}' ''')
-    summarize = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    if result:
-        (id, name, gender, phonenumber, citizenid, birthday, email,
-         satisfaction, dissatisfaction, totalsession, totalmessage, urgent,
-         priority, intentsummary) = result
 
-        data = {
-            "id": id,
-            "userInformation": {
-                "name": name,
-                "gender": gender,
-                "phoneNumber": phonenumber,
-                "citizenId": citizenid,
-                "birthday": birthday,
-                "email": email,
-            },
-            "dashboard": {
-                "satisfaction": satisfaction,
-                "dissatisfaction": dissatisfaction,
-                "totalSession": totalsession,
-                "totalMessage": totalmessage,
-                "urgent": urgent,
-                "priority": priority,
-                "intentSummary": summarize[0].split('\n') if summarize else [],
-            }
-        }
-
-        return JsonResponse(data, safe=False)
-
-    else:
-        data = {
-            "dashboard": {
-                "dissatisfaction": 0,
-                "intentSummary": [
-
-                ],
-                "priority": None,
-                "satisfaction": 0,
-                "totalMessage": 0,
-                "totalSession": 0,
-                "urgent": 0
-            },
-            "id": "-1",
-            "userInformation": {
-                "birthday": "untitled",
-                "citizenId": "untitled",
-                "email": "untitled",
-                "gender": "untitled",
-                "name": "untitled",
-                "phoneNumber": "untitled"
-            }
-        }
-        return JsonResponse(data, safe=False)
-
-def list_dashboard_test(request, id):
+def list_dashboard_new(request, id):
     try:
-        dashboard = Dashboard.objects.get(platform_id=id)
-    except Dashboard.DoesNotExist:
-        customer = Customer.objects.get(platform_id=id)
-        dashboard = Dashboard.objects.create(
+        customer = CustomerNew.objects.get(id=id)
+        dashboard = DashboardNew.objects.get(platform_id=customer)
+    except DashboardNew.DoesNotExist:
+        customer = CustomerNew.objects.get(id=id)
+        dashboard = DashboardNew.objects.create(
             platform_id=customer,
             name="untitled",
             gender="untitled",
@@ -495,11 +300,11 @@ def list_dashboard_test(request, id):
             intentsummary=None,
         )
 
-    satisfaction = ChatUserSatisfaction.objects.filter(platform_id=id).first()
-    urgent = ChatUserUrgent.objects.filter(platform_id=id).first()
-    summarize = ChatSummarize.objects.filter(platform_id=id).first()
+    satisfaction = ChatUserSatisfaction.objects.filter(platform_id=customer.id).first()
+    urgent = ChatUserUrgent.objects.filter(platform_id=customer.id).first()
+    summarize = ChatSummarize.objects.filter(platform_id=customer.id).first()
 
-    messages_by_bot = Message.objects.filter(by='bot', platform_id=id) \
+    messages_by_bot = MessageNew.objects.filter(by='bot', platform_id=customer) \
         .values('platform_id') \
         .annotate(message_count=Count('id')) \
         .order_by('platform_id')
@@ -509,12 +314,12 @@ def list_dashboard_test(request, id):
 
     response_data = {
         "dissatisfaction": dashboard.dissatisfaction if dashboard.dissatisfaction is not None else 0,
-        "intentSummary": summarize.summarize.split('\n') if summarize.summarize else [],
+        "intentSummary": summarize.summarize.split('\n') if summarize else [],
         "priority": dashboard.priority if dashboard.priority else None,
-        "satisfaction": satisfaction.satisfaction if satisfaction.satisfaction is not None else 0,
-        "totalMessage": dashboard.totalmessage if dashboard.totalmessage is not None else 0,
+        "satisfaction": satisfaction.satisfaction if satisfaction is not None else 0,
+        "totalMessage": count_message if count_message is not None else 0,
         "totalSession": dashboard.totalsession if dashboard.totalsession is not None else 0,
-        "urgent": urgent.urgent if urgent.urgent is not None else 0,
+        "urgent": urgent.urgent if urgent is not None else 0,
         "id": dashboard.id,
         "userInformation": {
             "birthday": dashboard.birthday if dashboard.birthday else "untitled",
@@ -529,7 +334,8 @@ def list_dashboard_test(request, id):
 
     return JsonResponse(response_data)
 
-def edit_customer_profile(request):
+
+def edit_customer_profile_new(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         id = data.get('id')
@@ -540,7 +346,7 @@ def edit_customer_profile(request):
         phonenumber = data.get('phoneNumber')
         citizenid = data.get('citizenId')
 
-        dashboard = Dashboard.objects.get(id=id)
+        dashboard = DashboardNew.objects.get(id=id)
         dashboard.name = name
         dashboard.email = email
         dashboard.gender = gender
@@ -549,7 +355,7 @@ def edit_customer_profile(request):
         dashboard.citizenid = citizenid
         dashboard.save()
 
-        dashboard_data = Dashboard.objects.filter(id=id).first()
+        dashboard_data = DashboardNew.objects.filter(id=id).first()
 
         satisfaction = ChatUserSatisfaction.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
         urgent = ChatUserUrgent.objects.filter(platform_id=dashboard_data.platform_id.platform_id).first()
@@ -577,161 +383,9 @@ def edit_customer_profile(request):
         return JsonResponse(response_data)
 
 
-def get_user_detail(request):
-    if request.user.is_authenticated:
-        user = User.objects.get(username=request.user)
-        user_dict = model_to_dict(user)
-        if request.user.is_superuser:
-            return JsonResponse(user_dict, status=status.HTTP_200_OK)
-        organization_member = OrganizationMember.objects.filter(user=user).first()
-        if organization_member:
-            organization_id = organization_member.organization.id
-            print("Organization ID:", organization_id)
-            return JsonResponse(user_dict, status=status.HTTP_200_OK)
-        else:
-            print("User is not a member of any organization.")
-            return JsonResponse({"detail": "User is not a member of any organization."}, status=status.HTTP_403_FORBIDDEN)
-    else:
-        return JsonResponse({"detail": "Authentication credentials were not provided."},
-                        status=status.HTTP_401_UNAUTHORIZED)
-
-
-class FileUploadView(APIView):
-    queryset = UploadedFile.objects.all()
-
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        print(request.user)
-        organization_member = OrganizationMember.objects.filter(user=request.user).first()
-        organization_name = organization_member.organization.name
-        organization = organization_member.organization
-        user = User.objects.get(username=request.user)
-        email = user.email
-        serializer = FileUploadSerializer(data=request.data)
-
-
-        if serializer.is_valid():
-            uploaded_file = serializer.save(organization_member=organization_member, user=email, description=request.data['description'], organization_id=organization)
-            print(f'file_path {uploaded_file.file}')
-            data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.name)
-
-            print(f"Uploaded file name: {uploaded_file.file.name}")
-            print(f"File stored at: {uploaded_file.file.url}")
-
-            # return JsonResponse({"message": "File uploaded and processed successfully!"}, status=200)
-            return JsonResponse(data, status=200)
-
-        return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
-
-
-def create_bot(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        bot_name = data.get('bot_name')
-        routing = data.get('routing')
-        prompt = data.get('prompt')
-        industry = data.get('industry')
-        retrieve_image = data.get('retrieve_image')
-        knowledge_base = data.get('knowledge_base')
-        is_active = data.get('isActive')
-        line_integration_uuid = data.get('line_integration_uuid')
-
-        user = request.user
-        organization_member = OrganizationMember.objects.filter(user=user).first()
-        organization = organization_member.organization
-
-        routing_chain = RoutingChain.objects.create(
-            bot_name=bot_name,
-            routing=routing,
-            prompt=prompt,
-            industry=industry,
-            retrieve_image=retrieve_image,
-            knowledge_base=knowledge_base,
-            is_active=is_active,
-            created_at=datetime.now(),
-            organization_id=organization,
-        )
-
-        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
-        if not line_integration:
-            LineConnectionNew.objects.create(
-                bot_id=routing_chain,
-                uuid=None,
-            )
-            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
-
-        LineConnectionNew.objects.create(
-            bot_id=routing_chain,
-            uuid=line_integration,
-        )
-
-        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
-
-def list_line_integration(request):
-    line_integrations = LineIntegration.objects.all()
-    # uuids = [integration.uuid for integration in line_integrations]
-    line_integration_data = [
-        {
-            'uuid': integration.uuid,
-            'user_id': integration.user_id,
-            'username': integration.username,
-        }
-        for integration in line_integrations
-    ]
-    return JsonResponse(line_integration_data, safe=False)
-
-def list_industry_choices(request):
-    industry_choices = RoutingChain._meta.get_field('industry').choices
-    industry_values = [choice[0] for choice in industry_choices]
-
-    return JsonResponse(industry_values, safe=False)
-
-
-def list_upload_file(request):
-    file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
-    for file in file_details:
-        file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
-        file['file_name'] = file['file'].split('/')[-1]
-
-    return JsonResponse(file_details, safe=False)
-
-def remove_upload_file(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        id = data.get('id')
-
-        data = UploadedFile.objects.get(id=id)
-        data.delete()
-
-        file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
-        for file in file_details:
-            file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
-            file['file_name'] = file['file'].split('/')[-1]
-
-        return JsonResponse(file_details, safe=False)
-
-def edit_upload_file(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        id = data.get('id')
-        description = data.get('description')
-
-        data = UploadedFile.objects.get(id=id)
-        data.description = description
-        data.save()
-
-        file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
-        for file in file_details:
-            file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
-            file['file_name'] = file['file'].split('/')[-1]
-
-        return JsonResponse(file_details, safe=False)
-
-
-def summarize_dashboard(request, user_id):
+def summarize_dashboard_new(request, user_id):
     # user_id = 'U32afe3db274f527b57262faf86bb1359'
-    
+
     tracer = LangChainTracer(project_name="Dashboard Chat Insight")
 
     llms = ChatOpenAI(
@@ -739,9 +393,11 @@ def summarize_dashboard(request, user_id):
         max_tokens=1024,  # Maximum token count in responses
         model="gpt-4o"  # Model version
     )
-    customer = Customer.objects.get(platform_id=user_id)
+    customer = CustomerNew.objects.get(id=user_id)
     # Task 1: Summarize conversations
-    df_msgs = pd.DataFrame(list(Message.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp', 'organization_id')))
+    df_msgs = pd.DataFrame(list(
+        MessageNew.objects.filter(platform_id=customer).values('platform_id', 'message', 'by', 'user', 'timestamp',
+                                                            'organization_id')))
 
     df_sums_query = ChatSummarize.objects.filter(platform_id=user_id)
 
@@ -774,7 +430,8 @@ def summarize_dashboard(request, user_id):
 
     focus_user_ids, grouped = preprocess_data(df_msgs.copy(), df_sats, summary_col='lastest_msg_date')
 
-    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction", tracer)
+    data = process_task(focus_user_ids, grouped, llms, score_satisfaction, "chat_user_satisfaction", "satisfaction",
+                        tracer)
 
     ChatUserSatisfaction.objects.update_or_create(
         platform_id=user_id,
@@ -808,6 +465,669 @@ def summarize_dashboard(request, user_id):
     )
 
     return JsonResponse({"message": "Done"}, status=200)
+
+
+def get_user_detail(request):
+    if request.user.is_authenticated:
+        user = User.objects.get(username=request.user)
+        user_dict = model_to_dict(user)
+        group_names = [group.name for group in request.user.groups.all()]
+        user_dict['groups'] = group_names
+
+        if request.user.is_superuser:
+            return JsonResponse(user_dict, status=status.HTTP_200_OK)
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        if organization_member:
+            organization_id = organization_member.organization.id
+            print("Organization ID:", organization_id)
+            return JsonResponse(user_dict, status=status.HTTP_200_OK)
+        else:
+            print("User is not a member of any organization.")
+            return JsonResponse({"detail": "User is not a member of any organization."}, status=status.HTTP_403_FORBIDDEN)
+    else:
+        return JsonResponse({"detail": "Authentication credentials were not provided."},
+                        status=status.HTTP_401_UNAUTHORIZED)
+
+
+class FileUploadView(APIView):
+    # user = request.user
+    # response = check_user_groups(user, ['admin', 'standard'])
+    # if response:
+    #     return response
+    queryset = UploadedFile.objects.all()
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        print(request.user)
+        organization_member = OrganizationMember.objects.filter(user=request.user).first()
+        organization_name = organization_member.organization.name
+        organization = organization_member.organization
+        user = User.objects.get(username=request.user)
+        email = user.email
+        serializer = FileUploadSerializer(data=request.data)
+
+
+        if serializer.is_valid():
+            uploaded_file = serializer.save(organization_member=organization_member, user=email, description=request.data['description'], organization_id=organization)
+            print(f'file_path {uploaded_file.file}')
+            data = boto3.client('s3').generate_presigned_post(settings.AWS_STORAGE_BUCKET_NAME, uploaded_file.file.name)
+
+            print(f"Uploaded file name: {uploaded_file.file.name}")
+            print(f"File stored at: {uploaded_file.file.url}")
+
+            # return JsonResponse({"message": "File uploaded and processed successfully!"}, status=200)
+            return JsonResponse(data, status=200)
+
+        return JsonResponse({"message": "File upload failed", "errors": serializer.errors}, status=400)
+
+
+def create_bot(request):
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
+        data = json.loads(request.body)
+        bot_name = data.get('bot_name')
+        routing = data.get('routing')
+        prompt = data.get('prompt')
+        industry = data.get('industry')
+        retrieve_image = data.get('retrieve_image')
+        knowledge_base = data.get('knowledge_base')
+        is_active = data.get('isActive')
+        line_integration_uuid = data.get('line_integration_uuid')
+
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        # create bot
+        routing_chain = RoutingChain.objects.create(
+            bot_name=bot_name,
+            routing=routing,
+            prompt=prompt,
+            industry=industry,
+            retrieve_image=retrieve_image,
+            knowledge_base=knowledge_base,
+            is_active=is_active,
+            created_at=datetime.now(),
+            organization_id=organization,
+        )
+        
+        # create skill
+        if data.get('skill_name'): 
+            skill_name = data.get('skill_name')
+            skill_description = data.get('skill_description')
+            skill_type = data.get('skill_type')
+            field_names = data.get('field_names')
+            field_descriptions = data.get('field_descriptions')
+            field_types = data.get('field_types')
+        
+            # routing skill
+            routing_skill = RoutingSkill.objects.create(
+                skill_name=skill_name, 
+                skill_description=skill_description, 
+                skill_type=skill_type, 
+                organization_id=organization
+            )
+            
+            # skill connection
+            skill_connection = SkillConnection.objects.create(
+                skill_id=routing_skill, 
+                bot_id=routing_chain
+            )
+            
+            # field connection 
+            for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                field_connection = FieldConnection.objects.create(
+                    field_name=field_name, 
+                    field_description=field_description, 
+                    field_type=field_type, 
+                    skill_id=routing_skill
+                )
+
+        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+        if not line_integration:
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=None,
+            )
+            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
+
+        LineConnectionNew.objects.create(
+            bot_id=routing_chain,
+            uuid=line_integration,
+        )
+
+        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
+    
+    elif request.method == 'GET':
+        bot_name = 'Test Create Bot'
+        routing = 'Test Create Bot'
+        prompt = 'Test Create Bot'
+        industry = 'HR'
+        retrieve_image = False
+        knowledge_base = "org1___Demo__E_receipt_2568_pdf"
+        knowledge_base_list = ["org1___Demo__E_receipt_2568_pdf", "org1___Demo__PVD_4plus_pdf"]
+        is_active = True
+        line_integration_uuid = None
+        skill_name = "Test Personal Information Extraction"
+        skill_description = "This skill extract user data from chat."
+        skill_type = "Information Extraction"
+        field_names = ["name", "email"]
+        field_descriptions = ["Name of the user", "User contact E-mail"]
+        field_types = ["string", "string"]
+
+        user = 2
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+        print(organization)
+
+        # create bot
+        routing_chain = RoutingChain.objects.create(
+            bot_name=bot_name,
+            routing=routing,
+            prompt=prompt,
+            industry=industry,
+            retrieve_image=retrieve_image,
+            knowledge_base=knowledge_base,
+            knowledge_base_list=knowledge_base_list, 
+            is_active=is_active,
+            created_at=datetime.now(),
+            organization_id=organization,
+        )
+        
+        # create skill
+        if skill_name:
+        
+            # routing skill
+            routing_skill = RoutingSkill.objects.create(
+                skill_name=skill_name, 
+                skill_description=skill_description, 
+                skill_type=skill_type
+            )
+            
+            # skill connection
+            skill_connection = SkillConnection.objects.create(
+                skill_id=routing_skill, 
+                bot_id=routing_chain
+            )
+            
+            # field connection 
+            for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                field_connection = FieldConnection.objects.create(
+                    field_name=field_name, 
+                    field_description=field_description, 
+                    field_type=field_type, 
+                    skill_id=routing_skill
+                )
+
+        line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+        if not line_integration:
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=None,
+            )
+            return JsonResponse({"message": "Create bot successfully without line integration."}, status=200)
+
+        LineConnectionNew.objects.create(
+            bot_id=routing_chain,
+            uuid=line_integration,
+        )
+
+        return JsonResponse({"message": "Create bot successfully with line integration."}, status=200)
+
+
+def save_draft(request):
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+        bot_name = data.get('bot_name')
+        routing = data.get('routing')
+        prompt = data.get('prompt')
+        industry = data.get('industry')
+        retrieve_image = data.get('retrieve_image')
+        knowledge_base_list = data.get('knowledge_base')
+        line_integration_uuid = data.get('line_integration_uuid')
+        is_active = data.get('isActive')
+        is_publish = data.get('isPublish')
+        define_skill = data.get('defineSkill')
+        setup_guard = data.get('setupGuard')
+
+        user = request.user
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+        
+        if bot_id:
+            # create bot
+            routing_chain, _ = RoutingChain.objects.update_or_create(
+                id=bot_id, 
+                defaults={ 
+                    "bot_name": bot_name, 
+                    "routing": routing,
+                    "prompt": prompt,
+                    "industry": industry,
+                    "retrieve_image": retrieve_image,
+                    "knowledge_base_list": knowledge_base_list,
+                    "is_active": is_active,
+                    "is_publish": is_publish,
+                    "created_at": datetime.now(),
+                    "organization_id": organization,
+                }
+            )
+            
+            # create skill
+            if len(define_skill) > 0: 
+                
+                skill_connections = SkillConnection.objects.filter(bot_id=routing_chain)
+                skill_ids = skill_connections.values_list('skill_id', flat=True)
+                
+                # if skill_ids: 
+                #     print("Skill IDs:", skill_ids)
+                #     field_connection = FieldConnection.objects.filter(skill_id__in=skill_ids)
+                #     routing_skill = RoutingSkill.objects.filter(id__in=skill_ids)
+                    
+                #     # remove old skills with new skill before create new skills
+                #     FieldConnection.objects.filter(skill_id__in=skill_ids).delete()
+
+                #     skill_connections.delete()
+
+                #     RoutingSkill.objects.filter(id__in=skill_ids).delete()
+                
+                for skill in define_skill:
+                    skill_name = skill['name']
+                    skill_description = skill['description']
+                    skill_type = skill['type']
+                    field_options = skill['options']
+                    field_names = [option["plan_name"]["value"] for option in field_options]
+                    field_descriptions = [option["plan_description"]["value"] for option in field_options]
+                    field_types = [option["plan_name"]["type"] for option in field_options]
+                    
+                    # routing skill
+                    routing_skill, _ = RoutingSkill.objects.update_or_create(
+                        skill_name=skill_name, 
+                        skill_description=skill_description, 
+                        skill_type=skill_type, 
+                    )
+                    
+                    # skill connection
+                    skill_connection, _ = SkillConnection.objects.update_or_create(
+                        skill_id=routing_skill, 
+                        bot_id=routing_chain
+                    )
+                    
+                    # field connection 
+                    for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                        field_connection, _ = FieldConnection.objects.update_or_create(
+                            field_name=field_name, 
+                            field_description=field_description, 
+                            field_type=field_type, 
+                            skill_id=routing_skill
+                        )
+            
+        else: 
+            routing_chain = RoutingChain.objects.create(
+                bot_name=bot_name, 
+                routing=routing,
+                prompt=prompt,
+                industry=industry,
+                retrieve_image=retrieve_image,
+                knowledge_base_list=knowledge_base_list,
+                is_active=is_active,
+                is_publish=is_publish,
+                created_at=datetime.now(),
+                organization_id=organization,
+            )
+        
+        try:
+            # clear session that related to this bot first
+            InternalChatSession.objects.filter(routing_chain=routing_chain).delete()
+        except: 
+            pass
+        
+        
+        ### create session here ###
+        temp_id = -1
+        while InternalChatSession.objects.filter(id=temp_id).exists():
+            temp_id -= 1
+            
+        new_session = InternalChatSession(id=temp_id, session_name="save_draft_session", bot_id=routing_chain, user=user, timestamp=datetime.now())
+        new_session.save() 
+        
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
+            'id',
+            'session_name',
+            'timestamp',
+        )
+
+        bot_session = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
+            }
+            for item in queryset
+        ]
+        
+        bot_item = [
+            {
+                'id': routing_chain.id, 
+                'img': "", 
+                'name': routing_chain.bot_name, 
+                'industry': routing_chain.industry, 
+                'routing': routing_chain.routing, 
+                'isActive': routing_chain.is_active, 
+                'isPublish': routing_chain.is_publish
+            }
+        ]
+        
+        # Merging the two into the expected response format
+        response_data = {
+            'botItem': bot_item[0],
+            'botSession': bot_session[0]
+        }
+        
+        if line_integration_uuid:
+            line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+            if not line_integration:
+                LineConnectionNew.objects.create(
+                    bot_id=routing_chain,
+                    uuid=None,
+                )
+                return JsonResponse(response_data, status=200)
+
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=line_integration,
+            )
+            
+
+        return JsonResponse(response_data, status=200)
+    
+    elif request.method == 'GET':
+        bot_id = 21
+        bot_name = 'Test Create Bot V2'
+        routing = 'Test Create Bot'
+        prompt = 'Test Create Bot'
+        industry = 'HR'
+        retrieve_image = False
+        knowledge_base = "org1___Demo__E_receipt_2568_pdf"
+        knowledge_base_list = ["org1___Demo__E_receipt_2568_pdf", "org1___Demo__PVD_4plus_pdf"]
+        is_active = True
+        line_integration_uuid = None
+        is_publish = True
+        define_skill = [
+            {
+                'name': 'New Personal Info Extraction V3',
+                'description': 'Info Extraction for The Mall V3',
+                'isActive': False,
+                'type': 'football_skill',
+                'options': [
+                    {
+                    'plan_name': { 'value': 'name V3', 'type': 'text' },
+                    'plan_description': {
+                    'value': 'User Name V3',
+                    'type': 'textarea',
+                        },
+                    },
+                    {
+                    'plan_name': { 'value': 'phone_number V3', 'type': 'int' },
+                    'plan_description': {
+                    'value': 'User Phone Number V3',
+                    'type': 'textarea',
+                        },
+                    },
+                ],
+            },
+        ]
+        setup_guard = []
+
+        user = 2
+        user = User.objects.get(id=user)
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        if bot_id:
+            # create bot
+            routing_chain, _ = RoutingChain.objects.update_or_create(
+                id=bot_id, 
+                defaults={ 
+                    "bot_name": bot_name, 
+                    "routing": routing,
+                    "prompt": prompt,
+                    "industry": industry,
+                    "retrieve_image": retrieve_image,
+                    "knowledge_base_list": knowledge_base_list,
+                    "is_active": is_active,
+                    "is_publish": is_publish,
+                    "created_at": datetime.now(),
+                    "organization_id": organization,
+                }
+            )
+            
+            # create skill
+            if len(define_skill) > 0: 
+                
+                skill_connections = SkillConnection.objects.filter(bot_id=routing_chain)
+                skill_ids = skill_connections.values_list('skill_id', flat=True)
+                
+                # if skill_ids: 
+                #     print("Skill IDs:", skill_ids)
+                #     field_connection = FieldConnection.objects.filter(skill_id__in=skill_ids)
+                #     routing_skill = RoutingSkill.objects.filter(id__in=skill_ids)
+                    
+                #     # remove old skills with new skill before create new skills
+                #     FieldConnection.objects.filter(skill_id__in=skill_ids).delete()
+
+                #     skill_connections.delete()
+
+                #     RoutingSkill.objects.filter(id__in=skill_ids).delete()
+                
+                for skill in define_skill:
+                    skill_name = skill['name']
+                    skill_description = skill['description']
+                    skill_type = skill['type']
+                    field_options = skill['options']
+                    field_names = [option["plan_name"]["value"] for option in field_options]
+                    field_descriptions = [option["plan_description"]["value"] for option in field_options]
+                    field_types = [option["plan_name"]["type"] for option in field_options]
+                    
+                    # routing skill
+                    routing_skill, _ = RoutingSkill.objects.update_or_create(
+                        skill_name=skill_name, 
+                        skill_description=skill_description, 
+                        skill_type=skill_type, 
+                    )
+                    
+                    # skill connection
+                    skill_connection, _ = SkillConnection.objects.update_or_create(
+                        skill_id=routing_skill, 
+                        bot_id=routing_chain
+                    )
+                    
+                    # field connection 
+                    for field_name, field_description, field_type in zip(field_names, field_descriptions, field_types): 
+                        field_connection, _ = FieldConnection.objects.update_or_create(
+                            field_name=field_name, 
+                            field_description=field_description, 
+                            field_type=field_type, 
+                            skill_id=routing_skill
+                        )
+            
+        else: 
+            routing_chain = RoutingChain.objects.create(
+                bot_name=bot_name, 
+                routing=routing,
+                prompt=prompt,
+                industry=industry,
+                retrieve_image=retrieve_image,
+                knowledge_base_list=knowledge_base_list,
+                is_active=is_active,
+                is_publish=is_publish,
+                created_at=datetime.now(),
+                organization_id=organization,
+            )
+        
+        
+        # clear session that related to this bot first
+        InternalChatSession.objects.filter(bot_id=routing_chain).delete()
+        
+        ### create session here ###
+        temp_id = -1
+        while InternalChatSession.objects.filter(id=temp_id).exists():
+            temp_id -= 1
+            
+        new_session = InternalChatSession(id=temp_id, session_name="save_draft_session", bot_id=routing_chain, user=user, timestamp=datetime.now())
+        new_session.save() 
+        
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
+            'id',
+            'session_name',
+            'timestamp',
+        )
+
+        bot_session = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
+            }
+            for item in queryset
+        ]
+        
+        bot_item = [
+            {
+                'id': routing_chain.id, 
+                'img': "", 
+                'name': routing_chain.bot_name, 
+                'industry': routing_chain.industry, 
+                'routing': routing_chain.routing, 
+                'isActive': routing_chain.is_active, 
+                'isPublish': routing_chain.is_publish
+            }
+        ]
+        
+        # Merging the two into the expected response format
+        response_data = {
+            'botItem': bot_item[0],
+            'botSession': bot_session[0]
+        }
+        
+        if line_integration_uuid:
+            line_integration = LineIntegration.objects.filter(uuid=line_integration_uuid).first()
+            if not line_integration:
+                LineConnectionNew.objects.create(
+                    bot_id=routing_chain,
+                    uuid=None,
+                )
+                return JsonResponse(response_data, status=200)
+
+            LineConnectionNew.objects.create(
+                bot_id=routing_chain,
+                uuid=line_integration,
+            )
+            
+
+        return JsonResponse(response_data, status=200)
+
+
+def chatbot_publish(request): 
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
+        data = json.loads(request.body)
+        id = data.get('id')
+        
+        try:
+            routing_chain = RoutingChain.objects.get(id=id)
+            routing_chain.is_publish = not routing_chain.is_publish
+            routing_chain.save()
+        except RoutingChain.DoesNotExist:
+            print("RoutingChain with the given id does not exist.")
+            
+        response = HttpResponse('', status=200)
+
+        return response
+
+
+def list_line_integration(request):
+    line_integrations = LineIntegration.objects.all()
+    # uuids = [integration.uuid for integration in line_integrations]
+    line_integration_data = [
+        {
+            'uuid': integration.uuid,
+            'user_id': integration.user_id,
+            'username': integration.username,
+        }
+        for integration in line_integrations
+    ]
+    return JsonResponse(line_integration_data, safe=False)
+
+
+def list_industry_choices(request):
+    industry_choices = RoutingChain._meta.get_field('industry').choices
+    industry_values = [choice[0] for choice in industry_choices]
+
+    return JsonResponse(industry_values, safe=False)
+
+
+def list_upload_file(request):
+    file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
+    for file in file_details:
+        file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
+        file['file_name'] = file['file'].split('/')[-1]
+
+    return JsonResponse(file_details, safe=False)
+
+
+def remove_upload_file(request):
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
+        data = json.loads(request.body)
+        id = data.get('id')
+
+        data = UploadedFile.objects.get(id=id)
+        data.delete()
+
+        file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
+        for file in file_details:
+            file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
+            file['file_name'] = file['file'].split('/')[-1]
+
+        return JsonResponse(file_details, safe=False)
+
+
+def edit_upload_file(request):
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
+        data = json.loads(request.body)
+        id = data.get('id')
+        description = data.get('description')
+
+        data = UploadedFile.objects.get(id=id)
+        data.description = description
+        data.save()
+
+        file_details = list(UploadedFile.objects.values('id', 'file', 'uploaded_at', 'collection_name', 'embedded_date', 'status', 'user', 'description'))
+        for file in file_details:
+            file['file_url'] = f'https://{os.environ['AWS_STORAGE_BUCKET_NAME']}.s3.amazonaws.com/{file['file']}'
+            file['file_name'] = file['file'].split('/')[-1]
+
+        return JsonResponse(file_details, safe=False)
+
 
 async def process_file_async(file_path, file_extension, collection_name, uploaded_file):
     if file_extension == 'xlsx':
@@ -995,12 +1315,13 @@ def list_bot(request):
     organization_member = OrganizationMember.objects.filter(user=user).first()
     organization = organization_member.organization
 
-    queryset = RoutingChain.objects.filter(organization_id=organization).values(
+    queryset = RoutingChain.objects.filter(organization_id=organization, is_publish=True).values(
         'id',
         'bot_name',
         'industry',
         'routing',
-        'is_active'
+        'is_active', 
+        'is_publish'
     )
 
     # Map the queryset to the desired format
@@ -1012,6 +1333,83 @@ def list_bot(request):
             'industry': item['industry'],
             'mastery': item['routing'],
             'isActive': item['is_active'],
+            'isPublish': item['is_publish']
+        }
+        for item in queryset
+    ]
+
+    return JsonResponse(formatted_data, safe=False)
+
+def remove_bot(request):
+    if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
+        data = json.loads(request.body)
+
+        bot_id = data.get('id')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        routing_chain.delete()
+
+        username = request.user
+        user = User.objects.get(username=username)
+
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+
+        queryset = RoutingChain.objects.filter(organization_id=organization, is_publish=True).values(
+            'id',
+            'bot_name',
+            'industry',
+            'routing',
+            'is_active',
+            'is_publish'
+        )
+
+        # Map the queryset to the desired format
+        formatted_data = [
+            {
+                'id': item['id'],
+                'img': '',
+                'name': item['bot_name'],
+                'industry': item['industry'],
+                'mastery': item['routing'],
+                'isActive': item['is_active'],
+                'isPublish': item['is_publish']
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+
+def list_bot_ai_management(request):
+    username = request.user
+    user = User.objects.get(username=username)
+
+    organization_member = OrganizationMember.objects.filter(user=user).first()
+    organization = organization_member.organization
+
+    queryset = RoutingChain.objects.filter(organization_id=organization).values(
+        'id',
+        'bot_name',
+        'industry',
+        'routing',
+        'is_active', 
+        'is_publish'
+    )
+
+    # Map the queryset to the desired format
+    formatted_data = [
+        {
+            'id': item['id'],
+            'img': '',
+            'name': item['bot_name'],
+            'industry': item['industry'],
+            'mastery': item['routing'],
+            'isActive': item['is_active'],
+            'isPublish': item['is_publish']
         }
         for item in queryset
     ]
@@ -1057,7 +1455,33 @@ def list_session(request):
         user = request.user
         user = User.objects.get(username=user)
 
-        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user).values(
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user, id__gte=0).values(
+            'id',
+            'session_name',
+            'timestamp'
+        )
+
+        formatted_data = [
+            {
+                'id': item['id'],
+                'name': item['session_name'],
+                'lastConversationTime': item['timestamp'].astimezone(tz).strftime("%Y-%m-%d %H:%M:%S%z") if item['timestamp'] else None,
+            }
+            for item in queryset
+        ]
+
+        return JsonResponse(formatted_data, safe=False)
+    
+def list_save_draft_session(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bot_id = data.get('id')
+
+        routing_chain = RoutingChain.objects.get(id=bot_id)
+        user = request.user
+        user = User.objects.get(username=user)
+
+        queryset = InternalChatSession.objects.filter(bot_id=routing_chain, user=user, id__lt=0).values(
             'id',
             'session_name',
             'timestamp'
@@ -1186,6 +1610,7 @@ def internal_chatbot(request):
               generate a bot response.
     """
     EMBEDDING_MODEL_API = os.environ.get('EMBEDDING_MODEL_API')
+    
     if request.method == 'POST':
         data = json.loads(request.body)
         bot_id = data.get('id')
@@ -1261,12 +1686,12 @@ def internal_chatbot(request):
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
         routing_configs = RoutingChain.objects.filter(id=bot_id).values()
         df_routing_config = pd.DataFrame(routing_configs)
-        print(df_routing_config)
+        
+        knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
 
-        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
-            df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
 
-        print('Model response : ', model_response)
+        print('Model response : ',model_response)
 
         try:
             retrieval_text = model_response.json()['retrieval_text']
@@ -1310,8 +1735,8 @@ def internal_chatbot(request):
 
         return JsonResponse(chat_logs, safe=False)
     elif request.method == 'GET':
-        bot_id = 7
-        session_id = 1
+        bot_id = 21
+        session_id = 3
         message = 'testja'
         user = request.user
         print(user)
@@ -1344,10 +1769,10 @@ def internal_chatbot(request):
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
         routing_configs = RoutingChain.objects.filter(id=bot_id).values()
         df_routing_config = pd.DataFrame(routing_configs)
-        print(df_routing_config)
+        
+        knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
 
-        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": list(
-            df_routing_config['knowledge_base']), "candidate_labels": list(df_routing_config['routing'])})
+        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
 
         print('Model response : ',model_response)
 
@@ -1408,8 +1833,9 @@ def get_chatbot_data(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
+            'is_publish'
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
@@ -1425,9 +1851,12 @@ def get_chatbot_data(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
+                'isPublish': item['is_publish'], 
                 'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
         except:
             formatted_data = {
@@ -1438,15 +1867,22 @@ def get_chatbot_data(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
+                'is_publish': item['is_publish'], 
                 'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
 
         return JsonResponse(formatted_data, status=200)
 
 def get_chatbot_data_new(request):
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
         bot_id = int(data.get('id'))
 
@@ -1458,8 +1894,9 @@ def get_chatbot_data_new(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
+            'is_publish'
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
@@ -1475,9 +1912,12 @@ def get_chatbot_data_new(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
+                'isPublish': item['is_publish'], 
                 'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
         except:
             formatted_data = {
@@ -1488,12 +1928,16 @@ def get_chatbot_data_new(request):
                 'prompt': item['prompt'],
                 'industry': item['industry'],
                 'retrieve_image': item['retrieve_image'],
-                'knowledge_base': item['knowledge_base'],
+                'knowledge_base': item['knowledge_base_list'],
                 'isActive': item['is_active'],
+                'isPublish': item['is_publish'],
                 'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
             }
 
         return JsonResponse(formatted_data, status=200)
+    
     elif request.method == 'GET':
         bot_id = 7
 
@@ -1505,27 +1949,48 @@ def get_chatbot_data_new(request):
             'industry',
             'retrieve_image',
             'routing',
-            'knowledge_base',
+            'knowledge_base_list',
             'is_active',
+            'is_publish'
         ).first()
 
         routing_chain = RoutingChain.objects.get(id=bot_id)
-        print(routing_chain)
-        line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
-        print(line_connection)
+        try:
+            line_connection = LineConnectionNew.objects.filter(bot_id=routing_chain).values('uuid').first()
+            print(line_connection)
 
-        formatted_data = {
-            'id': item['id'],
-            'img': '',
-            'bot_name': item['bot_name'],
-            'routing': item['routing'],
-            'prompt': item['prompt'],
-            'industry': item['industry'],
-            'retrieve_image': item['retrieve_image'],
-            'knowledge_base': item['knowledge_base'],
-            'isActive': item['is_active'],
-            'line_integration_uuid': line_connection['uuid'] if line_connection else None,
-        }
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base_list'],
+                'isActive': item['is_active'],
+                'isPublish': item['is_publish'], 
+                'line_integration_uuid': line_connection['uuid'] if line_connection else None,
+                'defineSkill': [], 
+                'setupGuard': []
+            }
+        except:
+            formatted_data = {
+                'id': item['id'],
+                'img': '',
+                'bot_name': item['bot_name'],
+                'routing': item['routing'],
+                'prompt': item['prompt'],
+                'industry': item['industry'],
+                'retrieve_image': item['retrieve_image'],
+                'knowledge_base': item['knowledge_base_list'],
+                'isActive': item['is_active'],
+                'isPublish': item['is_publish'],
+                'line_integration_uuid': None,
+                'defineSkill': [], 
+                'setupGuard': []
+            }
+
         return JsonResponse(formatted_data, status=200)
 
 
@@ -1538,7 +2003,7 @@ def edit_bot(request):
         prompt = data.get('prompt')
         industry = data.get('industry')
         retrieve_image = data.get('retrieve_image')
-        knowledge_base = data.get('knowledge_base')
+        knowledge_base_list = data.get('knowledge_base')
         is_active = data.get('isActive')
         line_integration_uuid = data.get('line_integration_uuid')
 
@@ -1549,7 +2014,7 @@ def edit_bot(request):
         routing_chain.prompt = prompt
         routing_chain.industry = industry
         routing_chain.retrieve_image = retrieve_image
-        routing_chain.knowledge_base = knowledge_base
+        routing_chain.knowledge_base_list = knowledge_base_list
         routing_chain.is_active = is_active
         routing_chain.save()
 
@@ -1574,6 +2039,10 @@ def edit_bot(request):
 @csrf_exempt
 def add_line_chatbot(request): 
     if request.method == 'POST':
+        # user = request.user
+        # response = check_user_groups(user, ['admin', 'standard'])
+        # if response:
+        #     return response
         data = json.loads(request.body)
 
         user = request.user
@@ -1678,7 +2147,7 @@ def count_bot_message(request):
 
         result = dict()
 
-        messages_grouped = Message.objects.filter(by='bot',organization_id=organization) \
+        messages_grouped = MessageNew.objects.filter(by='bot',organization_id=organization) \
             .select_related('platform_id') \
             .values('organization_id', 'platform_id', 'platform_id__provider') \
             .annotate(message_count=Count('id'))
@@ -1709,3 +2178,292 @@ def count_bot_message(request):
         result['internal_chat'] = internal_chat_results
 
         return JsonResponse(result, status=200)
+
+
+def download_s3_file(request):
+    if request.method == 'GET':
+        load_dotenv()
+
+        AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+        AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        try:
+            file_key = '1 - Demo/TYFOOJYIGVDJFOVH7ULZZWXIYE/20250221_4PlusHospital.pdf'
+            file_obj = s3.get_object(Bucket=AWS_STORAGE_BUCKET_NAME, Key=file_key)
+
+            file_data = file_obj['Body'].read()
+
+            file_extension = file_key.split('.')[-1].lower()
+            mime_type, _ = mimetypes.guess_type(file_key)
+
+            # If MIME type is not detected, default to binary stream
+            if not mime_type:
+                mime_type = "application/octet-stream"
+
+            # Set the response headers with the appropriate MIME type
+            response = HttpResponse(file_data, content_type=mime_type)
+
+            # Set the Content-Disposition header to prompt a download with the correct file name
+            response['Content-Disposition'] = f'attachment; filename={file_key.split("/")[-1]}'
+
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        file_key = data.get('file')
+        load_dotenv()
+
+        AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+        AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        try:
+            file_obj = s3.get_object(Bucket=AWS_STORAGE_BUCKET_NAME, Key=file_key)
+
+            file_data = file_obj['Body'].read()
+
+            file_extension = file_key.split('.')[-1].lower()
+            mime_type, _ = mimetypes.guess_type(file_key)
+
+            # If MIME type is not detected, default to binary stream
+            if not mime_type:
+                mime_type = "application/octet-stream"
+
+            # Set the response headers with the appropriate MIME type
+            response = HttpResponse(file_data, content_type=mime_type)
+
+            # Set the Content-Disposition header to prompt a download with the correct file name
+            response['Content-Disposition'] = f'attachment; filename={file_key.split("/")[-1]}'
+
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
+
+
+
+def view_image(request):
+    if request.method == 'GET':
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
+        try:
+            decoded_file_path = '1 - Demo/X2PJNU3OXJH5VPK23VJOVAWY3U/paragon_festival.jpg'
+
+            file_obj = s3.get_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=decoded_file_path)
+            file_data = file_obj['Body'].read()
+
+            mime_type, _ = mimetypes.guess_type(decoded_file_path)
+
+            if not mime_type:
+                mime_type = "application/octet-stream"
+
+            response = HttpResponse(file_data, content_type=mime_type)
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        decoded_file_path = data.get('file')
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
+        try:
+            file_obj = s3.get_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=decoded_file_path)
+            file_data = file_obj['Body'].read()
+
+            mime_type, _ = mimetypes.guess_type(decoded_file_path)
+
+            if not mime_type:
+                mime_type = "application/octet-stream"
+
+            response = HttpResponse(file_data, content_type=mime_type)
+            return response
+
+        except s3.exceptions.NoCredentialsError:
+            return HttpResponse("AWS credentials not found.", status=403)
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=500)
+
+
+def list_information_extraction_result(request): 
+    if request.method == 'GET':
+        # user = request.user
+        user = 2
+        organization_member = OrganizationMember.objects.filter(user=user).first()
+        organization = organization_member.organization
+        
+        # Get all RoutingChain instances for the given organization
+        routing_chains = RoutingChain.objects.filter(organization_id=organization)
+
+        # Get all SkillConnection instances related to these RoutingChains
+        skill_connections = SkillConnection.objects.filter(bot_id__in=routing_chains)
+
+        # Get all InformationExtractionSkill records linked to these skills
+        extraction_skills = InformationExtractionSkillNew.objects.filter(
+            skill_id__in=skill_connections.values_list("skill_id", flat=True)
+        ).select_related("user_id", "message_id")
+
+        # Get all LineIntegration users for the given organization
+        customers = CustomerNew.objects.filter(platform_id__in=extraction_skills.values_list("user_id", flat=True), organization_id=organization)
+        
+        # Create a mapping: {message_id -> message}
+        user_id_to_username = {
+            customer.platform_id: customer.name for customer in customers
+        }     
+        
+        # Get all messages for the given organization
+        messages = MessageNew.objects.filter(id__in=extraction_skills.values_list("message_id", flat=True), organization_id=organization)
+
+        # Create a mapping: {message_id -> message}
+        message_id_to_text = {
+            msg.id: msg.message for msg in messages
+        }
+
+        information_extraction_result = [
+            {
+                "field_name": skill.field_name,
+                "result": skill.result, 
+                "username": user_id_to_username.get(skill.user_id.platform_id) if skill.user_id else None,  # Get username from the mapping
+                "message": message_id_to_text.get(skill.message_id.id) if skill.message_id else None,
+            }
+            for skill in extraction_skills
+        ]
+
+
+        return JsonResponse({"data": information_extraction_result}, safe=False)
+
+def search_engine(request):
+    if request.method == 'GET':
+        search = 'สยามพาราก้อน มีอะไรเจ๋งๆบ้าง'
+        llms = ChatOpenAI(
+        # temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4o"  # Model version
+        )
+        
+        tool = TavilySearchResults(
+                    max_results=5,
+                    search_depth="advanced",
+                    include_answer=True,
+                    include_raw_content=True,
+                    include_images=True,
+                    # include_domains=[...],
+                    # exclude_domains=[...],
+                    # name="...",            # overwrite default tool name
+                    # description="...",     # overwrite default tool description
+                    # args_schema=...,       # overwrite default args_schema: BaseModel
+                )
+        
+        # Initialize Langchain Agent with Tavily Search Tool
+        agent = initialize_agent(
+            tools=[tool],
+            llm=llms,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            handle_parsing_errors=True
+        )
+        
+        respones = agent.invoke({"input": search})
+        
+        return HttpResponse(respones['output'], status=200)
+    
+    
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        search = data.get('search')
+        
+        llms = ChatOpenAI(
+        # temperature=0.7,  # Controls randomness of responses
+        max_tokens=1024,  # Maximum token count in responses
+        model="gpt-4o"  # Model version
+        )
+        
+        tool = TavilySearchResults(
+                    max_results=5,
+                    search_depth="advanced",
+                    include_answer=True,
+                    include_raw_content=True,
+                    include_images=True,
+                    # include_domains=[...],
+                    # exclude_domains=[...],
+                    # name="...",            # overwrite default tool name
+                    # description="...",     # overwrite default tool description
+                    # args_schema=...,       # overwrite default args_schema: BaseModel
+                )
+        
+        # Initialize Langchain Agent with Tavily Search Tool
+        agent = initialize_agent(
+            tools=[tool],
+            llm=llms,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            handle_parsing_errors=True
+        )
+        
+        respones = agent.invoke({"input": search})
+        
+        return HttpResponse(respones['output'], status=200)
+
+def plotly_test1(request):
+    if request.method == 'GET':
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        return HttpResponse(fig.to_json(), status=200)
+    elif request.method == 'POST':
+        # data = json.loads(request.body)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        return HttpResponse(fig.to_json(), status=200)
+
+def plotly_test2(request):
+    if request.method == 'GET':
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        plotly_dict = fig.to_dict()
+        plotly_data = plotly_dict["data"]
+        return HttpResponse(plotly_data, status=200)
+    
+    elif request.method == 'POST':
+        # data = json.loads(request.body)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        plotly_dict = fig.to_dict()
+        plotly_data = plotly_dict["data"]
+        return HttpResponse(plotly_data, status=200)
+
+def plotly_test3(request):
+    if request.method == 'GET':
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        plotly_dict = fig.to_dict()
+        plotly_data = plotly_dict["data"]
+        return HttpResponse(plotly_dict, status=200)
+    
+    elif request.method == 'POST':
+        # data = json.loads(request.body)
+        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
+        plotly_dict = fig.to_dict()
+        plotly_data = plotly_dict["data"]
+        return HttpResponse(plotly_dict, status=200)

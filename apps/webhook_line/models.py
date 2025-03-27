@@ -13,7 +13,7 @@ class LineIntegration(models.Model):
     is_active = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.uuid}"
+        return f"{self.uuid} - {self.username}"
 
 class LineConnectionNew(models.Model):
     bot_id = models.ForeignKey('chat_center.RoutingChain', on_delete=models.CASCADE,null=True, blank=True)

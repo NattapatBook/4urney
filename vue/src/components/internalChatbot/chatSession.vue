@@ -212,6 +212,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    mode: {
+      type: String,
+      default: `internalChatbot`,
+    },
   },
   watch: {
     isChange(newValue, oldValue) {
@@ -281,19 +285,30 @@ export default {
       this.windowHeight = window.innerHeight;
     },
     getSession(id) {
-      axios
-        .post(`api/chat_center/list_session/`, { id })
-        .then((res) => {
-          this.chatSessionItem = res.data;
-          return this.$nextTick();
-        })
-        .then(() => {
-          this.groupChats();
-        })
-        .catch((err) => {
-          console.error(err);
-          this.groupChats();
-        });
+      if (this.mode === `internalChatbot`) {
+        axios
+          .post(`api/chat_center/list_session/`, { id })
+          .then((res) => {
+            this.chatSessionItem = res.data;
+            return this.$nextTick();
+          })
+          .then(() => {
+            this.groupChats();
+          })
+          .catch((err) => {
+            console.error(err);
+            this.groupChats();
+          });
+      } else if (this.mode === `ChatWithData`) {
+        this.chatSessionItem = [
+          {
+            id: `999`,
+            name: `test_999`,
+            lastConversationTime: new Date(),
+          },
+        ];
+        this.groupChats();
+      }
     },
     //tools
     timeSince(dateString, short = false) {
@@ -425,15 +440,26 @@ export default {
       this.dialog = true;
     },
     applyFromDialog(item) {
-      // console.log("applyFromDialog", item);
-      const api =
-        item.mode === `newChat`
-          ? `create_session`
-          : item.mode === `rename`
-          ? `rename_session`
-          : item.mode === `delete`
-          ? `remove_session`
-          : ``;
+      let api = `untitled`;
+      if (this.mode === `internalChatbot`) {
+        api =
+          item.mode === `newChat`
+            ? `create_session`
+            : item.mode === `rename`
+            ? `rename_session`
+            : item.mode === `delete`
+            ? `remove_session`
+            : ``;
+      } else if (this.mode === `ChatWithData`) {
+        api =
+          item.mode === `newChat`
+            ? `create_ChatWithData`
+            : item.mode === `rename`
+            ? `rename_ChatWithData`
+            : item.mode === `delete`
+            ? `remove_ChatWithData`
+            : ``;
+      }
       const body =
         item.mode === `newChat`
           ? { id: this.selectedUser.id, sessionName: item.name }
@@ -453,6 +479,11 @@ export default {
         .post(`api/chat_center/${api}/`, body)
         .then(() => {
           this.getSession(this.selectedUser.id);
+          if (item.mode === `delete`) {
+            this.$emit(`cancelSelected`, {
+              flag: this.isChange,
+            });
+          }
           this.snackbarCallback(
             item.mode === `newChat`
               ? `New session created successfully!`

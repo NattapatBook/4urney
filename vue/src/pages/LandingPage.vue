@@ -194,6 +194,8 @@
       </v-menu>
       <v-btn
         class="get-login-btn rounded-lg px-5 py-2"
+        :loading="loginLoading"
+        :disabled="loginLoading"
         color="primary"
         @click="clickLogin()"
         >Login</v-btn
@@ -418,6 +420,8 @@
                         Log In to Begin Experience AI Power
                       </p>
                       <v-btn
+                        :loading="loginLoading"
+                        :disabled="loginLoading"
                         class="get-login-page-btn rounded-lg"
                         color="primary"
                         elevation="10"
@@ -1633,6 +1637,12 @@
 <script>
 import axios from "axios";
 export default {
+  props: {
+    loginLoading: {
+      type: Boolean,
+      default: true,
+    },
+  },
   data() {
     return {
       featureText: ``,
