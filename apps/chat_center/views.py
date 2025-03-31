@@ -2467,3 +2467,11 @@ def plotly_test3(request):
         plotly_dict = fig.to_dict()
         plotly_data = plotly_dict["data"]
         return HttpResponse(plotly_dict, status=200)
+
+def chat_with_data(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        msg = data.get('msg')
+
+        response = dict()
+        return JsonResponse(response, safe=False)
