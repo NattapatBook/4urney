@@ -31,6 +31,7 @@ LANGCHAIN_TRACING_V2=os.environ.get('LANGCHAIN_TRACING_V2')
 LANGCHAIN_ENDPOINT=os.environ.get('LANGCHAIN_ENDPOINT')
 LANGCHAIN_API_KEY=os.environ.get('LANGCHAIN_API_KEY')
 LANGCHAIN_PROJECT=os.environ.get('LANGCHAIN_PROJECT')
+EMBEDDING_MODEL_API_LINE=os.environ.get('EMBEDDING_MODEL_API_LINE')
 
 tz = pytz.timezone('Asia/Bangkok')
 
@@ -184,15 +185,10 @@ async def webhook(request: HttpRequest, uuid):
         
         # knowledge base dict -> {routing: knowledge_base_list}
         knowledge_base_dict = {row.routing: row.knowledge_base_list for _, row in df_routing_config.iterrows() if row.knowledge_base_list}
-        kb_routings = [key for key, values in knowledge_base_dict.items() for _ in values]
-        kb_values = [item for sublist in knowledge_base_dict.values() for item in sublist]
 
         # get user config
         df_user = await sync_to_async(lambda: list(CustomerNew.objects.filter(id=customer_id).values()))()
         df_user = pd.DataFrame(df_user)
-        print(knowledge_base_dict)
-        print(kb_values)
-        print(kb_routings)
 
         if df_user['message_type'].values != 'Opened Messages' or df_user.empty:
 
@@ -200,7 +196,8 @@ async def webhook(request: HttpRequest, uuid):
                 """
                 If user response as text
                 """
-                model_response = requests.post(EMBEDDING_MODEL_API, json = {"msg": message, "milvus_collection": kb_values, "candidate_labels": kb_routings})
+                
+                model_response = requests.post(EMBEDDING_MODEL_API_LINE, json = {"msg": message, "milvus_collection": knowledge_base_dict})
 
                 try:
                     retrieval_text = model_response.json()['retrieval_text']
