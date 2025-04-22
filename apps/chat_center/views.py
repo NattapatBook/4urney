@@ -1610,6 +1610,7 @@ def internal_chatbot(request):
               generate a bot response.
     """
     EMBEDDING_MODEL_API = os.environ.get('EMBEDDING_MODEL_API')
+    EMBEDDING_MODEL_API_LINE = os.environ.get('EMBEDDING_MODEL_API_LINE')
     
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -1687,10 +1688,13 @@ def internal_chatbot(request):
         routing_configs = RoutingChain.objects.filter(id=bot_id).values()
         df_routing_config = pd.DataFrame(routing_configs)
         
-        knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
-
-        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
-
+        # knowledge base dict -> {routing: knowledge_base_list}
+        knowledge_base_dict = {row.routing: row.knowledge_base_list for _, row in df_routing_config.iterrows() if row.knowledge_base_list}
+        # knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
+        
+        # model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
+        model_response = requests.post(EMBEDDING_MODEL_API_LINE, json = {"msg": message, "milvus_collection": knowledge_base_dict})
+        
         print('Model response : ',model_response)
 
         try:
@@ -1768,11 +1772,14 @@ def internal_chatbot(request):
 
         # routing_configs = await sync_to_async(lambda: list(RoutingChain.objects.filter(id=bot_id).values()))()
         routing_configs = RoutingChain.objects.filter(id=bot_id).values()
-        df_routing_config = pd.DataFrame(routing_configs)
         
-        knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
-
-        model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
+        df_routing_config = pd.DataFrame(routing_configs)
+        # knowledge base dict -> {routing: knowledge_base_list}
+        knowledge_base_dict = {row.routing: row.knowledge_base_list for _, row in df_routing_config.iterrows() if row.knowledge_base_list}
+        # knowledge_base_list = list(set(item for sublist in df_routing_config['knowledge_base_list'] for item in sublist))
+        
+        # model_response = requests.post(EMBEDDING_MODEL_API, json={"msg": message, "milvus_collection": knowledge_base_list, "candidate_labels": list(df_routing_config['routing'])})
+        model_response = requests.post(EMBEDDING_MODEL_API_LINE, json = {"msg": message, "milvus_collection": knowledge_base_dict})
 
         print('Model response : ',model_response)
 
