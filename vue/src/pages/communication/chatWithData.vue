@@ -292,9 +292,9 @@ export default {
         {
           id: `999`,
           img: ``,
-          name: `test`,
-          industry: `untitled`,
-          mastery: `untitled`,
+          name: `NOOM`,
+          industry: `Company`,
+          mastery: `Sales and Marketing`,
           isActive: true,
         },
       ];

@@ -302,8 +302,13 @@ export default {
       } else if (this.mode === `ChatWithData`) {
         this.chatSessionItem = [
           {
-            id: `999`,
-            name: `test_999`,
+            id: `-998`,
+            name: `test_chart`,
+            lastConversationTime: new Date(),
+          },
+          {
+            id: `-999`,
+            name: `สอบถามข้อมูลยอดขาย`,
             lastConversationTime: new Date(),
           },
         ];
