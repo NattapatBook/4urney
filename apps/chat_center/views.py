@@ -2384,15 +2384,6 @@ def search_engine(request):
         
         return HttpResponse(respones['output'], status=200)
 
-def plotly_test1(request):
-    if request.method == 'GET':
-        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
-        return HttpResponse(fig.to_json(), status=200)
-    elif request.method == 'POST':
-        # data = json.loads(request.body)
-        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
-        return HttpResponse(fig.to_json(), status=200)
-
 def plotly_test2(request):
     if request.method == 'GET':
         fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
@@ -2406,20 +2397,6 @@ def plotly_test2(request):
         plotly_dict = fig.to_dict()
         plotly_data = plotly_dict["data"]
         return HttpResponse(plotly_data, status=200)
-
-def plotly_test3(request):
-    if request.method == 'GET':
-        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
-        plotly_dict = fig.to_dict()
-        plotly_data = plotly_dict["data"]
-        return HttpResponse(plotly_dict, status=200)
-    
-    elif request.method == 'POST':
-        # data = json.loads(request.body)
-        fig = go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6], mode='markers'))
-        plotly_dict = fig.to_dict()
-        plotly_data = plotly_dict["data"]
-        return HttpResponse(plotly_dict, status=200)
 
 def chat_with_data(request):
     if request.method == 'POST':
