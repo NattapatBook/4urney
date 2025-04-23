@@ -1129,60 +1129,6 @@ def edit_upload_file(request):
         return JsonResponse(file_details, safe=False)
 
 
-async def process_file_async(file_path, file_extension, collection_name, uploaded_file):
-    if file_extension == 'xlsx':
-        print('Processing Excel file...')
-        whole_df = await asyncio.to_thread(process_excel, file_path=file_path, client=client)
-        await asyncio.to_thread(data_ingestion_df, data=whole_df, collection_name=collection_name)
-    elif file_extension == 'csv':
-        print('Processing CSV file...')
-        ready_data = await asyncio.to_thread(process_csv, file_path=file_path, client=client)
-        await asyncio.to_thread(data_ingestion_df, data=ready_data, collection_name=collection_name)
-    elif file_extension == 'pdf':
-        print('Processing PDF file...')
-        docs = await asyncio.to_thread(process_pdf, file_path)
-        await asyncio.to_thread(read_push_document, docs=docs, collection_name=collection_name, client=client)
-    elif file_extension in ['jpeg', 'jpg']:
-        pass
-    else:
-        print('Unknown file type.')
-
-    # Update the UploadedFile model
-    uploaded_file.collection_name = collection_name
-    uploaded_file.embedded_date = datetime.now()
-    await asyncio.to_thread(uploaded_file.save)
-
-# class EmbeddedDataView(View):
-#     async def get(self, request, *args, **kwargs):
-#         load_dotenv()
-#
-#         bucket_name = os.environ['AWS_STORAGE_BUCKET_NAME']
-#         save_dir = './downloads/'
-#
-#         # Fetch file from S3 (this is an I/O-bound operation and can be async)
-#         s3_url = "https://4urney-dev-data-model.s3.amazonaws.com/Demo/EC_EI_008_S2.xlsx"
-#         bucket_name, object_name = extract_bucket_and_object(s3_url)
-#         await asyncio.to_thread(save_file_in_original_format, bucket_name, object_name, save_dir)
-#
-#         org_name, file_name, file_path, collection_name = get_file_details(object_name, save_dir)
-#
-#         # Connect to Milvus asynchronously (Database connection can be offloaded to a thread)
-#         await asyncio.to_thread(connections.connect, "default", host=os.environ['MILVUS_HOST'], port=os.environ['MILVUS_PORT'])
-#
-#         # Get the UploadedFile instance to update
-#         uploaded_file = await asyncio.to_thread(UploadedFile.objects.get, file__exact=object_name)
-#
-#         file_extension = object_name.split('.')[-1]
-#
-#         # Process the file asynchronously (offload long-running tasks to separate threads)
-#         await process_file_async(file_path, file_extension, collection_name, uploaded_file)
-#
-#         # Cleanup after processing (run in a separate thread)
-#         await asyncio.to_thread(delete_save_dir, save_dir)
-#
-#         return JsonResponse({"message": "Embedded file successfully!"}, status=200)
-
-
 class TaskStatusView(View):
     def get(self, request, *args, **kwargs):
         # file_name = kwargs.get('file_name')
