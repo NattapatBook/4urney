@@ -8,7 +8,7 @@ from apps.chat_center.views import get_user_detail, \
     rename_session, remove_session, get_internal_chat, internal_chatbot, remove_upload_file, edit_upload_file, \
     get_chatbot_data, edit_bot, add_line_chatbot, get_chatbot_data_new, request_demo, \
     list_channel_management, count_bot_message, download_s3_file, view_image, list_information_extraction_result, \
-    search_engine, plotly_test1, plotly_test2, plotly_test3, list_user_new, \
+    search_engine, plotly_test2, list_user_new, \
     list_message_new, admin_reply_post_new, change_message_type_new, list_dashboard_new, edit_customer_profile_new, \
     summarize_dashboard_new, save_draft, list_bot_ai_management, chatbot_publish, remove_bot, list_save_draft_session, \
     chat_with_data
