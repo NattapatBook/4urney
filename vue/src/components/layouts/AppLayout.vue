@@ -267,7 +267,7 @@
               :style="{ width: windowWidth > 960 ? `30vw` : `70vw` }"
             >
               <!--profile-->
-              <v-card-text>
+              <v-card-text class="pb-0">
                 <v-container>
                   <v-row>
                     <v-col
@@ -321,7 +321,7 @@
               </v-card-text>
               <v-divider :style="{ color: `black` }" class="mx-10" />
               <!--notification-->
-              <v-card-text>
+              <!-- <v-card-text>
                 <v-row>
                   <v-col
                     :style="{
@@ -371,7 +371,7 @@
                   </v-col>
                 </v-row>
               </v-card-text>
-              <v-divider :style="{ color: `black` }" class="mx-10" />
+              <v-divider :style="{ color: `black` }" class="mx-10" /> -->
               <!--Logout-->
               <v-card-text>
                 <v-row>
