@@ -288,6 +288,20 @@
                                 </v-list-item>
                                 <v-list-item class="pa-0">
                                   <v-card
+                                    @click="clickDownloadKnowledgeBase(item)"
+                                    class="pa-4"
+                                    elevation="0"
+                                    :style="{
+                                      display: `flex`,
+                                      alignItems: `center`,
+                                    }"
+                                  >
+                                    <v-icon>mdi-download</v-icon>
+                                    <span>&nbsp;Download</span>
+                                  </v-card>
+                                </v-list-item>
+                                <v-list-item class="pa-0">
+                                  <v-card
                                     @click="knowledgeActionDialog(item, `edit`)"
                                     class="pa-4"
                                     elevation="0"
@@ -530,6 +544,24 @@ export default {
     // removeFile(item) {
     //   console.log("Remove file:", item.fileName);
     // },
+    clickDownloadKnowledgeBase(item) {
+      axios
+        .post(`api/chat_center/download_s3_file/`, { file: item.file })
+        .then(() => {
+          this.snackbarAction({
+            snackbarMsg: `Downloading [${item.file_name}]...`,
+            snackbarSuccess: true,
+            snackbarAlert: true,
+          });
+        })
+        .catch((err) => {
+          this.snackbarAction({
+            snackbarMsg: err,
+            snackbarSuccess: false,
+            snackbarAlert: true,
+          });
+        });
+    },
     onUpload() {
       this.uploadDialog = true;
     },
