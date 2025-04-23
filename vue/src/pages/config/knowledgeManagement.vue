@@ -546,10 +546,54 @@ export default {
     // },
     clickDownloadKnowledgeBase(item) {
       axios
-        .post(`api/chat_center/download_s3_file/`, { file: item.file })
-        .then(() => {
+        .post(
+          `api/chat_center/download_s3_file/`,
+          { file: item.file },
+          {
+            responseType: "blob",
+          }
+        )
+        .then((res) => {
+          const blob = res.data;
+
+          const contentType =
+            res.headers["content-type"] || "application/octet-stream";
+
+          const contentDisposition = res.headers["content-disposition"];
+          let filename = item.file_name || "downloaded_file";
+
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(
+              /filename[^;=\\r\\n]*=((['"])(.*?)\2|([^;=\\r\\n]*))/i
+            );
+            if (filenameMatch) {
+              filename = filenameMatch[3] ? filenameMatch[3] : filenameMatch[4];
+
+              try {
+                if (filename.indexOf("%") > -1) {
+                  filename = decodeURIComponent(filename.replace(/\+/g, " "));
+                }
+              } catch (e) {
+                console.warn("Could not decode filename:", filename, e);
+              }
+            }
+          }
+
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+
           this.snackbarAction({
-            snackbarMsg: `Downloading [${item.file_name}]...`,
+            snackbarMsg: `Download complete: ${filename}`,
             snackbarSuccess: true,
             snackbarAlert: true,
           });
