@@ -33,6 +33,8 @@ def get_username(user_id, line_access_token):
 
     x = requests.get(url=f'https://api.line.me/v2/bot/profile/{user_id}', headers=headers)
     x_content_dict = x.json()
+    
+    print(x_content_dict)
 
     # Access the desired key
     username = x_content_dict['displayName']
